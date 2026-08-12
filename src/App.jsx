@@ -35,7 +35,7 @@ function Hero() {
 function Proof() {
   return <section id="about" className="proof section-shell"><div className="quote-mark"><Quotes size={45} weight="fill" aria-hidden="true" /></div><blockquote>“Securing expert tax advice early is critical. Once Inland Revenue initiates contact, delays can lead to escalation, increased penalties and restricted relief options.”</blockquote>
     <div className="proof__identity"><img src="assets/dave-ananth-profile.webp" alt="Dave Ananth" width="1280" height="1280" /><p><strong>Dave Ananth</strong><span>Partner, Meridian Partners</span></p></div>
-    <div className="proof__media"><span>Expert commentary published by</span><a href="https://www.interest.co.nz/business/138466/dave-ananth-says-overseas-student-loan-problem-not-just-about-losing-money-its-also" target="_blank" rel="noreferrer">interest.co.nz</a><a href="https://www.rnz.co.nz/national/programmes/ninetonoon" target="_blank" rel="noreferrer">RNZ Nine to Noon</a></div>
+    <div className="proof__media"><img src="assets/media-lockup.png" alt="As seen in Newstalk ZB, Stuff, NZ Lawyer and The Post" width="402" height="85" /></div>
   </section>;
 }
 

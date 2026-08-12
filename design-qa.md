@@ -1,40 +1,44 @@
 # Design QA
 
-- Source visual truth: `/Users/shankar/.codex/generated_images/019ff4d4-050b-7da2-8650-88079745a433/exec-290e382f-13cd-48b8-9014-feb11a3b8a35.png`
-- Implementation screenshot: `implementation-desktop-viewport.png`
-- Comparison board: `design-qa-comparison.png`
-- Viewport: 1536 × 1024 CSS pixels, device scale factor 1
-- Source pixels: 1536 × 1024
+- Source visual truth: restored scrollable implementation from commit `8a619e3`; publication-logo treatment from `/var/folders/n2/d96307fd2c91hg5g4xt_f24m0000gn/T/codex-clipboard-43f2c6e2-4376-47d0-beee-7f9eaff1ecca.png`
+- Implementation screenshot: `/tmp/dave-tax-design-qa-restored/restored-desktop.png`
+- Comparison board: `/tmp/dave-tax-design-qa-restored/design-qa-comparison-restored.png`
+- Desktop viewport: 1536 × 1024 CSS pixels, device scale factor 1
+- Mobile viewport: 390 × 844 CSS pixels, device scale factor 1
+- Source direction pixels: 1536 × 1024
 - Implementation pixels: 1536 × 1024
-- Density normalization: none required; both evidence images are 1× and equal size
-- State: homepage, top of page, desktop navigation closed
+- Density normalization: none required
+- State: homepage, desktop navigation closed; mobile navigation tested open and closed
 
 ## Full-view comparison evidence
 
-The side-by-side comparison board shows the selected dark editorial direction is preserved: black hero, left-aligned high-impact headline, real portrait on the right, vermilion primary actions, warm paper evidence band, serif editorial typography, strong rules and compact metadata. The implementation intentionally extends the page below the initial viewport so article filters, services, client evidence and contact information remain comfortably readable and accessible rather than compressing the entire production site into the concept image’s presentation-board height.
+The rollback restores the earlier production composition: a substantial split hero followed by proof, Expertise, Client Story, Articles & Media, Contact, and footer sections. The page is 3,719 CSS pixels tall in its default desktop state and scrolls normally. The comparison board confirms that the dark editorial hero, portrait, typography, warm paper proof section, vermilion actions, and publication strip retain the selected visual language.
+
+The compact one-screen presentation is intentionally not reproduced because the user explicitly requested restoration of the previous scrollable page.
 
 ## Focused-region evidence
 
-No additional crop was required because the 1536 × 1024 board keeps the logo, navigation, hero typography, portrait crop, calls to action and evidence strip readable at original density. Mobile evidence was separately captured in `implementation-mobile-top.png` and `implementation-mobile.png` at 390 × 844.
+The proof-section region was checked separately at desktop and mobile sizes. The supplied publication lockup is rendered as one sharp 402 × 85 image and visibly contains Newstalk ZB, Stuff, NZ Lawyer, and The Post. All five local images loaded with non-zero natural dimensions.
 
 ## Findings
 
-- No actionable P0, P1 or P2 fidelity issues remain.
-- Fonts and typography: Libre Franklin and Source Serif 4 reproduce the source’s modern grotesk/editorial-serif contrast. Headline wrapping is intentionally narrower at common desktop widths to maintain readable measure.
-- Spacing and layout rhythm: the hero’s split grid, action grouping and evidence strip match the source hierarchy. Below-fold sections use a roomier production rhythm than the compressed concept board.
-- Colors and visual tokens: near-black, warm paper, vermilion, muted gold and grey rules match the visual target and retain accessible contrast.
-- Image quality and asset fidelity: Dave’s real source-site logo and two real portraits are used locally with no hotlinking or generated substitutes.
-- Copy and content: visible claims, testimonials, services, contact details and media links are grounded in davetaxnz.nz. Unverified media logos and invented article titles from the concept were not reproduced.
-- Interaction and responsiveness: desktop article filtering works; the mobile menu opens, exposes the correct expanded state, closes after navigation and lands on the target section; console error/warning checks were clear.
+- No actionable P0, P1, or P2 issues remain.
+- Fonts and typography: the restored Libre Franklin and Source Serif 4 hierarchy matches the earlier scrollable build, including the large hero display and editorial headings.
+- Spacing and layout rhythm: the long-form section sequence and generous vertical rhythm are restored. Desktop and mobile show no horizontal overflow.
+- Colors and visual tokens: the near-black, warm paper, vermilion, muted gold, and grey rule system is restored without new drift.
+- Image quality and asset fidelity: Dave’s supplied logo and portraits remain local assets. The four publication marks use the supplied raster lockup rather than substituted text.
+- Copy and content: the previous service, client story, article, contact, and footer content is restored.
+- Interaction and responsiveness: article filtering works; selecting “In the media” displays two cards. The mobile menu reports the correct expanded state, becomes visible, closes correctly, and the page remains free of horizontal overflow.
 
 ## Comparison history
 
-- Initial implementation: the selected direction and core layout matched with no P0/P1/P2 findings. No visual fixes were required after the first normalized comparison.
+- Earlier compact pass: the page was compressed into a 958-pixel presentation canvas, removing the expected long-form scrolling experience.
+- Rollback pass: reverted the compact page to commit `8a619e3`, restoring all long-form sections and normal scrolling.
+- Logo pass: replaced the earlier text-only media links with the supplied Newstalk ZB, Stuff, NZ Lawyer, and The Post image lockup. Post-fix desktop and mobile captures show the lockup fully visible.
 
 ## Follow-up polish
 
-- P3: replace external Google Fonts with self-hosted subsets before a final custom-domain launch if absolute third-party independence is required.
-- P3: migrate article entries from `src/articles.js` to the future automated publishing source when that workflow is selected.
+- P3: connect the existing article collection to the planned automated publishing source when that workflow is selected.
 
 ## Final result
 
