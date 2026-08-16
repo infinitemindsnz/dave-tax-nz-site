@@ -1,0 +1,912 @@
+# Governed page-copy model for the Dave Ananth tax barrister site.
+#
+# One entry per WordPress page from davetaxnz.nz, keyed by its WordPress slug.
+# Copy is migrated VERBATIM from the WordPress REST payload
+# (/wp-json/wp/v2/pages) with HTML entities decoded and Elementor wrapper markup
+# stripped. Nothing here is rewritten, summarised or "improved" — every string
+# is the client's own words and any edit is a visible content change.
+#
+# `title` is the WordPress page title. `description` is the WordPress excerpt
+# rendered to plain text. WordPress auto-generates these by truncating the page,
+# so most of them end in the literal "[…]" marker WordPress emits and some are
+# stale relative to the live page body. That is upstream data, preserved as-is.
+#
+# Each section is one of four kinds:
+#   prose  — heading and/or body paragraphs (blank-line separated)
+#   list   — heading (optional) plus items[]
+#   quote  — a pull quote or testimonial; heading = attributed name,
+#            meta = the secondary attribution line (e.g. the month/year)
+#   cta    — a call to action; body = the link label, href = the target
+#
+# Validated at build time by src/data/schema.ts (strict: unknown keys throw).
+# Run `npm run content:validate` after any edit.
+
+home:
+  title: "Home"
+  description: "Dave Ananth Student Loan Lawyer & IRD NegotiatorHonorary Consul of Timor-Leste Book a Free Consultation See Dave Ananth’s Profile Get Expert Advice See our Services How do you save money in legal costs? About Dave “Securing expert tax advice early is critical. Once Inland Revenue (IRD) initiates contact, delays often lead to case escalation, increased […]"
+  sections:
+    - kind: "prose"
+      heading: |-
+        Student Loan Lawyer & IRD Negotiator
+        Honorary Consul of Timor-Leste
+    - kind: "cta"
+      body: "See Dave Ananth's Profile"
+      href: "#about"
+    - kind: "cta"
+      body: "Get Expert Advice See our Services"
+      href: "#services"
+    - kind: "cta"
+      body: "How do you save money in legal costs?"
+      href: "#strategy"
+    - kind: "prose"
+      heading: "About Dave"
+    - kind: "quote"
+      heading: "Dave Ananth"
+      body: "\"Securing expert tax advice early is critical. Once Inland Revenue (IRD) initiates contact, delays often lead to case escalation, increased penalties, and restricted relief options. By implementing a proactive strategy at the outset, complex IRD matters, including student loan arrears and unpaid tax debt, can be resolved faster and more cost-effectively.\""
+    - kind: "prose"
+      heading: "Student Loan Lawyer & IRD Negotiation Specialist."
+    - kind: "prose"
+      heading: "Student Loan Work - IRD Negotiations - Debts, Penalties, and Overseas-Based Borrower Issues"
+    - kind: "cta"
+      body: "Read More"
+      href: "/about"
+    - kind: "prose"
+      body: |-
+        Dave Ananth is a Partner at Meridian Partners and the Honorary Consul of Timor-Leste in Auckland, with over 35 years of legal practice in New Zealand and internationally. As a former Solicitor and Prosecutor for the Inland Revenue Department, he is widely recognized for his expertise in tax compliance and regulatory disputes, particularly where government enforcement intersects with individual and small business obligations.
+
+        Dave specializes in navigating complex, high-stakes student loan disputes in NZ and Inland Revenue negotiations. His practice focuses on resolving extreme, multi-decade debt cycles—including severe cases where an overseas-based borrower’s student loan has ballooned up to $500,000 due to compounding interest and penalties. Across every case, his primary focus is achieving practical, lawful outcomes while reducing unnecessary cost, escalation, and enforcement risk.
+
+        By serving as a complete strategic buffer, Dave halts aggressive IRD enforcement, cascading interest, and active NZ border-arrest risks. Drawing on firsthand insight into how the department operates, he secures rapid breakthroughs, penalty relief, and manageable student loan repayment packages—often within 24 to 72 hours.
+
+        A trusted authority on New Zealand tax law, Dave is a regular media contributor on IRD tax debt and recovery practices, with recent expert commentary published on Interest.co.nz.
+    - kind: "prose"
+      heading: "Our Services"
+      body: |-
+        Dave Ananth provides focused legal advice on student loan debt and tax negotiations with Inland Revenue, with an emphasis on early intervention, strategy, and practical outcomes.
+
+        He advises and represents clients in student loan negotiations, IRD tax debt matters, penalties, interest, and enforcement action, including issues affecting overseas-based borrowers.
+
+        Dave’s approach is practical and results-driven:
+    - kind: "list"
+      items:
+        - "Early engagement to preserve negotiation options"
+        - "Clear strategy for IRD negotiations and enforcement"
+        - "Fair, transparent, and reasonable fees"
+        - "Concise advice that is clear and easy to act on"
+    - kind: "list"
+      items:
+        - "Tax Investigations"
+        - "Tax Dispute Process"
+        - "Student Loan Negotiation"
+    - kind: "quote"
+      body: "GOOD TAX ADVICE REDUCES PRESSURE, NOT JUST LIABILITY"
+    - kind: "prose"
+      heading: "OUR STRATEGY"
+      body: |-
+        Dave specializes in giving tax advice and negotiations with IRD.
+
+        He will help you save time, legal costs and achieve a practical outcome.
+    - kind: "prose"
+      heading: "Value for money"
+      body: |-
+        We provide you value for your
+        money by giving you timely advice on matters
+        before they get out of hand. The advice will not only be legal, but also in accordance with your business interest as well.
+    - kind: "prose"
+      heading: "IRD Matters"
+      body: |-
+        Have you received a letter from IRD? Don't know what to do? I help negotiate:
+        instalment arrangements, penalty/interest relief, hardship applications,
+        resolution for overdue tax/student loan balances. Contact me for help in any of these areas.
+    - kind: "prose"
+      heading: "Risk Analysis"
+      body: "We do a thorough risk assessment of your situation and give you a fair risk analysis. Advising you on the possible scenarios and the best possible outcome for you or/and your business."
+    - kind: "prose"
+      heading: "Strategy"
+      body: "We do not waste your time and money if you do not have a good case. We advise the best solution on a case-to-case basis. This is crucial. Don't forget that interest, UOMI and penalties can accumulate on a daily basis. The longer you delay , the more you may need to pay!"
+    - kind: "prose"
+      heading: "Client Testimonials"
+    - kind: "quote"
+      heading: "Martyn Svendsen"
+      meta: "July 2026"
+      body: |-
+        I can’t recommend Dave Ananth highly enough.
+        My student loan had grown more than 6x since I took it out in 2003. I had no idea, it was completely out of ignorance on my part. It wasn’t until my wife and I had our child that I finally looked into it. When I saw the number, it honestly blew my mind and created an enormous amount of stress for our family.
+        Dave literally changed our financial trajectory. He is deeply knowledgeable about the IRD and how student loans work, especially for people living overseas. He negotiated a settlement that chopped my debt by two thirds and arranged a very reasonable lump sum payment. His fees are incredibly fair too.
+        Thanks to him, I’ll be completely debt free by the end of the month. He’s been an absolute saint through this whole process. If you’re struggling with an old student loan and don’t know where to turn, reach out to Dave. You won’t regret it.
+    - kind: "quote"
+      heading: "R McMahon"
+      meta: "July 2026"
+      body: |-
+        If you’re living overseas and overwhelmed by a ballooning New Zealand student loan, stop waiting — contact Dave Ananth and his team right away.
+        When I took out my student loans in my 20s, I never imagined how difficult repayment would become. I was excited to build my career and experience the world. But life takes unexpected turns, and what once seemed manageable can quickly grow into something overwhelming.
+        The years fly by, but one thing that never disappears is your student loan — especially with penalties and interest compounding month after month, sometimes for decades.
+        I was so nervous to face my debt that when I finally checked the balance, I burst into tears. It had grown enormous. A fellow lawyer referred me to Dave, and within just two weeks, the matter was resolved.
+        A huge thank you to Dave and his team for their professionalism, deep knowledge, and strong relationships with IRD. Thanks to them, my husband and I were able to settle the debt. I can finally breathe again.
+        Dave truly is a light for so many Kiwis who left in good faith and later found it too hard to return home. If you’re in this situation, reach out to him — you won’t regret it.
+        Thank you, Dave and your team!
+    - kind: "quote"
+      heading: "S.Greene"
+      meta: "June 2026"
+      body: |-
+        I'd been living in Europe for over 20 years with a student loan situation I'd been too overwhelmed and frankly too scared to deal with. As a single parent who'd been out of the workforce for 15 years raising kids, I had no savings, no assets, and no idea how I was ever going to resolve it. The debt had ballooned over the years and I was terrified about travelling back to New Zealand to visit my elderly parents, not knowing whether I'd be stopped at the airport.
+        A friend suggested I look into getting legal help and I found Dave. From the first conversation he was calm, kind and completely non-judgmental. He listened to my situation with real empathy and at no point did I feel ashamed or embarrassed, which after 20 years of avoiding this, meant a lot. Within a week and a half he had negotiated a hardship arrangement with IRD that included the removal of an enormous amount in late penalties, and I am now repaying the remaining balance in affordable monthly instalments. It's an outcome I could never have achieved on my own and honestly didn't think was possible. His background as a former IRD prosecutor means he knows exactly how IRD thinks, what they'll accept, and how to present a case to get the best result.
+        If you're an overseas Kiwi who has been putting this off because it feels too big and too scary, please just contact Dave, it is so worth it. I can now travel home and see my parents without that fear hanging over me, and that means everything.
+        Thank you Dave, from the bottom of my heart!
+    - kind: "quote"
+      heading: "John Jackson"
+      meta: "April 2026"
+      body: |-
+        I can highly recommend Dave Ananth and his negotiating skills. After living abroad since 2004, I was returning to New Zealand facing a significant and long-standing student loan debt that had been hanging over me for over two decades. It felt like a massive roadblock to my relocation.
+        I strongly agree with the sentiments Dave has shared in his published articles and interviews, these ballooning debts and rigid penalties truly do prevent skilled Kiwis from returning home. For many of us, the fear of enforcement makes the prospect of moving back feel impossible.
+        Dave was a total professional from the first contact. He didn’t just give advice, he took action. Within just a few days, he successfully negotiated a full settlement with the IRD, providing me with the clean slate I needed to return home. If you are an expat looking to settle affairs in NZ, Dave is the person you want in your corner. He is a genuine lifesaver.
+    - kind: "quote"
+      heading: "Sarah Williams"
+      meta: "October 2025"
+      body: |-
+        I cannot recommend Dave Ananth and his team at Stace Hammond highly enough.
+        The process of sorting out my student loan debt , which was daunting and overwhelming for me, was managed with reassurance, professionalism, trust and kindness.
+        His very reasonable flat fee for service is the best money I have spent in 25 years!
+        I have been burdened with a burgeoning student loan debt since 2001. I have been tauntingly harassed by debt collectors over this time and forced into financial exile from my beloved NZ.
+        Handing over the reins to Dave, unburdened me from this anxiety and shame. He is a master negotiator with the IRD - reducing my debt total by 30percent. With Dave’s help I am now debt free and feel lighter and happier than I have in years.
+        Engaging with Dave and his team has been nothing less than life changing for me. I am so very grateful for his help and would strongly encourage anyone else feeling fearful, lost or hopeless about their situation to contact him and enjoy the rewards of his incredible work.
+        (Note: Dave Ananth is currently a Partner with Meridian Partners)
+    - kind: "quote"
+      heading: "Louise Doherty"
+      meta: "June 2025"
+      body: |-
+        I would certainly recommend Stace Hammond and Dave Ananth in particular if you are to find yourself in the same predicament as me having a student loan debt spanning 27 years. I took out a student loan of around 41k in the late 90s, moved abroad and never paid from this date for one reason or another. On a recent return to NZ I was contacted by the Inland Revenue about my student loan liability and was told that I owed (with penalties and interest) well over 150k. As you can imagine, this was a very stressful time and meant I had to sort this out as it could've affected my ability to exit or enter the country. I found Dave online and was so pleased that he caps his fee to make it affordable for people like me to seek his services. He was very reassuring and dealt with all IRD negotiations on my behalf. The outcome is that I paid a fair lump sum up-front and are now paying off manageable instalments twice a year until the full liability is cleared. I don't expect I would ever have received the same outcome had I attempted to resolve this myself and fully appreciate Dave's professionalism, manner and negotiating skills. Please contact Dave at Stace Hammond if you find yourself in the same situation.
+        (Note: Dave Ananth is currently a Partner with Meridian Partners)
+    - kind: "quote"
+      heading: "Jana R"
+      meta: "June 2025"
+      body: |-
+        I cannot recommend Dave Ananth highly enough.
+        I reached out to Dave due to ongoing difficulties with my student loan, a debt I had been unable to repay for over 30 years. The situation had become overwhelming. Communication with IRD had broken down, and with accumulating penalties and changes, the amount I owed kept growing. Eventually, I felt so discouraged that I simply ignored the problem.
+        When I finally acknowledged how serious things had become, I contacted Dave for help—and it was the best decision I could have made. Within just two days, the entire process was turned around. In the first 24 hours, Dave handled all the paperwork to initiate the process. Within the next 24 hours, an offer was made that completely reset my student loan, saving me an incredible $40k+
+        Dave managed all communication on my behalf, and the loan was closed within three days. After three decades of stress and anxiety, I felt an immense sense of relief.
+        Dave is not only professional and efficient, but also incredibly empathetic. He truly understood the stress I was under and dealt with everything swiftly and with care.
+        If you're struggling with student loan repayments, as I was, I strongly encourage you to reach out to Dave. He is a true lifesaver.
+        Thank you, Dave—you’re an absolute star.
+    - kind: "quote"
+      heading: "Felicity McKeen"
+      meta: "April 2025"
+      body: |-
+        Due to time overseas and with an amount unpaid, my student loan grew, in penalties and interest. I was stuck in the system, a number not a person. Endless circular phone calls with the IRD, saw frustration and anxiety, loaded with a deep sense of futility – I couldn't see myself ever being able to earn enough money to capture the debt growing in interest and penalties. The snake eating its tail, my life was financially stripped, and I felt crushed.
+        I contacted Dave Ananth and immediately, my life changed. Dave works fast. In less than five business days almost 20 years of anxiety, stress and shame was gone. His expertise and professionalism saw him deftly navigate the IRD system and win a viable resolution seeing my loan consolidated and completed. Gone FOREVER.
+        His generosity, empathy and kindness is also reflected in his fixed price fee for this service. This makes him accessible and affordable, with the ability to change your life, forever.
+        If you want to get your Student Loan sorted and your life back, then work with Dave - I can't recommend a better person to do this.
+    - kind: "prose"
+      heading: "Need Help with Tax or Student Loan Debt?"
+      body: "Get expert advice from a leading student loan lawyer & IRD negotiation specialist. Book a free consultation today."
+
+about-dave:
+  title: "About Dave"
+  description: "About Dave Dave Ananth – Tax Barrister | Inland Revenue Disputes & Negotiations DAVE ANANTH Student loan lawyer, tax negotiator & former IRD prosecutor Honorary Consul of Timor-Leste (Auckland, NZ) Auckland Mobile: +64 21 021 68888 Email: dave@davetaxnz.nz 35+ Years in Tax Law, IRD Investigations & Commercial Advice Dave Ananth is a senior Auckland-based tax […]"
+  sections:
+    - kind: "prose"
+      heading: "Dave Ananth – Tax Barrister | Inland Revenue Disputes & Negotiations"
+    - kind: "prose"
+      heading: "DAVE ANANTH"
+      body: |-
+        Student loan lawyer, tax negotiator & former IRD prosecutor
+
+        Honorary Consul of Timor-Leste (Auckland, NZ)
+    - kind: "list"
+      items:
+        - "Auckland Mobile: +64 21 021 68888"
+        - "Email: dave@davetaxnz.nz"
+    - kind: "prose"
+      heading: "35+ Years in Tax Law, IRD Investigations & Commercial Advice"
+      body: |-
+        Dave Ananth is a senior Auckland-based tax barrister, advising clients on IRD disputes, audits, investigations, penalties, GST matters, and student loan enforcement. With more than three decades of experience in legal practice across New Zealand and overseas, he brings deep practical insight into how tax, regulatory, and enforcement systems operate in reality.
+
+        Clients turn to Dave for calm, strategic, and technically rigorous advice, particularly in high-stakes matters involving IRD enforcement, negotiation, and dispute resolution.
+    - kind: "list"
+      heading: "How Dave Can Help You"
+      items:
+        - "Student loan arrears, penalties, overseas-based borrower issues, and IRD enforcement action"
+        - "IRD audits, tax disputes, and Inland Revenue negotiations"
+        - "Tax debt, penalties, late payment issues, and remission applications"
+        - "GST disputes, refunds, and reassessments"
+    - kind: "list"
+      heading: "Why Clients Choose Dave"
+      items:
+        - "Clients choose Dave Ananth for his deep, practical experience in Inland Revenue disputes, tax debt, and student loan enforcement, and his ability to resolve matters efficiently before they escalate."
+        - "35+ years’ experience in New Zealand tax law and IRD matters"
+        - "Former Inland Revenue Prosecutor and decision-maker, with first-hand insight into IRD processes and enforcement"
+        - "Strong track record in IRD negotiations involving tax debt, penalties, interest, and student loans"
+        - "Focus on early intervention to preserve options and reduce escalation"
+        - "Clear, direct advice grounded in strategy, not jargon"
+        - "Transparent, upfront fees and a pragmatic approach to cost"
+        - "Calm, approachable manner, clients value his ability to simplify stressful IRD and student loan issues"
+    - kind: "prose"
+      heading: "Dave’s Background"
+      body: |-
+        Dave Ananth’s practice is grounded in decades of experience across the courts, Inland Revenue, and complex tax disputes, giving him a rare, practical understanding of how IRD investigations, enforcement, and decision-making operate in reality.
+
+        He has served as a judicial officer, litigation lawyer, and Inland Revenue prosecutor and adjudicator, developing deep expertise in evidence assessment, statutory interpretation, and dispute resolution. Since returning to New Zealand, his work has focused on tax audits, IRD investigations, penalties, GST matters, and student loan enforcement, particularly where matters are fact-heavy, high-risk, or enforcement-driven.
+
+        This background allows Dave to advise clients strategically at an early stage, anticipate how Inland Revenue will approach a matter, and resolve disputes efficiently through negotiation where possible.
+    - kind: "prose"
+      heading: "PROFESSIONAL MEMBERSHIPS / LEADERSHIP ROLES"
+    - kind: "list"
+      heading: "NEW ZEALAND"
+      items:
+        - "Honorary Consul of Timor-Leste (Auckland, New Zealand)"
+        - "Partner at Meridian Partners"
+        - "Admitted as Barrister & Solicitor of New Zealand High Court 1989."
+        - "Honorary Advisor (ASEAN Region) – Auckland Business Chamber"
+        - "President – New Zealand Malaysian Business Association (NZMBA)"
+        - "Layperson Member – NZ Health Practitioners Disciplinary Tribunal"
+        - "Expert Panel Member – Ethnic Advisory Panel, Indian Newslink"
+        - "Trustee - Atmabhav (atmabhav.org.nz)"
+    - kind: "list"
+      heading: "MALAYSIA"
+      items:
+        - "Former Magistrate, Life Member - Judicial & Legal Officers Association Malaysia"
+        - "Former member of Malaysian Bar (Advocate & Solicitor)"
+        - "Former member of Asian Law Association of Malaysia"
+        - "Former consultant and writer for Wolters Kluwer Malaysia for their general tax policy"
+        - "Former Director, EY Malaysia"
+
+contact:
+  title: "Contact"
+  description: "Contact Dave DAVE ANANTH Tax Barrister Mobile Cell: +64 21 021 68888 Email: dave@davetaxnz.nz Address: 97 Great South Road, Epsom, Auckland 1051 Follow on LinkedIn"
+  sections:
+    - kind: "prose"
+      heading: "Contact Dave"
+    - kind: "prose"
+      heading: "DAVE ANANTH"
+    - kind: "prose"
+      heading: "Tax Barrister"
+    - kind: "prose"
+      heading: "Mobile Cell:"
+      body: "+64 21 021 68888"
+    - kind: "prose"
+      heading: "Email:"
+      body: "dave@davetaxnz.nz"
+    - kind: "prose"
+      heading: "Address:"
+      body: "97 Great South Road, Epsom, Auckland 1051"
+    - kind: "cta"
+      body: "Follow on LinkedIn"
+      href: "https://www.linkedin.com/in/dave-ananth-6310b023/"
+    - kind: "list"
+      items:
+        - "Name"
+        - "Email"
+        - "Subject"
+        - "Message"
+    - kind: "cta"
+      body: "Send Message"
+
+testimonials:
+  title: "Testimonials"
+  description: "TESTIMONIALS Chelsea Bernal August 2026 Hire Dave from the very beginning. I’m living overseas and I found Dave when I was a year into back and forth with the IRD, having found myself in the middle of a disputes process when all I wanted was for the penalties and interest on penalties to be removed […]"
+  sections:
+    - kind: "prose"
+      heading: "TESTIMONIALS"
+    - kind: "quote"
+      heading: "Chelsea Bernal"
+      meta: "August 2026"
+      body: "Hire Dave from the very beginning. I’m living overseas and I found Dave when I was a year into back and forth with the IRD, having found myself in the middle of a disputes process when all I wanted was for the penalties and interest on penalties to be removed or reduced from my incredibly large loan debt. Dave calmly swept in, explained everything and continuously kept me in the loop while he negotiated an outcome that meant I could actually pay the loan off entirely! He gives an excellent free 15-minute consultation to understand your situation – absolutely worth your time! Thanks, Dave!"
+    - kind: "quote"
+      heading: "Tanvi & Chirag Hirani"
+      meta: "August 2026"
+      body: "Dave has been a tremendous support. After getting to know my situation and circumstance, Dave and his team were proactive and instantaneous with their services despite the time differences to where I live. Pretty much within the day of speaking of Dave he had successfully negotiated an outcome. I cannot recommend Dave enough!"
+    - kind: "quote"
+      heading: "Tamara D"
+      meta: "August 2026"
+      body: "Dave really goes the extra mile for his clients and gets results – he negotiated my student loan payment demand & interest down with IRD successfully in one phone call! His fee is very very reasonable – so it is not a barrier to engaging him at all. He could potentially save you thousands in accrued overseas borrower interest, penalites etc. I wholeheartedly recommend contacting Dave for a free consult to find out how he can help you. His professionalism and communication with me was top notch. Get some peace of mind and give him a call – I’m so glad I did."
+    - kind: "quote"
+      heading: "Hong Chris"
+      meta: "July 2026"
+      body: "Dave was extremely helpful in resolving my student loan issue with IRD. He communicated with IRD on my behalf and successfully negotiated a fair settlement amount for me. He was professional, knowledgeable, and supportive throughout the entire process. I especially appreciated how quickly he responded and always kept me updated in a timely manner. I highly recommend Dave to anyone dealing with a similar issue."
+    - kind: "quote"
+      heading: "Michelle Rice"
+      meta: "July 2026"
+      body: "Dave is incredibly efficient, professional, and gets results quickly. Very reasonable rates, and he’s understanding and compassionate when helping you through a very stressful situation. Cannot recommend him highly enough. Could not have sorted student loan payments with IRD without his help."
+    - kind: "quote"
+      heading: "Martyn Svendsen"
+      meta: "July 2026"
+      body: |-
+        I can’t recommend Dave Ananth highly enough.
+        My student loan had grown more than 6x since I took it out in 2003. I had no idea, it was completely out of ignorance on my part. It wasn’t until my wife and I had our child that I finally looked into it. When I saw the number, it honestly blew my mind and created an enormous amount of stress for our family.
+        Dave literally changed our financial trajectory. He is deeply knowledgeable about the IRD and how student loans work, especially for people living overseas. He negotiated a settlement that chopped my debt by two thirds and arranged a very reasonable lump sum payment. His fees are incredibly fair too.
+        Thanks to him, I’ll be completely debt free by the end of the month. He’s been an absolute saint through this whole process. If you’re struggling with an old student loan and don’t know where to turn, reach out to Dave. You won’t regret it.
+    - kind: "quote"
+      heading: "Allessi Zeus"
+      meta: "July 2026"
+      body: "Dave is a human angel with power who saved me from a lifetime of paying off my undeserved student loan fees by $50K. He is kind, easy to talk to & will actually help you. He will be very rich in money, in soul, in spirit & in karma after what he does for those who come to him in need. Thank you Dave. You are a Godsend. I am sure I am echoing what many say. Keep up the angelic work!"
+    - kind: "quote"
+      heading: "R McMahon"
+      meta: "July 2026"
+      body: |-
+        If you’re living overseas and overwhelmed by a ballooning New Zealand student loan, stop waiting — contact Dave Ananth and his team right away.
+
+        When I took out my student loans in my 20s, I never imagined how difficult repayment would become. I was excited to build my career and experience the world. But life takes unexpected turns, and what once seemed manageable can quickly grow into something overwhelming.
+
+        The years fly by, but one thing that never disappears is your student loan — especially with penalties and interest compounding month after month, sometimes for decades.
+
+        I was so nervous to face my debt that when I finally checked the balance, I burst into tears. It had grown enormous. A fellow lawyer referred me to Dave, and within just two weeks, the matter was resolved.
+
+        A huge thank you to Dave and his team for their professionalism, deep knowledge, and strong relationships with IRD. Thanks to them, my husband and I were able to settle the debt. I can finally breathe again.
+
+        Dave truly is a light for so many Kiwis who left in good faith and later found it too hard to return home. If you’re in this situation, reach out to him — you won’t regret it.
+
+        Thank you, Dave and your team!
+    - kind: "quote"
+      heading: "S. Greene"
+      meta: "June 2026"
+      body: |-
+        I’d been living in Europe for over 20 years with a student loan situation I’d been too overwhelmed and frankly too scared to deal with. As a single parent who’d been out of the workforce for 15 years raising kids, I had no savings, no assets, and no idea how I was ever going to resolve it. The debt had ballooned over the years and I was terrified about travelling back to New Zealand to visit my elderly parents, not knowing whether I’d be stopped at the airport.
+
+        A friend suggested I look into getting legal help and I found Dave. From the first conversation he was calm, kind and completely non-judgmental. He listened to my situation with real empathy and at no point did I feel ashamed or embarrassed, which after 20 years of avoiding this, meant a lot. Within a week and a half he had negotiated a hardship arrangement with IRD that included the removal of an enormous amount in late penalties, and I am now repaying the remaining balance in affordable monthly instalments. It’s an outcome I could never have achieved on my own and honestly didn’t think was possible. His background as a former IRD prosecutor means he knows exactly how IRD thinks, what they’ll accept, and how to present a case to get the best result.
+
+        If you’re an overseas Kiwi who has been putting this off because it feels too big and too scary, please just contact Dave, it is so worth it. I can now travel home and see my parents without that fear hanging over me, and that means everything.
+
+        Thank you Dave, from the bottom of my heart!
+    - kind: "quote"
+      heading: "Mamagreenish"
+      meta: "June 2026"
+      body: "If you’re an overseas Kiwi with a student loan situation you’ve been too scared to deal with, look no further. Dave sorted my over-20-year-old default within a week and a half, wiping an enormous amount in late penalties off my balance and setting me up with affordable monthly instalments. His background as a former IRD prosecutor means he knows exactly how IRD thinks, but what really surprised me was how kind and patient he was throughout. Life-changing stuff! Thank you Dave."
+    - kind: "quote"
+      heading: "Tim Haller"
+      meta: "June 2026"
+      body: "I can’t thank, or recommend Dave enough! The “15 minute” initial consultation ran to over half an hour. This was followed by a couple more “chats”, some minimal paperwork (a one-page consent form) and then clear instructions, following his conversation with the right people at the IRD. Armed with the right information Dave has put me in a position to sort out my own niggly consequences of working overseas for an NZ Company. At no time was there any pressure to commit to the fixed fee whilst Dave assessed the merits of my case. Willingly given, worthwhile, free legal advice is a rare thing these days. A pleasure to deal with. If you’ve got mounting Student Loan debt and no idea how to address the consequences, talk to Dave first! Tim"
+    - kind: "quote"
+      heading: "Gogtuk Unal"
+      meta: "April 2026"
+      body: "We had a great experience working with Dave Ananth. He helped my wife resolve some complexities regarding her student loan with clear, expert advice. If you are looking for someone reliable and professional to handle tax or loan-related legal issues, this is the place to go"
+    - kind: "quote"
+      heading: "John Jackson"
+      meta: "April 2026"
+      body: |-
+        I can highly recommend Dave Ananth and his negotiating skills. After living abroad since 2004, I was returning to New Zealand facing a significant and long-standing student loan debt that had been hanging over me for over two decades. It felt like a massive roadblock to my relocation.
+
+        I strongly agree with the sentiments Dave has shared in his published articles and interviews, these ballooning debts and rigid penalties truly do prevent skilled Kiwis from returning home. For many of us, the fear of enforcement makes the prospect of moving back feel impossible.
+
+        Dave was a total professional from the first contact. He didn’t just give advice, he took action. Within just a few days, he successfully negotiated a full settlement with the IRD, providing me with the clean slate I needed to return home. If you are an expat looking to settle affairs in NZ, Dave is the person you want in your corner. He is a genuine lifesaver.
+    - kind: "quote"
+      heading: "Brad S"
+      meta: "March 2026"
+      body: "I reached out to Dave to resolve a 13-year long battle with IRD over a student loan debt of $185,000 I was unable to repay without facing financial hardship. Within ten days Dave negotiated an agreement with IRD for me that reduced this exorbitant debt to the much more manageable amount of $60,000 and also managed to discontinue legal proceedings against me IRD had already initiated. Needless to say that Dave’s fast and friendly expert help ended a long-standing anguish that started to affect my health. Given Dave’s expertise in this area, the superb communication between him and me in which he explained every step of his negotiations with IRD to me, and the very favourable deal he brokered for me, I cannot recommend Dave highly enough to anyone with student loan issues that have become too overwhelming. Thank you so much Dave for your invaluable help that finally made these many years of stress and anxiety go away."
+    - kind: "quote"
+      heading: "Mulberrynz"
+      meta: "March 2026"
+      body: "Can’t recommend Dave highly enough. Fast, friendly, expert help. No hidden costs. A genuine lifesaver. If your student loan is out of control, call Dave!"
+    - kind: "quote"
+      heading: "Jana T"
+      meta: "March 2026"
+      body: |-
+        After many years of headaches dealing with my SL, I decided to contact Dave. He reassured me straight away that we can definitely do something about this. He negotiated on my behalf and had an outcome in less than a few days. I would highly recommend him for anyone who is experiencing anguish over their SL. He really does care about his clients and the mental health that these SL’s are causing thousands of New Zealanders overseas. I found his service and expertise absolutely invaluable!
+        Thanks so much Dave…you are a life saver!
+    - kind: "quote"
+      heading: "Emma"
+      meta: "March 2026"
+      body: "Like a lot of overseas student loan borrowers, penalty interest on overdue obligations was making it extremely difficult to make a dent in the balance, despite years of payments and trying negotiate with the IRD myself. Dave was able to obtain a resolution for me swiftly and with compassion. I’m now able to get on top of repayments again and hopefully be rid of a loan I’ve had for over two decades. Highly recommended, Dave and team know their stuff and work fast."
+    - kind: "quote"
+      heading: "AI"
+      meta: "March 2026"
+      body: "After leaving NZ years ago to make my fortune and pay my loan back quickly before returning home, things didn’t work out that way. When it feels like all hope is lost, Dave is the one to call. His non judgement attitude and genuine desire to help is a credit to him. His dealing with the Government helped me get back to an understanding with IRD and back to my home and family. In a matter of days, and for a lot less than he could charge Dave changed my life."
+    - kind: "quote"
+      heading: "S.W."
+      meta: "February 2026"
+      body: "So grateful for Dave Ananth’s support. He was friendly and efficient. Easy to communicate with and everything was completed quickly. He negotiated on my behalf and I am so glad that I contacted him."
+    - kind: "quote"
+      heading: "Rose Mills"
+      meta: "February 2026"
+      body: "I highly recommend Dave Ananth for his expertise, knowledge and care when he worked for me with my student loan reduction. He gained a truly wonderful outcome for me. He is professional and thorough in his work and gets the results in a very short time."
+    - kind: "quote"
+      heading: "Wayne H Pham"
+      meta: "February 2026"
+      body: |-
+        I have the pleasure to engage Dave to act on my behalf in dealing with IRD. His assistance was honest, clear in direction and effective.
+        The result was tremendous and exactly what I wanted. Thanks Dave. It is much appreciated.
+    - kind: "quote"
+      heading: "Numan Ahmed"
+      meta: "February 2026"
+      body: "Dave worked efficiently and quickly. He was able to get my student loan penalties waived within two days. Great result for a nominal fee."
+    - kind: "quote"
+      heading: "S S"
+      meta: "January 2026"
+      body: "I had an excellent experience working with Dave Ananth on my student loan case. He was professional, knowledgeable, and truly cared about helping me find the best possible outcome. Dave successfully managed to reduce my penalties, which took a huge weight off my shoulders. He explained everything clearly and kept me informed throughout the process. I’m very grateful for his help and highly recommend Dave to anyone needing legal assistance with student loans. Thank you, Dave, for your hard work and dedication. Shima"
+    - kind: "quote"
+      heading: "Jana R"
+      meta: "June 2025"
+      body: |-
+        I cannot recommend Dave Ananth highly enough.
+
+        I reached out to Dave due to ongoing difficulties with my student loan, a debt I had been unable to repay for over 30 years. The situation had become overwhelming. Communication with IRD had broken down, and with accumulating penalties and changes, the amount I owed kept growing. Eventually, I felt so discouraged that I simply ignored the problem.
+
+        When I finally acknowledged how serious things had become, I contacted Dave for help—and it was the best decision I could have made. Within just two days, the entire process was turned around. In the first 24 hours, Dave handled all the paperwork to initiate the process. Within the next 24 hours, an offer was made that completely reset my student loan, saving me an incredible $40k+
+
+        Dave managed all communication on my behalf, and the loan was closed within three days. After three decades of stress and anxiety, I felt an immense sense of relief.
+
+        Dave is not only professional and efficient, but also incredibly empathetic. He truly understood the stress I was under and dealt with everything swiftly and with care.
+
+        If you’re struggling with student loan repayments, as I was, I strongly encourage you to reach out to Dave. He is a true lifesaver.
+
+        Thank you, Dave—you’re an absolute star.
+    - kind: "quote"
+      heading: "Sarah Williams"
+      meta: "October 2025"
+      body: |-
+        I cannot recommend Dave Ananth and his team at Stace Hammond highly enough.
+
+        The process of sorting out my student loan debt , which was daunting and overwhelming for me, was managed with reassurance, professionalism, trust and kindness.
+        His very reasonable flat fee for service is the best money I have spent in 25 years!
+
+        I have been burdened with a burgeoning student loan debt since 2001. I have been tauntingly harassed by debt collectors over this time and forced into financial exile from my beloved NZ.
+
+        Handing over the reins to Dave, unburdened me from this anxiety and shame. He is a master negotiator with the IRD – reducing my debt total by 30percent. With Dave’s help I am now debt free and feel lighter and happier than I have in years.
+
+        Engaging with Dave and his team has been nothing less than life changing for me. I am so very grateful for his help and would strongly encourage anyone else feeling fearful, lost or hopeless about their situation to contact him and enjoy the rewards of his incredible work.
+    - kind: "quote"
+      heading: "Felicity McKeen"
+      meta: "April 2025"
+      body: |-
+        Due to time overseas and with an amount unpaid, my student loan grew, in penalties and interest. I was stuck in the system, a number not a person. Endless circular phone calls with the IRD, saw frustration and anxiety, loaded with a deep sense of futility – I couldn’t see myself ever being able to earn enough money to capture the debt growing in interest and penalties. The snake eating its tail, my life was financially stripped, and I felt crushed.
+        I contacted Dave Ananth and immediately, my life changed. Dave works fast. In less than five business days almost 20 years of anxiety, stress and shame was gone. His expertise and professionalism saw him deftly navigate the IRD system and win a viable resolution seeing my loan consolidated and completed. Gone FOREVER.
+        His generosity, empathy and kindness is also reflected in his fixed price fee for this service. This makes him accessible and affordable, with the ability to change your life, forever.
+        If you want to get your Student Loan sorted and your life back, then work with Dave – I can’t recommend a better person to do this.
+    - kind: "quote"
+      heading: "Louise Doherty"
+      meta: "June 2025"
+      body: "I would certainly recommend Stace Hammond and Dave Ananth in particular if you are to find yourself in the same predicament as me having a student loan debt spanning 27 years. I took out a student loan of around 41k in the late 90s, moved abroad and never paid from this date for one reason or another. On a recent return to NZ I was contacted by the Inland Revenue about my student loan liability and was told that I owed (with penalties and interest) well over 150k. As you can imagine, this was a very stressful time and meant I had to sort this out as it could’ve affected my ability to exit or enter the country. I found Dave online and was so pleased that he caps his fee to make it affordable for people like me to seek his services. He was very reassuring and dealt with all IRD negotiations on my behalf. The outcome is that I paid a fair lump sum up-front and are now paying off manageable instalments twice a year until the full liability is cleared. I don’t expect I would ever have received the same outcome had I attempted to resolve this myself and fully appreciate Dave’s professionalism, manner and negotiating skills. Please contact Dave at Stace Hammond if you find yourself in the same situation."
+    - kind: "quote"
+      heading: "Gabriella Larkin"
+      meta: "October 2025"
+      body: |-
+        I’m incredibly grateful to Dave Ananth and his Legal Administrator Pam for their expert guidance, steady support, and professionalism throughout what was a particularly complex and personally challenging situation.
+        Dave brought clarity, calm, and strategic insight at every step — combining strong legal knowledge with a genuine understanding of the bigger picture. His approach was firm, fair, and always focused on a practical outcome that supported both my wellbeing and my future.
+        Pam was equally impressive — warm, responsive, and meticulous with the details. Together, they made a daunting process feel manageable and ensured I was never left in the dark.
+        Thanks to their help, I’ve been able to move forward with confidence and renewed focus on my business. I would recommend them both without hesitation.
+    - kind: "quote"
+      heading: "Fleur Crockford"
+      meta: "November 2025"
+      body: |-
+        I’m so grateful to Dave and Pam at Stace Hammond Lawyers for how efficiently they handled my student loan negotiations. Everything was explained clearly, and the whole process was managed with such care and professionalism.
+        Dave was amazing to deal with — always quick to respond, reassuring, and genuinely supportive through what was a really stressful time. Thanks to him, everything was resolved smoothly, and I finally feel at ease.
+        I’d highly recommend Dave at Stace Hammond Lawyers to anyone needing honest, efficient, and compassionate legal help.
+    - kind: "quote"
+      heading: "Jillaine McClutchie"
+      meta: "August 2025"
+      body: "Dave Ananth and his amazing PA Pam turned our long-standing student loan nightmare into a huge relief—on day one! The whole process was fast, respectful, and handled with such care. We’re beyond grateful for Dave’s expertise and Pam’s friendly, efficient support. Highly recommend them both if you’re in need of help—worth every cent."
+    - kind: "quote"
+      heading: "Daniel Nuralli"
+      meta: "October 2025"
+      body: |-
+        I’d been trying to deal with the IRD from overseas for quite some time and wasn’t making any progress. After engaging with Dave at Stace Hammond, he was able to achieve what I couldn’t. He went the extra mile to secure an outcome that I was genuinely happy with and was a pleasure to work with throughout the process.
+        Dave was professional, knowledgeable, and clearly committed to getting a fair result. He was able to significantly reduce the burden of my student loan, which made a real difference. His expertise and support were not only invaluable — they were genuinely life-changing.
+        I highly recommend getting in touch with Dave if you’re dealing with student loan issues from overseas.
+    - kind: "quote"
+      heading: "PiscesByBirth"
+      meta: "September 2025"
+      body: |-
+        I had an old student loan that had grown substantially over the years, and I needed help resolving it. I reached out to Dave at Stace Hammond, and from the very beginning he was exceptional—professional, knowledgeable, and genuinely supportive.
+        With his background and experience working with the IRD, Dave managed the entire process on my behalf. I didn’t have to deal directly with the IRD at all, other than making the final payment. Once a settlement was agreed upon, the IRD responded within hours, and my balance was cleared the next day. The peace of mind that brought me was immense.
+        Dave’s expertise made the process straightforward and far less stressful than I imagined. His fees were also very fair.
+        If you’re facing a similar situation, I can’t recommend Dave highly enough.
+    - kind: "quote"
+      heading: "B"
+      meta: "September 2025"
+      body: "I finally have my student loan issues resolved, thanks to the wonderful Dave and Pam. My only regret is not finding them sooner. Dave’s service was affordable, compassionate, and efficient, and it got me the results I needed. Pam was amazing, offering support every step of the way. I highly recommend their services to anyone needing help managing their NZ student loan. Thank you, Dave and Pam!"
+    - kind: "quote"
+      heading: "S S"
+      meta: "September 2025"
+      body: "I had a great experience working with Dave. He helped me manage and pay off my student loan and was very supportive throughout the process. Dave was able to get my penalties waived, which made a huge difference for me. I really appreciate his professionalism and guidance, and I highly recommend him to anyone who needs legal help with student loans."
+    - kind: "quote"
+      heading: "Cam Pellett"
+      meta: "October 2025"
+      body: "Dave and his team acted sympathetically, promotly and efficiently. They were able to negotiate a workable deal for me at a reasonable fixed price. I can plan and move on. Thanks Stace Hammond."
+    - kind: "quote"
+      heading: "Claire Sherwood"
+      meta: "August 2025"
+      body: |-
+        Dave is the best in the business. He worked efficiently and quickly, and explained the entire process clearly and without hesitation. He knows every detail of the way the IRD and student loan process works and was able to reach a really successful outcome for me.
+        I had been treating my loan as out of sight out of mind for too long – I’m so glad to have found Dave and had his assistance.
+        A huge thanks, too, to Pam who made the process easy.
+        Truly a case of above and beyond.
+        If you’re needing help with your student loan or tax concerns, don’t hesitate to contact Dave. I have no doubt I wouldn’t have been able to navigate this alone.
+    - kind: "quote"
+      heading: "Darren Harper"
+      meta: "October 2025"
+      body: "Working with Dave and Pam at ‘Stace Hammond’ was something I wish we had done much, much, much sooner. They understood everything we had been dealing with and knew exactly where to go for the best outcome. This isn’t something you should try and deal with without talking to Dave first. Make this your first, and last step."
+    - kind: "quote"
+      heading: "Richard Shone"
+      meta: "September 2025"
+      body: "Really helped me with my student loan. Great result for a reasonable fee."
+    - kind: "quote"
+      heading: "Fenella Hodgkinson"
+      body: "I cannot express enough how grateful I am for how Dave handled IRD issue for me. As. 75yr old pensioner the stress this was causing me was intense. Bless Dave for his help."
+
+articles-advice:
+  title: "Articles & Advice"
+  description: "ARTICLES & ADVICE All1 IRD IRD When Tax Becomes a KPI: IRD’s $11.81 Return on Compliance and What It Means for Ordinary New Zealanders The IRD’s latest figures show a $11.81 return on every $1 spent on compliance, and that shift has real consequences for taxpayers. In this article, I look at what… December 4, […]"
+  sections:
+    - kind: "prose"
+      heading: "ARTICLES & ADVICE"
+    - kind: "list"
+      items:
+        - "All"
+        - "Crypto"
+        - "GST"
+        - "IRD"
+        - "Liquidation"
+        - "PAYE"
+        - "Student Loans"
+        - "Tax"
+        - "Uncategorized"
+
+student-loan-negotiations:
+  title: "Student Loan Negotiations"
+  description: "Student Loan Negotiations & IRD Help Student Loan Lawyer & IRD Negotiator If you’re living overseas, planning to return home, or feeling pressure from the IRD over unpaid student loans, you’re not alone — and you don’t need to face it alone. I’m Dave Ananth, a tax barrister, Partner at Meridian Partners, former IRD prosecutor, and […]"
+  sections:
+    - kind: "prose"
+      heading: "Student Loan Negotiations & IRD Help"
+    - kind: "prose"
+      heading: "Student Loan Lawyer & IRD Negotiator"
+      body: |-
+        If you’re living overseas, planning to return home, or feeling pressure from the IRD over unpaid student loans, you’re not alone — and you don’t need to face it alone.
+
+        I’m Dave Ananth, a tax barrister, Partner at Meridian Partners, former IRD prosecutor, and one of New Zealand’s leading authorities on student loan negotiations and enforcement.
+
+        Each year, I assist overseas New Zealanders to:
+    - kind: "list"
+      items:
+        - "reduce penalties"
+        - "negotiate affordable repayment arrangements,"
+        - "resolve decades-old arrears,"
+        - "avoid enforcement action, and"
+        - "return home without fear of arrest at the airport."
+    - kind: "prose"
+      body: "My work is regularly featured on RNZ, The Post, NZ Herald, Otago Daily Times, and Newstalk ZB, reflecting the scale and complexity of the student loan matters I handle."
+    - kind: "prose"
+      heading: "DAVE ANANTH"
+      body: "Student Loan Lawyer And IRD Negotiation Specialist"
+    - kind: "list"
+      items:
+        - "Auckland Mobile: +64 21 021 68888"
+        - "Email: dave@davetaxnz.nz"
+    - kind: "prose"
+      heading: "The Problem Overseas Student Loan Holders Face"
+      body: "New Zealand’s student loan system was built for local employment — not long-term migration. Overseas borrowers now face:"
+    - kind: "list"
+      items:
+        - "rapidly escalating penalties"
+        - "compounding interest"
+        - "“default” status"
+        - "threats of legal action"
+        - "border arrest risk"
+        - "pension deductions"
+        - "aggressive collection tactics"
+        - "confusing or inconsistent IRD communication"
+        - "unexpected arrears after many years abroad"
+    - kind: "prose"
+      body: |-
+        For many, the balance has doubled or tripled — and the idea of coming home feels unsafe or humiliating.
+
+        But ignoring IRD won’t make it go away.
+        Don’t bury your head in the sand.
+        There are legal, practical, and realistic pathways to fix this.
+    - kind: "prose"
+      heading: "How I Help With Your Student Loan Penalties"
+      body: "As a former IRD prosecutor and a specialist in tax negotiation, I bring a strategic, calm, and results-focused approach to resolving student loan issues."
+    - kind: "prose"
+      heading: "Penalty Negotiation & Reduction"
+      body: "Removing or reducing late payment penalties and compounding interest."
+    - kind: "prose"
+      heading: "Affordable Settlement Arrangements"
+      body: "Negotiated based on your real financial situation — not IRD’s assumptions."
+    - kind: "prose"
+      heading: "Safe Return to New Zealand"
+      body: "Sorting arrears and enforcement before you travel, so you can fly without fear."
+    - kind: "prose"
+      heading: "Preventing Airport Arrests"
+      body: "Managing your case so enforcement does not escalate to detention."
+    - kind: "prose"
+      heading: "Communicating with IRD For You"
+      body: "I deal with IRD directly — you don’t have to."
+    - kind: "prose"
+      heading: "Humanising Your Case"
+      body: "Your story matters. Family obligations, illness, income changes, hardship — the right presentation changes outcomes."
+    - kind: "prose"
+      heading: "Fixing Old or Forgotten Loans"
+      body: |-
+        Even if you left NZ decades ago, your situation can still be resolved.
+
+        You don’t need to be embarrassed. You just need the right strategy.
+    - kind: "prose"
+      heading: "Why Choose Me"
+    - kind: "prose"
+      heading: "Former IRD Prosecutor"
+      body: "I know exactly how IRD evaluates risk, penalties, hardship, and enforcement — from the inside."
+    - kind: "prose"
+      heading: "Recognised National Expert"
+      body: "My commentary on student loans and IRD enforcement is regularly published in major media."
+    - kind: "prose"
+      heading: "35+ Years of Legal and Tax Experience"
+      body: "I’ve negotiated some of New Zealand’s most difficult student loan cases."
+    - kind: "prose"
+      heading: "Confidential, Non-Judgmental Advice"
+      body: "No lectures, no judgment — just practical help."
+    - kind: "prose"
+      heading: "Proven Results"
+      body: |-
+        I’ve helped many overseas New Zealanders come home peacefully and rebuild their lives.
+
+        When you’re dealing with IRD, experience matters more than anything.
+    - kind: "prose"
+      heading: "If You’re Overseas and Worried About Your Student Loan Debt — Start Here"
+      body: "If you are:"
+    - kind: "list"
+      items:
+        - "worried about being arrested at the border,"
+        - "overwhelmed by ballooning penalties,"
+        - "ignoring IRD letters out of fear,"
+        - "struggling to pay from overseas,"
+        - "planning to return after many years abroad,"
+        - "or dealing with aggressive collectors…"
+    - kind: "prose"
+      body: |-
+        …then the worst thing you can do is nothing.
+
+        Don’t bury your head in the sand.
+        The earlier you act, the more options you have — and the easier the solution.
+    - kind: "cta"
+      body: "Contact Dave"
+      href: "https://davetaxnz.nz/contact/"
+    - kind: "prose"
+      heading: "Frequently Asked Questions"
+    - kind: "prose"
+      heading: "I’m overseas and afraid of being arrested. Can you help?"
+      body: "Yes. Arrests occur in limited circumstances. I can assess your risk immediately and negotiate protection before you enter New Zealand."
+    - kind: "prose"
+      heading: "My balance has exploded due to penalties. Is there any hope?"
+      body: "Absolutely. Penalties and charges can often be reduced, depending on circumstances."
+    - kind: "prose"
+      heading: "I’ve ignored IRD for years. Am I in trouble?"
+      body: "You’re not the first, and you won’t be the last. What matters is acting before enforcement escalates."
+    - kind: "prose"
+      heading: "Can everything be fixed while I’m overseas?"
+      body: "In most cases, yes — without you needing to come to New Zealand."
+    - kind: "prose"
+      heading: "Will IRD listen?"
+      body: "Yes — when approached strategically. As a former IRD prosecutor, I know how to present your case effectively."
+    - kind: "prose"
+      heading: "If I fix this, can I come home safely?"
+      body: "In the majority of cases, yes. Once a plan or negotiation is in place, the risk drops significantly."
+    - kind: "prose"
+      heading: "Is this confidential?"
+      body: "Always. Your situation is handled with discretion and respect."
+    - kind: "prose"
+      heading: "Don't leave your student loan unpaid any longer"
+      body: |-
+        You don’t need to face IRD alone.
+        You don’t need to be embarrassed.
+        And you don’t need to navigate this system by yourself.
+
+        If you’re stressed about arrears, penalties, or returning home safely, reach out.
+        I’m here to listen — and to help you fix this properly.
+    - kind: "list"
+      heading: "Contact Dave"
+      items:
+        - "Auckland Mobile: +64 21 021 68888"
+        - "Email: dave@davetaxnz.nz"
+        - "WhatsApp available"
+    - kind: "cta"
+      body: "BOOK A FREE CONSULTATION"
+      href: "https://davetaxnz.nz/book-a-consultation/"
+
+ird-disputes-tax-penalties-negotiation:
+  title: "IRD Disputes, Tax Penalties & Negotiation"
+  description: "Tax Debt, IRD Disputes & Negotiations Tax Lawyer & IRD Negotiator When the IRD starts asking questions or issuing penalties, most people quickly feel overwhelmed. One letter becomes three, penalties compound, cashflow tightens, and suddenly everything feels urgent. I’m Dave Ananth, a tax barrister, Partner at Meridian Partners, and former IRD prosecutor with over 35 […]"
+  sections:
+    - kind: "prose"
+      heading: "Tax Debt, IRD Disputes & Negotiations"
+    - kind: "prose"
+      heading: "Tax Lawyer & IRD Negotiator"
+      body: |-
+        When the IRD starts asking questions or issuing penalties, most people quickly feel overwhelmed. One letter becomes three, penalties compound, cashflow tightens, and suddenly everything feels urgent.
+
+        I’m Dave Ananth, a tax barrister, Partner at Meridian Partners, and former IRD prosecutor with over 35 years’ experience in tax disputes, negotiations, and complex arrears matters. I don’t argue for the sake of arguing — I negotiate, find workable solutions, and help you put the issue behind you so you can move forward with certainty rather than stress.
+
+        My commentary on IRD enforcement is regularly featured on RNZ, NZ Herald, The Post, Otago Daily Times, and Newstalk ZB, and I’m known for presenting cases in a way the IRD actually listens to.
+
+        If the IRD is contacting you, the worst thing you can do is ignore it.
+        Talk to me — and let me deal with the IRD.
+    - kind: "prose"
+      heading: "DAVE ANANTH"
+      body: "Tax Lawyer & IRD Negotiation Specialist"
+    - kind: "list"
+      items:
+        - "Auckland Mobile: +64 21 021 68888"
+        - "Email: dave@davetaxnz.nz"
+    - kind: "prose"
+      heading: "When IRD Gets Involved"
+      body: "Communication from IRD can feel heavy and relentless. Issues that often escalate include:"
+    - kind: "list"
+      items:
+        - "overdue tax returns"
+        - "PAYE and GST arrears"
+        - "instalment defaults"
+        - "penalty and interest accumulation"
+        - "incorrect filings"
+        - "non-response to IRD letters"
+        - "aggressive debt collection"
+        - "old student loan issues tied to your tax account"
+        - "compliance checks"
+        - "reassessments and audits"
+    - kind: "prose"
+      body: |-
+        Most clients aren’t “avoiding tax” — they are dealing with cashflow problems, a cancelled contract, an unexpected business downturn, health issues, or family pressures.
+
+        When one thing goes wrong, it quickly becomes a domino effect.
+        It’s not your fault that IRD penalties grow faster than your ability to resolve them.
+
+        I understand this — and more importantly, I know how IRD thinks.
+        There is always a pathway forward, but timing and strategy matter.
+    - kind: "prose"
+      heading: "How I Assist with IRD Problems"
+      body: "As a former IRD prosecutor and a specialist in tax negotiation, I bring a strategic, calm, and results-focused approach to resolving IRD issues."
+    - kind: "prose"
+      heading: "Penalty Reduction & Remission"
+      body: "Most IRD penalties can be negotiated. I prepare structured, persuasive remission requests that IRD understands and responds to."
+    - kind: "prose"
+      heading: "Working With Your Tax Agent"
+      body: "If you already have an accountant or tax agent, I work alongside them to fix filings, update overdue returns, and stabilise your position."
+    - kind: "prose"
+      heading: "Structured Payment Arrangements"
+      body: "Realistic instalment plans negotiated using financial evidence and genuine capacity to pay."
+    - kind: "prose"
+      heading: "IRD Debt Negotiation & Settlements"
+      body: "For long-running or complex issues, negotiated settlements can significantly reduce stress and ongoing penalties."
+    - kind: "prose"
+      heading: "Help With Overdue GST, PAYE & Income Tax"
+      body: "Especially sensitive areas like trust taxes or employer deductions — handled discreetly and carefully."
+    - kind: "prose"
+      heading: "Responding to IRD Letters & Demands"
+      body: "I take over all communication so you don’t need to deal with IRD directly."
+    - kind: "prose"
+      heading: "Stopping Escalation to Enforcement"
+      body: "Early intervention prevents legal action or escalation into the final recovery phase."
+    - kind: "prose"
+      heading: "Fixing Years of Unfiled Returns"
+      body: "More common than people admit. No judgment — just solutions."
+    - kind: "prose"
+      heading: "Managing Hardship, Illness, and Life Circumstances"
+      body: "When presented correctly, IRD will consider hardship, medical issues, relocations, and family pressures."
+    - kind: "prose"
+      heading: "Protecting You From Missteps"
+      body: "A rushed email or poorly framed explanation can damage your leverage. I prevent that."
+    - kind: "prose"
+      heading: "Why Clients Choose Me"
+    - kind: "prose"
+      heading: "Former IRD Prosecutor"
+      body: "I understand IRD’s internal processes, escalation pathways, and approval criteria for penalty removals and arrangements."
+    - kind: "prose"
+      heading: "Specialist Tax Negotiator"
+      body: "My practice is built on negotiation — getting results without unnecessary dispute."
+    - kind: "prose"
+      heading: "National Media Commentator on IRD Enforcement"
+      body: "When NZ media needs expert explanation of IRD’s approach, they call me."
+    - kind: "prose"
+      heading: "Outcome-Focused"
+      body: "Clients come to me because they want practical, real-life results — not jargon or theory."
+    - kind: "prose"
+      heading: "Discreet & Non-Judgmental"
+      body: |-
+        Tax issues happen for all sorts of reasons. I focus on helping you solve the problem, quietly and professionally.
+
+        When you’re dealing with IRD, experience matters more than anything.
+    - kind: "prose"
+      heading: "IRD Penalties & Interest — What Most People Don’t Realise"
+      body: |-
+        IRD penalties are automatic.
+        Penalty removal is not.
+
+        Most clients are surprised to learn:
+    - kind: "list"
+      items:
+        - "penalties can be reduced or removed"
+        - "interest can be mitigated"
+        - "genuine hardship changes IRD’s approach"
+        - "payment arrangements stop enforcement"
+        - "IRD considers context when it’s properly presented"
+        - "early intervention always produces better results"
+    - kind: "prose"
+      body: |-
+        This is why strategic negotiation matters.
+
+        You don’t have to accept IRD’s position — and you don’t need to be intimidated by the system.
+    - kind: "cta"
+      body: "Contact Dave"
+      href: "https://davetaxnz.nz/contact/"
+    - kind: "prose"
+      heading: "Frequently Asked Questions"
+    - kind: "prose"
+      heading: "I owe money to IRD and can’t pay. What should I do first?"
+      body: "Contact me early. The sooner you act, the more options we have. Delay makes things worse."
+    - kind: "prose"
+      heading: "Can IRD remove penalties?"
+      body: "Yes. Penalties can often be negotiated or remitted depending on your circumstances."
+    - kind: "prose"
+      heading: "Can you negotiate lower repayments?"
+      body: "Yes. IRD will consider capacity-to-pay when properly demonstrated."
+    - kind: "prose"
+      heading: "What if I’ve ignored IRD letters?"
+      body: "You’re not alone. Ignoring won’t make the problem disappear, but we can still get ahead of enforcement."
+    - kind: "prose"
+      heading: "Will IRD listen?"
+      body: "Yes — when the case is presented strategically. This is where expertise and experience matter."
+    - kind: "prose"
+      heading: "Can all this be handled quietly?"
+      body: "Yes. Everything is confidential and managed discreetly."
+    - kind: "prose"
+      heading: "Don't leave your IRD Debt unpaid any longer"
+      body: |-
+        If you’re facing IRD penalties, arrears, overdue returns, or growing pressure from collections, don’t wait until it escalates further.
+
+        You don’t need to deal with IRD alone.
+        You don’t need to feel embarrassed.
+        You don’t need to lose sleep over this.
+
+        Confidential, strategic, and results-driven negotiation — so you can put this chapter behind you and move on.
+    - kind: "list"
+      heading: "Contact Dave"
+      items:
+        - "Auckland Mobile: +64 21 021 68888"
+        - "Email: dave@davetaxnz.nz"
+        - "WhatsApp available"
+    - kind: "cta"
+      body: "BOOK A FREE CONSULTATION"
+      href: "https://davetaxnz.nz/book-a-consultation/"
+
+book-a-consultation:
+  title: "Book A Consultation"
+  description: "BOOK A CONSULTATION Free 15-Minute Initial Consultation Your first step is a short, no-obligation 15-minute consultation with Dave. This call is designed to help you: Understand your position and whether student loan or IRD representation is needed Get clear guidance on what Inland Revenue may require and the appropriate next steps Avoid unnecessary cost, you’ll […]"
+  sections:
+    - kind: "prose"
+      heading: "BOOK A CONSULTATION"
+    - kind: "prose"
+      heading: "Free 15-Minute Initial Consultation"
+      body: |-
+        Your first step is a short, no-obligation 15-minute consultation with Dave.
+
+        This call is designed to help you:
+    - kind: "list"
+      items:
+        - "Understand your position and whether student loan or IRD representation is needed"
+        - "Get clear guidance on what Inland Revenue may require and the appropriate next steps"
+        - "Avoid unnecessary cost, you’ll only proceed if Dave believes he can add real value"
+    - kind: "prose"
+      body: "This brief consultation helps clarify your options early and ensures your matter is directed to the most appropriate pathway, whether that involves strategic advice, representation in IRD negotiations, or an alternative solution."
+    - kind: "prose"
+      heading: "Make a booking"
+      body: |-
+        Request a time to speak with Dave Ananth, Barrister & Tax Specialist.
+        Consultations are held by phone or WhatsApp
+    - kind: "list"
+      items:
+        - "Name:"
+        - "Email:"
+        - "Phone:"
+        - "Message:"
+    - kind: "cta"
+      body: "Send"
+    - kind: "prose"
+      heading: "Fee & Engagement Disclaimer"
+      body: |-
+        Most student-loan matters are offered on a fixed-fee basis, agreed in advance and confirmed in a formal Engagement Letter. Any work outside the agreed scope may involve additional fees.
+
+        All fees will be fully discussed before work begins to ensure transparency and certainty.
+
+thanks-consult:
+  title: "Thanks – Consult"
+  description: "Thanks for your booking request I’ll be in touch soon to confirm your date/time."
+  sections:
+    - kind: "prose"
+      heading: "Thanks for your booking request"
+      body: "I’ll be in touch soon to confirm your date/time."

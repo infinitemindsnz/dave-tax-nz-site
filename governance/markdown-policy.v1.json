@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "policyId": "dave-tax-nz-site-markdown-v1",
+  "root": "src/content/articles",
+  "extensions": [".md"],
+  "flavour": {
+    "base": "commonmark",
+    "extensions": ["gfm"],
+    "comment": "Astro's default Markdown pipeline: CommonMark with GitHub Flavored Markdown enabled. GFM is not optional here — it is what the renderer runs, so the policy must be evaluated against a GFM parse or it will disagree with the built output. The GFM node types GFM makes reachable but this corpus does not use (table, tableRow, tableCell, delete, footnoteDefinition, footnoteReference) are refused below, so enabling the extension widens the parser, not the allowlist."
+  },
+  "allowedNodeTypes": [
+    "root",
+    "heading",
+    "paragraph",
+    "text",
+    "emphasis",
+    "strong",
+    "break",
+    "link",
+    "image",
+    "list",
+    "listItem",
+    "blockquote"
+  ],
+  "allowedNodeTypesDerivation": {
+    "comment": "This set is the EXACT set of mdast node types present across the eighteen migrated bodies, computed from a GFM parse — it is derived from the corpus, not copied from the reference contract. Two deliberate consequences follow. (1) `thematicBreak` is allowed by the reference contract's policy and is REFUSED here, because no migrated body contains one: an allowlist entry that authorises a node nothing uses widens authority for nothing. (2) `image` is REFUSED by the reference contract and is allowed here, because nineteen images are part of the client's verbatim body copy and removing them would be an edit. That allowance is narrowed by `imageConstraints` below rather than left open.",
+    "corpusSurvey": {
+      "files": 18,
+      "nodeCounts": {
+        "root": 18,
+        "heading": 85,
+        "paragraph": 488,
+        "text": 776,
+        "emphasis": 42,
+        "strong": 145,
+        "break": 50,
+        "link": 56,
+        "image": 19,
+        "list": 31,
+        "listItem": 109,
+        "blockquote": 1
+      }
+    }
+  },
+  "deniedNodeTypes": {
+    "comment": "Explicit, not merely absent from the allowlist. An allowlist already fails closed on anything unlisted; these are named so the refusal reason is legible in a review and so a later widening has to delete a line that says why it exists.",
+    "types": [
+      {
+        "type": "html",
+        "reason": "NO RAW HTML. Astro renders raw HTML in .md straight into the page. A single `html` node would let article body copy emit arbitrary markup — including <script>, <iframe>, <form>, <object>, event-handler attributes and inline style — inside a page that otherwise contains only renderer-owned markup. This is the single most load-bearing entry in the policy. It is refused at the AST level rather than sanitised, because a sanitiser is a filter that can be wrong and an allowlist is a gate that cannot be partially satisfied."
+      },
+      {
+        "type": "code",
+        "reason": "A fenced block can carry a `meta` string and a language hint that some pipelines resolve into a loader. No migrated body contains one, and a tax-advice article has no use for a code block."
+      },
+      {
+        "type": "inlineCode",
+        "reason": "Unused by the corpus. Refused for the same minimality reason as thematicBreak, not because inline code is dangerous."
+      },
+      {
+        "type": "table",
+        "reason": "GFM tables, with tableRow and tableCell. Unused, and .article-prose in src/styles-article.css has no table rules — an accepted table would render unstyled."
+      },
+      {
+        "type": "delete",
+        "reason": "GFM strikethrough. Unused. Struck-through text inside legally load-bearing tax copy is an ambiguous edit signal, not formatting."
+      },
+      {
+        "type": "footnoteDefinition",
+        "reason": "GFM footnotes, with footnoteReference. Unused, and they would move attribution out of the reading flow — the opposite of what this contract requires of source credits."
+      },
+      {
+        "type": "definition",
+        "reason": "Reference-style link definitions, with linkReference and imageReference. Unused. They separate a link's destination from where it is written, which defeats point-of-use review of every outbound URL."
+      },
+      {
+        "type": "yaml",
+        "reason": "Frontmatter is validated separately against governance/schemas/article-frontmatter.v1.schema.json and is not part of the body AST this policy governs. A second `yaml` node anywhere below the opening block is refused."
+      },
+      {
+        "type": "mdxjsEsm",
+        "reason": "With mdxFlowExpression, mdxTextExpression, mdxJsxFlowElement and mdxJsxTextElement. MDX is executable content. It is not enabled in astro.config.mjs and the collection loader globs `**/*.md` only; refusing the node types as well means enabling MDX later cannot silently inherit this policy's approval."
+      }
+    ]
+  },
+  "noScripts": {
+    "comment": "There is no path from a governed article body to executable code, and this is a property of the allowlist rather than a separate check. `html` and the five MDX node types are refused, so no <script>, no event-handler attribute and no JSX expression can be authored. The twelve allowed node types have exactly two URL-bearing fields between them — link.url and image.url — and both are constrained to a closed protocol set below, so `javascript:`, `data:`, `vbscript:` and every other scheme fail closed. The two interactive behaviours on this site (the mobile menu and the article filter) are inline <script> blocks in renderer-owned .astro components, bound by renderer_sha256; they are never authored as content.",
+    "executableNodeTypes": "denied",
+    "eventHandlerAttributes": "unreachable",
+    "scriptUrlProtocols": "denied"
+  },
+  "headingDepths": [2, 3, 4, 5, 6],
+  "headingConstraints": {
+    "comment": "Depth 1 is REFUSED. src/pages/articles/[slug].astro renders the frontmatter `title` as the page's only <h1>; a body heading at depth 1 would emit a second one, breaking the document outline and the accessibility gate. Depths 2 through 6 are all present in the corpus (25 h2, 30 h3, 25 h4, 4 h5, 1 h6) and are all permitted. This range is NOT tightened to the reference contract's [2,3,4]: the client's own headings already reach depth 6, and narrowing the policy would refuse existing verbatim copy — which would mean editing the client's structure to satisfy a governance file, exactly backwards.",
+    "minDepth": 2,
+    "maxDepth": 6,
+    "reservedForRenderer": [1]
+  },
+  "linkProtocols": ["https:"],
+  "linkConstraints": {
+    "comment": "HTTPS-ONLY for every authored link. All 54 authored link destinations in the corpus are https: — davetaxnz.nz, interest.co.nz, rnz.co.nz, stuff.co.nz, newstalkzb.co.nz, tewahanui.nz, stacehammond.co.nz, mplaw.nz and treasury.govt.nz. `http:` is refused rather than upgraded: silently rewriting a source's canonical URL is a change to an attribution, and attributions are not the publisher's to edit. Relative and root-relative destinations are refused too — the same body is rendered into the page, RSS and llms.txt, and a relative URL resolves differently in each.",
+    "requireAbsolute": true,
+    "denyEmbeddedCredentials": true,
+    "denyProtocols": [
+      "http:",
+      "javascript:",
+      "data:",
+      "vbscript:",
+      "file:",
+      "ftp:",
+      "blob:"
+    ]
+  },
+  "autolinkLiteralProtocols": ["mailto:"],
+  "autolinkLiteralConstraints": {
+    "comment": "NARROW, DECLARED EXCEPTION to https-only. Two bodies list the client's own published contact address as a bare `dave@davetaxnz.nz` inside a contact list, and GFM's autolink-literal extension turns each into a link with url `mailto:dave@davetaxnz.nz`. This is verbatim client contact copy: deleting the address to satisfy an https-only rule would be an edit, and no operation in this contract may edit client copy. The exception is therefore written down and bounded rather than absorbed into `linkProtocols`, where it would also authorise hand-authored mailto anchors pointing anywhere.",
+    "rule": "self-describing",
+    "ruleDetail": "A mailto: link passes ONLY when it is a literal autolink — the node has exactly one text child and `node.url` equals \"mailto:\" + that child's value. A hand-authored anchor whose visible text differs from its destination (e.g. [contact us](mailto:someone-else@example.com)) is refused, because the reader cannot see where it goes.",
+    "occurrences": 2,
+    "addresses": ["dave@davetaxnz.nz"],
+    "appliesTo": ["link"]
+  },
+  "imageConstraints": {
+    "comment": "Images are allowed because nineteen of them are part of the client's verbatim body copy, and constrained so the allowance cannot become a general remote-embed channel. Every body image URL must be https: AND must be a key in src/data/media-manifest.json, which maps the WordPress upload to a copy that ships in this repo under public/assets/wp/. All 19 currently resolve. An unresolvable URL means the site is hot-linking an asset it does not serve — a live dependency on the client's WordPress host that this repository cannot keep alive — so it fails closed rather than rendering a future 404. `heroImage.src` in frontmatter is governed by the same manifest rule; all 15 resolve.",
+    "protocols": ["https:"],
+    "mustResolveIn": "src/data/media-manifest.json",
+    "manifestPointer": "/media",
+    "allowedHosts": ["davetaxnz.nz"],
+    "requireAlt": false,
+    "requireAltComment": "Several upstream WordPress media records carry an empty alt and the migration preserved that rather than inventing alternative text for the client. Requiring non-empty alt here would force a publisher to write copy on the client's behalf. Alt text is a real accessibility gap and is recorded as one in governance/README.md; it is not closed by fabricating strings."
+  },
+  "frontmatter": {
+    "schema": "governance/schemas/article-frontmatter.v1.schema.json",
+    "enforcingValidator": "src/content.config.ts",
+    "comment": "The body AST and the frontmatter are validated separately and both must pass. src/content.config.ts is a zod strictObject, so an unknown or misspelled key already fails `astro build`; the JSON Schema is the platform-facing mirror."
+  },
+  "attributionRule": {
+    "comment": "LEGALLY LOAD-BEARING, AND NOT EXPRESSIBLE AS A NODE-TYPE RULE — stated here because a Markdown policy is where a body-content verifier will look. Twelve of the eighteen posts are reposts. Where a body opens with an editor's-note or original-article attribution line, that line is the client's own words and MUST survive byte-for-byte; the frontmatter `attribution` object is the machine-readable duplicate of the same claim, not a replacement for it. No operation may remove, reword, relocate, summarise or collapse either one, and no operation may add an attribution the body does not support. A candidate whose diff touches an attribution line without an explicit, approved attribution change is refused.",
+    "postsWithFrontmatterAttribution": 12,
+    "sources": [
+      "Interest.co.nz",
+      "Newstalk ZB – Canterbury Mornings with John MacDonald",
+      "RNZ Nine to Noon",
+      "Stace Hammond",
+      "Stuff",
+      "Te Waha Nui"
+    ]
+  },
+  "limits": {
+    "files": 200,
+    "bytesPerFile": 65536,
+    "nodesPerFile": 2000,
+    "astDepthPerFile": 16,
+    "linksPerFile": 60,
+    "imagesPerFile": 10,
+    "headingsPerFile": 60,
+    "comment": "Sized from the corpus with roughly 5x headroom, not copied from the reference contract's larger numbers. Observed maxima across the eighteen files: 12,398 bytes, 222 nodes, AST depth 7, 11 links, 3 images, 12 headings. These are denial-of-service and blast-radius bounds on a future publisher, not editorial limits — nothing here caps what the client may write, because nothing here is authorised to write anything at all (see governance/writable-paths.v1.json)."
+  },
+  "failureSemantics": {
+    "comment": "Fail closed, refuse whole. A single node of a denied type, a heading at depth 1, a non-https authored link, a mailto anchor whose text does not equal its destination, an image URL absent from the media manifest, an exceeded limit, a symlinked file, a path escaping `root`, or a frontmatter schema failure refuses the entire candidate. Nothing is stripped, downgraded, sanitised or auto-corrected: a policy that repairs its input has decided what the client meant, which is not a decision a publisher gets to make.",
+    "mode": "refuse-candidate",
+    "autoCorrect": false,
+    "sanitize": false
+  },
+  "authority": {
+    "comment": "THIS FILE GRANTS NOTHING. It describes the shape a governed article body would have to have IF an `article_publish` operation were ever authorised. It is not authorised: governance/writable-paths.v1.json documents that operation under `documentedOperations` with `permitted: false`, and its `files` allowlist contains only the hours and phone pointers in src/data/site.yaml. The eighteen files under src/content/articles are human-owned, migrated by hand, and edited by hand. Nothing in this repository reads this policy today.",
+    "grantsWriteAuthority": false,
+    "authorizingPolicy": "governance/writable-paths.v1.json"
+  }
+}

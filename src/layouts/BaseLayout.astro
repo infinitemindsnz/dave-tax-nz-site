@@ -1,0 +1,115 @@
+---
+/**
+ * Document shell for every page.
+ *
+ * Ports the `<html>`/`<head>` from the pre-Astro `index.html` verbatim (charset,
+ * viewport, description, theme-color, title) and adds the canonical, Open Graph,
+ * Twitter card, discovery-link and JSON-LD block. All of that is head-only and
+ * therefore changes nothing that renders.
+ *
+ * Structure contract with the page (src/pages/index.astro owns everything below):
+ * `src/App.jsx` renders
+ *   <a class="skip-link" href="#main">…</a>
+ *   <div id="top" class="dark-shell"> <SiteHeader /> <main id="main"> <Hero /> </main> </div>
+ *   <Proof /> <Expertise /> <Stories /> <Insights /> <Contact /> <Footer />
+ * This layout owns the skip link only. The `#top.dark-shell` wrapper, the
+ * `<main id="main">` element and every section go in the page, through <slot />.
+ *
+ * Copy rule: no user-visible string is written here. Everything comes from
+ * `site` (src/data/site.yaml). The optional props exist so a future page can
+ * pass a *different content-model value* — never a hardcoded literal.
+ */
+import { site } from "../lib/content";
+import { absoluteUrl } from "../lib/urls";
+import "../styles.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /**
+   * Open Graph object type. "website" for the marketing pages; an article page
+   * passes "article", which is what makes og:title/og:description read as a
+   * piece of writing rather than as the site itself.
+   */
+  ogType?: "website" | "article";
+  /**
+   * Share image. `src` may be site-relative ("assets/…", as the content model
+   * stores it) or already absolute (a migrated WordPress upload). Defaults to
+   * the hero portrait.
+   */
+  image?: { src: string; alt: string };
+  /** ISO-8601 wall-clock timestamps, article pages only. */
+  publishedTime?: string;
+  modifiedTime?: string;
+  /** Structured-data graph, built from the content model by src/lib/structured-data.ts. */
+  jsonLd?: unknown;
+}
+
+const { meta, brand, nav, hero, insights } = site;
+const {
+  title = meta.title,
+  description = meta.description,
+  ogType = "website",
+  image = hero.portrait,
+  publishedTime,
+  modifiedTime,
+  jsonLd,
+} = Astro.props;
+
+// `Astro.site` is set in astro.config.mjs; `Astro.url.pathname` already carries
+// the configured `base`, so this stays correct on the GitHub Pages deploy.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// Assets are referenced site-relative in the markup ("assets/…", exactly as in
+// App.jsx). Open Graph needs an absolute URL, so resolve it through the base.
+// A share image that is already absolute (a migrated upload resolved through
+// src/lib/media.ts) is passed through untouched.
+const ogImage = /^https?:\/\//.test(image.src) ? image.src : absoluteUrl(Astro.site, image.src);
+
+// `<` and `>` are escaped so the payload can never terminate the script element
+// early, no matter what a future content edit puts in the model.
+const jsonLdText =
+  jsonLd === undefined
+    ? undefined
+    : JSON.stringify(jsonLd).replaceAll("<", "\\u003c").replaceAll(">", "\\u003e");
+---
+
+<!doctype html>
+<html lang={meta.lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={meta.themeColor} />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href={canonical} />
+    <title>{title}</title>
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={image.alt} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={image.alt} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={insights.heading}
+      href={absoluteUrl(Astro.site, "rss.xml")}
+    />
+    <link rel="sitemap" type="application/xml" href={absoluteUrl(Astro.site, "sitemap.xml")} />
+    <link rel="describedby" href={absoluteUrl(Astro.site, "llms.txt")} />
+    {jsonLdText && <script is:inline type="application/ld+json" set:html={jsonLdText} />}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{nav.skipLabel}</a>
+    <slot />
+  </body>
+</html>

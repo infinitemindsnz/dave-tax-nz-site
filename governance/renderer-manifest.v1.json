@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "contractId": "dave-tax-nz-site-renderer.v1",
+  "renderer": "astro-static",
+  "rendererVersion": "5.18.2",
+  "nodeVersion": "22.21.1",
+  "packageManager": "npm",
+  "lockfileVersion": 3,
+  "buildCommand": "npm run build",
+  "contentValidationCommand": "npm run content:validate",
+  "outputDirectory": "dist",
+  "staticRootDirectory": "dist/client",
+  "outputDigest": "sha256-tree-v1",
+  "buildEnvironment": {
+    "comment": "astro.config.mjs resolves `base` from process.env.GITHUB_ACTIONS: set, it builds for the GitHub Pages sub-path \"/dave-tax-nz-redesign/\"; unset, it builds for \"/\". The build is therefore NOT environment-independent, and a preview tree digest is only comparable to a production tree digest when both were produced under the same setting. Governed builds run with GITHUB_ACTIONS unset.",
+    "requiredUnset": ["GITHUB_ACTIONS"],
+    "resolvedBase": "/"
+  },
+  "sourceGlobs": [
+    ".npmrc",
+    ".openai/hosting.json",
+    ".tool-versions",
+    "astro.config.mjs",
+    "governance/renderer-manifest.v1.json",
+    "package.json",
+    "public/**",
+    "scripts/prepare-sites-build.mjs",
+    "scripts/validate-content.mjs",
+    "src/components/**/*.astro",
+    "src/content.config.ts",
+    "src/data/media-manifest.json",
+    "src/data/schema.ts",
+    "src/layouts/**/*.astro",
+    "src/lib/**/*.ts",
+    "src/pages/**/*.astro",
+    "src/pages/**/*.ts",
+    "src/styles-article.css",
+    "src/styles.css",
+    "tsconfig.json",
+    "worker/index.js"
+  ],
+  "sourceGlobNotes": [
+    {
+      "path": "src/content.config.ts",
+      "reason": "Defines the `articles` collection: its glob loader and its zod strictObject frontmatter schema. Like src/data/schema.ts it is simultaneously a validator and a build input, so it is bound through renderer_sha256 rather than content_schema_sha256. governance/schemas/article-frontmatter.v1.schema.json is its platform-facing mirror."
+    },
+    {
+      "path": "src/data/media-manifest.json",
+      "reason": "Imported by src/lib/media.ts, so it is a build input. Migration provenance, not client copy: it maps WordPress upload URLs to the local copies under public/assets/wp/ that the source globs already cover via public/**."
+    },
+    {
+      "path": "src/styles-article.css",
+      "reason": "Imported by both article routes. The only new stylesheet the article surfaces required; src/styles.css remains byte-frozen and untouched."
+    },
+    {
+      "path": "public/**",
+      "reason": "Already covered public/assets; now also covers public/assets/wp/, the 36 migrated WordPress uploads referenced by article bodies and hero images."
+    }
+  ],
+  "publishedRoutes": {
+    "comment": "The exhaustive set of files the governed build emits into dist/client — 20 pages plus the generated stylesheet and copied assets. All of them are renderer-owned: every byte is derived from src/data/site.yaml, src/data/articles.yaml, src/data/pages.yaml, src/content/articles/*.md, src/styles.css, src/styles-article.css and public/assets. There is no separate marketing record and no hand-authored file in the output. This list is a factual record of the current output, NOT a verified output policy — see governance/README.md, 'Future work'.",
+    "routes": [
+      "index.html",
+      "articles/index.html",
+      "articles/<slug>/index.html",
+      "llms.txt",
+      "robots.txt",
+      "rss.xml",
+      "sitemap.xml",
+      "_astro/*.css",
+      "assets/*",
+      "assets/wp/*"
+    ],
+    "routeNotes": [
+      {
+        "route": "articles/<slug>/index.html",
+        "reason": "One page per published entry in the `articles` content collection — 18 at present. `build.format` is \"directory\", hence the trailing-slash route. `<slug>` is the frontmatter `slug`, which src/lib/articles.ts requires to equal the filename."
+      },
+      {
+        "route": "assets/wp/*",
+        "reason": "The 36 migrated WordPress uploads, copied from public/assets/wp/ by Astro's publicDir. Referenced by article body images and resolved for share images through src/data/media-manifest.json."
+      }
+    ]
+  },
+  "excludedFromRendererSources": [
+    {
+      "paths": ["src/data/site.yaml", "src/data/articles.yaml", "src/data/pages.yaml"],
+      "reason": "Governed content, not renderer source. Bound separately through the candidate manifest's changed_paths, diff_sha256 and content_schema_sha256."
+    },
+    {
+      "paths": ["src/content/articles/**/*.md"],
+      "reason": "Governed content, not renderer source — the eighteen migrated posts. Frontmatter is bound through content_schema_sha256 (governance/schemas/article-frontmatter.v1.schema.json) and the body AST through markdown_policy_sha256 (governance/markdown-policy.v1.json), which now HAS a local binding. Excluded from renderer_sha256 so a copy change and a renderer change can never be confused for one another."
+    },
+    {
+      "paths": ["src/data/article-migration-report.json"],
+      "reason": "Migration provenance: what the extractor pulled from davetaxnz.nz/wp-json/wp/v2/posts and what it did with each field. Referenced only in a source comment, imported by nothing, and contributes no bytes to dist. Unlike src/data/media-manifest.json it is not a build input, so it is neither a renderer source nor governed content."
+    },
+    {
+      "paths": ["src/App.jsx", "src/articles.js"],
+      "reason": "Inert pre-Astro React sources. Excluded by tsconfig.json, imported by nothing in the build graph, and retained only as the human reference the Astro components were ported from. They contribute no bytes to dist and must not be treated as renderer inputs."
+    },
+    {
+      "paths": ["tests/sites-worker.test.mjs", "design-qa.md", "AGENTS.md", "README.md"],
+      "reason": "Repository tooling and documentation. Not read by the build."
+    },
+    {
+      "paths": ["Dockerfile", "fly.toml", "nginx.conf", ".github/workflows/deploy.yml"],
+      "reason": "Deployment topology, downstream of the renderer. A deployment change does not alter dist and is out of scope for a content candidate."
+    }
+  ]
+}

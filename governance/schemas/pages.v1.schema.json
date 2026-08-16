@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dave-tax-nz-site.fly.dev/schemas/pages.v1.schema.json",
+  "title": "Dave Ananth tax site — governed page copy (src/data/pages.yaml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "home",
+    "about-dave",
+    "contact",
+    "testimonials",
+    "articles-advice",
+    "student-loan-negotiations",
+    "ird-disputes-tax-penalties-negotiation",
+    "book-a-consultation",
+    "thanks-consult"
+  ],
+  "properties": {
+    "home": { "$ref": "#/$defs/page" },
+    "about-dave": { "$ref": "#/$defs/page" },
+    "contact": { "$ref": "#/$defs/page" },
+    "testimonials": { "$ref": "#/$defs/page" },
+    "articles-advice": { "$ref": "#/$defs/page" },
+    "student-loan-negotiations": { "$ref": "#/$defs/page" },
+    "ird-disputes-tax-penalties-negotiation": { "$ref": "#/$defs/page" },
+    "book-a-consultation": { "$ref": "#/$defs/page" },
+    "thanks-consult": { "$ref": "#/$defs/page" }
+  },
+  "$defs": {
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "sections"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "comment": "The WordPress page title, decoded. /articles/ takes its <h1> and <title> from the `articles-advice` record."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "comment": "The WordPress excerpt rendered to plain text. Upstream copy, preserved as-is including its truncation artefacts. Used as the meta description; never rewritten to read better."
+        },
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/section" }
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["prose", "list", "quote", "cta"] },
+        "heading": { "type": "string", "minLength": 1 },
+        "meta": { "type": "string", "minLength": 1 },
+        "body": { "type": "string", "minLength": 1 },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "href": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(#[A-Za-z][\\w-]*|/[A-Za-z0-9._~\\-/]*|https?://\\S+|mailto:\\S+|tel:\\S+)$",
+          "comment": "Wider than the href rule in schemas/site.v1.schema.json because migrated page copy also links to site-root paths (\"/about\") alongside anchors, absolute URLs, mailto: and tel:."
+        }
+      },
+      "allOf": [
+        {
+          "comment": "Every section must carry something renderable.",
+          "anyOf": [
+            { "required": ["heading"] },
+            { "required": ["body"] },
+            { "required": ["items"] }
+          ]
+        },
+        {
+          "comment": "items is only valid on a list section.",
+          "if": {
+            "not": { "properties": { "kind": { "const": "list" } }, "required": ["kind"] }
+          },
+          "then": { "not": { "required": ["items"] } }
+        },
+        {
+          "comment": "A list section requires items.",
+          "if": { "properties": { "kind": { "const": "list" } }, "required": ["kind"] },
+          "then": { "required": ["items"] }
+        },
+        {
+          "comment": "A quote section requires body — the quoted text itself.",
+          "if": { "properties": { "kind": { "const": "quote" } }, "required": ["kind"] },
+          "then": { "required": ["body"] }
+        },
+        {
+          "comment": "ATTRIBUTION. On a quote, `heading` is the attributed name and `meta` the secondary attribution line (e.g. \"August 2026\"). A meta without a heading would print a date under an anonymous testimonial, so meta requires heading.",
+          "if": {
+            "allOf": [
+              { "properties": { "kind": { "const": "quote" } }, "required": ["kind"] },
+              { "required": ["meta"] }
+            ]
+          },
+          "then": { "required": ["heading"] }
+        },
+        {
+          "comment": "meta is only valid on a quote section.",
+          "if": {
+            "not": { "properties": { "kind": { "const": "quote" } }, "required": ["kind"] }
+          },
+          "then": { "not": { "required": ["meta"] } }
+        },
+        {
+          "comment": "A cta section requires body — the link label.",
+          "if": { "properties": { "kind": { "const": "cta" } }, "required": ["kind"] },
+          "then": { "required": ["body"] }
+        },
+        {
+          "comment": "href is only valid on a cta section. A cta WITHOUT an href is a form submit button, which has no target of its own — so href stays optional on cta.",
+          "if": {
+            "not": { "properties": { "kind": { "const": "cta" } }, "required": ["kind"] }
+          },
+          "then": { "not": { "required": ["href"] } }
+        }
+      ]
+    }
+  },
+  "comment": "Platform-facing mirror of `pagesSchema` in src/data/schema.ts, which is the enforcing validator: every strictObject rejects unknown keys, and `superRefine` enforces the seven cross-field rules restated above as if/then. Every one of the nine WordPress slugs is required and no others are allowed — a page that silently stops being migrated is a content regression, not a smaller file. The copy inside is verbatim client copy: attribution lines (testimonial names and dates, source links) are load-bearing and must never be stripped or paraphrased, and no length cap or punctuation normalisation is applied anywhere, because every string must survive the round-trip unchanged."
+}

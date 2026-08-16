@@ -1,0 +1,35 @@
+---
+/**
+ * `list` section — an optional heading plus items.
+ *
+ * Rendered inside `.article-prose`, which already owns a list idiom: `ul`
+ * margin/padding, `li` spacing and a muted `::marker`, all at `--measure` and
+ * in the same serif as the surrounding body. That is deliberate — these are
+ * sentences the client wrote as bullets ("35+ years' experience in New Zealand
+ * tax law and IRD matters"), so they belong in the reading column, not in a
+ * card grid.
+ *
+ * NOTE ON `.expertise-grid` / `.expertise-item`: the frozen sheet's other list
+ * idiom is a 3-up feature grid whose cells are `min-height:330px` with a number,
+ * an icon, an h3 and a paragraph. These items are one-liners with none of that
+ * ("compounding interest", "instalment defaults"), and nine of them would be
+ * ~1000px of mostly empty ruled cells. The grid is used for the quote sequence,
+ * where the content actually has that shape.
+ */
+import type { PageSection } from "../../data/schema";
+import type { HeadingLevel } from "../../lib/pages";
+
+interface Props {
+  section: PageSection;
+  level: HeadingLevel;
+}
+
+const { section, level } = Astro.props;
+const Heading = level;
+const items = section.items ?? [];
+---
+
+<section class="article-prose">
+  {section.heading && <Heading>{section.heading}</Heading>}
+  <ul>{items.map((item) => <li>{item}</li>)}</ul>
+</section>

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "policyId": "dave-tax-nz-site-approval-v1",
+  "operations": [
+    {
+      "operationKind": "article_publish",
+      "artifactClass": "article",
+      "requiredApprovalStages": ["legal_sign_off", "publication_approval"]
+    },
+    {
+      "operationKind": "public_hours_patch",
+      "artifactClass": "site_block_patch",
+      "requiredApprovalStages": ["publication_approval"]
+    },
+    {
+      "operationKind": "public_phone_patch",
+      "artifactClass": "site_block_patch",
+      "requiredApprovalStages": ["publication_approval"]
+    }
+  ],
+  "decisionSurface": "assistant-platform-authenticated",
+  "naturalLanguageApproval": "deny",
+  "default": "deny"
+}

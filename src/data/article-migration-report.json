@@ -1,0 +1,568 @@
+{
+  "generatedFrom": "https://davetaxnz.nz/wp-json/wp/v2/posts",
+  "articleCount": 18,
+  "conventions": {
+    "publishedAt/updatedAt": "WordPress `date` / `modified`, i.e. the site's local (NZ) wall-clock, emitted verbatim as a quoted ISO-8601 string. NOT converted to UTC: several posts are published late evening NZ time and a UTC shift would move them to the next calendar day, changing the date the client publishes on.",
+    "excerpt": "WordPress `excerpt.rendered`, tags removed and HTML entities decoded. Verbatim — auto-generated excerpts keep their WordPress '…' truncation and are flagged below rather than rewritten.",
+    "categories": "Category NAMES resolved from the post's category IDs, in the order WordPress returned them. Includes 'Uncategorized' where WordPress recorded it.",
+    "attribution": "Present only where the body carries a repost / original-reporting / original-segment line. `originalUrl` is copied byte-for-byte from the client's own link, tracking parameters included. The attribution line itself is also preserved verbatim in the Markdown body.",
+    "heroImage": "WordPress featured media as {src, alt, width, height}, matching the existing `image` shape in src/data/schema.ts. Omitted where featured_media is 0."
+  },
+  "articles": [
+    {
+      "slug": "nz-crypto-tax-disposals",
+      "title": "NZ Crypto Tax Disposals: Why Every Trade and Swap Triggers Income Tax",
+      "file": "src/content/articles/nz-crypto-tax-disposals.md",
+      "sourceHtmlBytes": 18500,
+      "outputMarkdownBytes": 8452,
+      "outputFileBytes": 9192,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Interest.co.nz",
+        "originalUrl": "https://www.interest.co.nz/personal-finance/139687/dave-ananth-points-out-crypto-disposals-trigger-income-tax-any-profits-each"
+      },
+      "attributionEvidence": "This article is a repost of the analysis originally published on",
+      "noAttributionReason": null,
+      "categories": [
+        "Tax",
+        "Crypto",
+        "IRD"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/08/Crypto-1.webp",
+        "alt": "NZ Crypto Tax Disposals",
+        "width": 759,
+        "height": 1017
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/08/Crypto-2-768x512.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2026/08/Crypto-3-768x512.png",
+        "https://davetaxnz.nz/wp-content/uploads/2026/08/NZ-Crypto-Tax-Disposals-300x298.jpg"
+      ],
+      "dropped": [],
+      "notes": []
+    },
+    {
+      "slug": "overseas-student-loan-default-deal",
+      "title": "Doctor’s $180k Settlement: How to Resolve an Overseas Student Loan Default",
+      "file": "src/content/articles/overseas-student-loan-default-deal.md",
+      "sourceHtmlBytes": 22034,
+      "outputMarkdownBytes": 11657,
+      "outputFileBytes": 12398,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Stuff",
+        "originalUrl": "https://www.stuff.co.nz/nz-news/361012265/doctors-180000-student-loan-standoff-ends-deal"
+      },
+      "attributionEvidence": "Original reporting by Stuff,",
+      "noAttributionReason": null,
+      "categories": [
+        "IRD",
+        "Student Loans"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-29-2026-08_48_27-AM.webp",
+        "alt": "overseas student loan default",
+        "width": 1536,
+        "height": 1024
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-29-2026-08_48_27-AM-768x512.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-768x419.webp"
+      ],
+      "dropped": [],
+      "notes": []
+    },
+    {
+      "slug": "ird-statutory-demand-critical-10-day-guide",
+      "title": "Received an IRD Statutory Demand? Critical Steps Every Director Must Take in the First 10 Days",
+      "file": "src/content/articles/ird-statutory-demand-critical-10-day-guide.md",
+      "sourceHtmlBytes": 16987,
+      "outputMarkdownBytes": 10850,
+      "outputFileBytes": 11487,
+      "attributionFound": false,
+      "attribution": null,
+      "attributionEvidence": null,
+      "noAttributionReason": "Original piece by Dave Ananth. No repost or original-reporting line; the RNZ / davetaxnz links appear only in the closing 'Further Reading & Resources' list.",
+      "categories": [
+        "IRD",
+        "GST",
+        "Liquidation",
+        "PAYE",
+        "Tax"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/07/Stat-Demand-scaled.webp",
+        "alt": "IRD Statutory Demand",
+        "width": 1920,
+        "height": 1047
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/Stat-Demand-3-768x512.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/Stat-Demand-2-768x419.webp"
+      ],
+      "dropped": [
+        "decorative image (Elementor 'Further Reading' section logo): https://davetaxnz.nz/wp-content/uploads/2026/07/Further-Reading-LOGO-300x269.jpeg"
+      ],
+      "notes": []
+    },
+    {
+      "slug": "nz-student-loan-border-arrest",
+      "title": "NZ Student Loan Border Arrest: What the Latest Wellington Airport Detention Means for Overseas Borrowers",
+      "file": "src/content/articles/nz-student-loan-border-arrest.md",
+      "sourceHtmlBytes": 16470,
+      "outputMarkdownBytes": 8041,
+      "outputFileBytes": 8833,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Stuff",
+        "originalUrl": "https://www.stuff.co.nz/nz-news/360997679/doctor-built-life-overseas-now-hes-been-arrested-airport-over-180000-student-loan-debt"
+      },
+      "attributionEvidence": "As published on 26th June, 2026 in Stuff, authored by Steve Kilgallon",
+      "noAttributionReason": null,
+      "categories": [
+        "Student Loans"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/07/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-scaled.webp",
+        "alt": "NZ Student Loan Border Arrest",
+        "width": 1920,
+        "height": 1047
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-1024x559.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/Border-arrest-3-768x520.jpeg"
+      ],
+      "dropped": [
+        "decorative image (Elementor 'Further Reading' section logo): https://davetaxnz.nz/wp-content/uploads/2026/07/Further-Reading-LOGO-1-300x269.webp"
+      ],
+      "notes": []
+    },
+    {
+      "slug": "gst-as-working-capital-critical-ird-fix",
+      "title": "GST as Working Capital: Why Critical Early IRD Intervention Could Save Viable NZ Businesses",
+      "file": "src/content/articles/gst-as-working-capital-critical-ird-fix.md",
+      "sourceHtmlBytes": 16207,
+      "outputMarkdownBytes": 5446,
+      "outputFileBytes": 6239,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Interest.co.nz",
+        "originalUrl": "https://www.interest.co.nz/business/139325/gst-becoming-working-capital-why-earlier-intervention-could-save-viable-businesses"
+      },
+      "attributionEvidence": "Read the full article as published in",
+      "noAttributionReason": null,
+      "categories": [
+        "GST",
+        "IRD",
+        "Tax"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-11-2026-06_29_05-PM.webp",
+        "alt": "GST as Working Capital",
+        "width": 1536,
+        "height": 1024
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/4NMKSOJ_image_crop_67990-768x480-1.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-11-2026-06_29_05-PM-768x512.webp"
+      ],
+      "dropped": [
+        "decorative image (Elementor 'Further Reading' section logo): https://davetaxnz.nz/wp-content/uploads/2026/07/Further-Reading-LOGO-1-2-300x269.webp"
+      ],
+      "notes": []
+    },
+    {
+      "slug": "ird-tax-debt-rehabilitation",
+      "title": "IRD Tax Debt Crackdown: Why We Need Business Rehabilitation",
+      "file": "src/content/articles/ird-tax-debt-rehabilitation.md",
+      "sourceHtmlBytes": 6333,
+      "outputMarkdownBytes": 2913,
+      "outputFileBytes": 3903,
+      "attributionFound": true,
+      "attribution": {
+        "source": "RNZ Nine to Noon",
+        "originalUrl": "https://www.rnz.co.nz/national/programmes/ninetonoon/audio/2019041554/inland-revenue-crackdown-on-tax-debt-continues"
+      },
+      "attributionEvidence": "**Listen to the full discussion on RNZ here:**",
+      "noAttributionReason": null,
+      "categories": [
+        "Tax",
+        "IRD",
+        "Liquidation",
+        "Student Loans"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/07/Gemini_Generated_Image_hpaq5vhpaq5vhpaq.webp",
+        "alt": "IRD Tax Debt",
+        "width": 1408,
+        "height": 768
+      },
+      "imageUrls": [],
+      "dropped": [],
+      "notes": [
+        "Excerpt is a WordPress auto-generated summary truncated mid-sentence; kept verbatim (no rewriting) — needs a hand-written excerpt from the client."
+      ]
+    },
+    {
+      "slug": "i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do",
+      "title": "I Live in Australia and My NZ Student Loan Has Doubled — What Can I Do?",
+      "file": "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md",
+      "sourceHtmlBytes": 11740,
+      "outputMarkdownBytes": 9023,
+      "outputFileBytes": 9761,
+      "attributionFound": false,
+      "attribution": null,
+      "attributionEvidence": null,
+      "noAttributionReason": "Original piece by Dave Ananth. No source line and no external original URL anywhere in the body.",
+      "categories": [
+        "IRD",
+        "Student Loans"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/05/pexels-donovan-kelly-110228397-26834716-scaled.jpg",
+        "alt": "Dave Ananth, Student Loans Australia, Kiwis in Aussie, Tax Negotiator",
+        "width": 2560,
+        "height": 1707
+      },
+      "imageUrls": [],
+      "dropped": [],
+      "notes": []
+    },
+    {
+      "slug": "can-ird-arrest-me-at-the-border-over-my-student-loan",
+      "title": "Can IRD Arrest Me at the Border Over My Student Loan?",
+      "file": "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+      "sourceHtmlBytes": 5047,
+      "outputMarkdownBytes": 4042,
+      "outputFileBytes": 4606,
+      "attributionFound": false,
+      "attribution": null,
+      "attributionEvidence": null,
+      "noAttributionReason": "Original piece by Dave Ananth. Body cites 'As reported in the NZ Herald (August 2025)' for a quoted case, which is an in-text citation of a source Dave was quoted in, not this article's provenance — and it carries no URL, so no originalUrl could be recorded without inventing one. Kept verbatim in the body.",
+      "categories": [
+        "Student Loans",
+        "IRD"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/05/pexels-kindelmedia-7773261-scaled.webp",
+        "alt": "Dave Ananth, Airport Arrest, Student Loans, IRD Negotiator",
+        "width": 1920,
+        "height": 1440
+      },
+      "imageUrls": [],
+      "dropped": [],
+      "notes": []
+    },
+    {
+      "slug": "ird-fails-to-communicate-student-loan-interest-rate-changes-to-kiwis-living-abroad",
+      "title": "IRD fails to communicate student loan interest rate changes to Kiwis living abroad",
+      "file": "src/content/articles/ird-fails-to-communicate-student-loan-interest-rate-changes-to-kiwis-living-abroad.md",
+      "sourceHtmlBytes": 579,
+      "outputMarkdownBytes": 419,
+      "outputFileBytes": 1247,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Te Waha Nui",
+        "originalUrl": "https://tewahanui.nz/politics/ird-fails-to-communicate-student-loan-interest-rate-changes-to-kiwis-living-abroad"
+      },
+      "attributionEvidence": "AUT’s student newspaper Te Waha Nui interviews Dave Ananth",
+      "noAttributionReason": null,
+      "categories": [
+        "Student Loans"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/05/content.webp",
+        "alt": "Dave Ananth, tax barrister, IRD lawyer",
+        "width": 960,
+        "height": 615
+      },
+      "imageUrls": [],
+      "dropped": [],
+      "notes": []
+    },
+    {
+      "slug": "dave-ananth-wants-to-see-a-different-approach-to-collecting-tax-arrears-from-businesses",
+      "title": "Dave Ananth wants to see a different approach to collecting tax arrears from businesses",
+      "file": "src/content/articles/dave-ananth-wants-to-see-a-different-approach-to-collecting-tax-arrears-from-businesses.md",
+      "sourceHtmlBytes": 8218,
+      "outputMarkdownBytes": 7027,
+      "outputFileBytes": 7604,
+      "attributionFound": false,
+      "attribution": null,
+      "attributionEvidence": null,
+      "noAttributionReason": "Original piece; ends with the byline 'By Dave Ananth, Partner at Meridian Partners'. The headline reads like a syndicated media title but the body contains no repost line and no original URL — NEEDS CLIENT CONFIRMATION rather than a guessed attribution.",
+      "categories": [
+        "IRD",
+        "Liquidation",
+        "Tax"
+      ],
+      "heroImage": null,
+      "imageUrls": [],
+      "dropped": [],
+      "notes": [
+        "No featured image in WordPress; heroImage omitted."
+      ]
+    },
+    {
+      "slug": "davetaxnz-student-loan-repayment-challenges",
+      "title": "DAVE ANANTH SAYS STUDENT LOAN REPAYMENT OBLIGATIONS ARE OFTEN MUCH TOUGHER THAN THEY SEEM BECAUSE THEY BEGIN BEFORE GRADUATES REACH FINANCIAL STABILITY",
+      "file": "src/content/articles/davetaxnz-student-loan-repayment-challenges.md",
+      "sourceHtmlBytes": 10855,
+      "outputMarkdownBytes": 7028,
+      "outputFileBytes": 8222,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Interest.co.nz",
+        "originalUrl": "https://www.interest.co.nz/personal-finance/137543/dave-ananth-says-student-loan-repayment-obligations-are-often-much-tougher"
+      },
+      "attributionEvidence": "**Media:** Interest.co.nz",
+      "noAttributionReason": null,
+      "categories": [
+        "Student Loans",
+        "IRD",
+        "Uncategorized"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/03/Lady-IRD.webp",
+        "alt": "Student Loan Repayment",
+        "width": 1374,
+        "height": 1536
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/03/Guy-Calculator-1024x676.webp"
+      ],
+      "dropped": [],
+      "notes": [
+        "Excerpt is a WordPress auto-generated summary truncated mid-sentence; kept verbatim (no rewriting) — needs a hand-written excerpt from the client.",
+        "Excerpt has words welded together (e.g. '2026Media:') because WordPress built it by stripping <br> from the body. The defect exists in the WordPress excerpt itself; kept verbatim.",
+        "Carries the WordPress 'Uncategorized' term; migrated as-is — decide at render time whether to surface it as a filter."
+      ]
+    },
+    {
+      "slug": "tax-debt-enforcement-timing",
+      "title": "2 Critical Outcomes: Why Tax Debt Enforcement Now Prioritises Timing Over Law",
+      "file": "src/content/articles/tax-debt-enforcement-timing.md",
+      "sourceHtmlBytes": 20701,
+      "outputMarkdownBytes": 8938,
+      "outputFileBytes": 9616,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Interest.co.nz",
+        "originalUrl": "https://www.interest.co.nz/personal-finance/137242/dave-ananth-reports-ird-systems-prioritise-tax-debt-enforcement-even"
+      },
+      "attributionEvidence": "As published in",
+      "noAttributionReason": null,
+      "categories": [
+        "Tax",
+        "IRD",
+        "Uncategorized"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/02/Gemini_Generated_Image_zcfl0lzcfl0lzcfl.webp",
+        "alt": "Tax Debt Enforcement",
+        "width": 1408,
+        "height": 768
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/02/Gemini_Generated_Image_zcfl0lzcfl0lzcfl-1024x559.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2026/02/Gemini_Generated_Image_yy4wzryy4wzryy4w-1024x559.webp"
+      ],
+      "dropped": [],
+      "notes": [
+        "Carries the WordPress 'Uncategorized' term; migrated as-is — decide at render time whether to surface it as a filter."
+      ]
+    },
+    {
+      "slug": "student-loan-interest-dave-ananth-analysis",
+      "title": "The Critical Case for Reforming Student Loan Interest: Why Flexibility is Essential",
+      "file": "src/content/articles/student-loan-interest-dave-ananth-analysis.md",
+      "sourceHtmlBytes": 8407,
+      "outputMarkdownBytes": 5818,
+      "outputFileBytes": 6768,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Interest.co.nz",
+        "originalUrl": "https://www.interest.co.nz/personal-finance/136799/dave-ananth-makes-case-some-basic-reasonable-flexibility-way-interest"
+      },
+      "attributionEvidence": "My recent analysis, published on",
+      "noAttributionReason": null,
+      "categories": [
+        "Student Loans",
+        "IRD",
+        "Uncategorized"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/01/ird-penalty.webp",
+        "alt": "",
+        "width": 476,
+        "height": 495
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/01/ird-penalty.webp"
+      ],
+      "dropped": [],
+      "notes": [
+        "Excerpt is a WordPress auto-generated summary truncated mid-sentence; kept verbatim (no rewriting) — needs a hand-written excerpt from the client.",
+        "Carries the WordPress 'Uncategorized' term; migrated as-is — decide at render time whether to surface it as a filter.",
+        "Featured image has no alt text in WordPress; emitted as an empty string for the client to fill in."
+      ]
+    },
+    {
+      "slug": "ird-crackdown-overseas-student-loan-debt-davetaxnz",
+      "title": "Dave Ananth on RNZ Nine to Noon — IRD Cracks Down on Overseas Student Loan Debt",
+      "file": "src/content/articles/ird-crackdown-overseas-student-loan-debt-davetaxnz.md",
+      "sourceHtmlBytes": 3251,
+      "outputMarkdownBytes": 1997,
+      "outputFileBytes": 2967,
+      "attributionFound": true,
+      "attribution": {
+        "source": "RNZ Nine to Noon",
+        "originalUrl": "https://www.rnz.co.nz/national/programmes/ninetonoon/audio/2019003626/ird-cracks-down-on-overseas-student-debt"
+      },
+      "attributionEvidence": "**Original segment:**",
+      "noAttributionReason": null,
+      "categories": [
+        "Student Loans"
+      ],
+      "heroImage": null,
+      "imageUrls": [],
+      "dropped": [],
+      "notes": [
+        "Excerpt is a WordPress auto-generated summary truncated mid-sentence; kept verbatim (no rewriting) — needs a hand-written excerpt from the client.",
+        "Excerpt has words welded together (e.g. '2026Media:') because WordPress built it by stripping <br> from the body. The defect exists in the WordPress excerpt itself; kept verbatim.",
+        "No featured image in WordPress; heroImage omitted."
+      ]
+    },
+    {
+      "slug": "dave-ananth-student-loan-enforcement-newstalk",
+      "title": "Dave Ananth – Commentary on Student Loan Enforcement",
+      "file": "src/content/articles/dave-ananth-student-loan-enforcement-newstalk.md",
+      "sourceHtmlBytes": 2021,
+      "outputMarkdownBytes": 1833,
+      "outputFileBytes": 2933,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Newstalk ZB – Canterbury Mornings with John MacDonald",
+        "originalUrl": "https://www.newstalkzb.co.nz/on-air/christchurch/canterbury-mornings-with-john-macdonald/opinion/john-macdonald-the-hardline-stance-on-student-loans-is-backfiring/?utm_source=chatgpt.com"
+      },
+      "attributionEvidence": "**Source:** Newstalk ZB – Canterbury Mornings with John MacDonald",
+      "noAttributionReason": null,
+      "categories": [
+        "Student Loans"
+      ],
+      "heroImage": null,
+      "imageUrls": [],
+      "dropped": [],
+      "notes": [
+        "Excerpt is a WordPress auto-generated summary truncated mid-sentence; kept verbatim (no rewriting) — needs a hand-written excerpt from the client.",
+        "Excerpt has words welded together (e.g. '2026Media:') because WordPress built it by stripping <br> from the body. The defect exists in the WordPress excerpt itself; kept verbatim.",
+        "No featured image in WordPress; heroImage omitted."
+      ]
+    },
+    {
+      "slug": "ird-tax-debt-commercial-judgment",
+      "title": "When Tax Law Meets the Real World: Why Commercial Judgement Matters in IRD Tax Debt Decisions",
+      "file": "src/content/articles/ird-tax-debt-commercial-judgment.md",
+      "sourceHtmlBytes": 17553,
+      "outputMarkdownBytes": 4444,
+      "outputFileBytes": 5214,
+      "attributionFound": false,
+      "attribution": null,
+      "attributionEvidence": null,
+      "noAttributionReason": "Original piece; ends 'Authored by Dave Ananth'. No external source line or original URL in the body.",
+      "categories": [
+        "Tax",
+        "IRD",
+        "Uncategorized"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2026/01/Tax-article-pic-1.webp",
+        "alt": "IRD Tax Debt",
+        "width": 1536,
+        "height": 1024
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2026/01/Tax-article-pic-1-1024x683.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2026/01/Tax-article-pic-2.webp"
+      ],
+      "dropped": [],
+      "notes": [
+        "Excerpt is a WordPress auto-generated summary truncated mid-sentence; kept verbatim (no rewriting) — needs a hand-written excerpt from the client.",
+        "Carries the WordPress 'Uncategorized' term; migrated as-is — decide at render time whether to surface it as a filter."
+      ]
+    },
+    {
+      "slug": "ird-tax-debt-negotiation-beats-liquidation",
+      "title": "IRD Tax Debt Negotiation: 7 Powerful Reasons It Beats Liquidation – Maximum Recovery, Care and Management and What the Law Actually Requires",
+      "file": "src/content/articles/ird-tax-debt-negotiation-beats-liquidation.md",
+      "sourceHtmlBytes": 13755,
+      "outputMarkdownBytes": 4771,
+      "outputFileBytes": 5492,
+      "attributionFound": false,
+      "attribution": null,
+      "attributionEvidence": null,
+      "noAttributionReason": "Original piece; ends 'Authored by Dave Ananth'. The RNZ link is an in-text citation of a statistic, not a provenance line.",
+      "categories": [
+        "IRD",
+        "Liquidation",
+        "Tax"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2025/12/Financial-distress-and-liquidation-effects-1.webp",
+        "alt": "IRD Tax Debt Negotiation 1",
+        "width": 751,
+        "height": 1024
+      },
+      "imageUrls": [
+        "https://davetaxnz.nz/wp-content/uploads/2025/12/Financial-distress-and-liquidation-effects-1-700x700.webp",
+        "https://davetaxnz.nz/wp-content/uploads/2025/12/Financial-distress-and-liquidation-effects-2-700x700.webp"
+      ],
+      "dropped": [],
+      "notes": []
+    },
+    {
+      "slug": "ird-compliance-return-kpi-impact-on-nz-taxpayers",
+      "title": "When Tax Becomes a KPI: IRD’s $11.81 Return on Compliance and What It Means for Ordinary New Zealanders",
+      "file": "src/content/articles/ird-compliance-return-kpi-impact-on-nz-taxpayers.md",
+      "sourceHtmlBytes": 1739,
+      "outputMarkdownBytes": 990,
+      "outputFileBytes": 1743,
+      "attributionFound": true,
+      "attribution": {
+        "source": "Stace Hammond",
+        "originalUrl": "https://www.stacehammond.co.nz/tax-kpi-ird-compliance-return-new-zealand-impact/"
+      },
+      "attributionEvidence": "Read the full article here:",
+      "noAttributionReason": null,
+      "categories": [
+        "IRD",
+        "Tax"
+      ],
+      "heroImage": {
+        "src": "https://davetaxnz.nz/wp-content/uploads/2025/11/f30b96_a52f06055c53437b9f39de1507ca1c76.avif",
+        "alt": "",
+        "width": 1905,
+        "height": 541
+      },
+      "imageUrls": [],
+      "dropped": [],
+      "notes": [
+        "Featured image has no alt text in WordPress; emitted as an empty string for the client to fill in."
+      ]
+    }
+  ],
+  "attributionCount": 12,
+  "totalMarkdownBytes": 103689,
+  "totalFileBytes": 118225,
+  "globalDecisions": [
+    "Elementor chrome removed: `data-elementor-*` container <div>s, `elementor-*` class attributes, inline styles, spacer widgets, and the tab/newline runs Elementor injects between widgets. Only the text, headings, lists, quotes, links and content images survive.",
+    "WordPress oEmbed cards (`<blockquote class=\"wp-embedded-content\">` + a hidden `<iframe>`) were flattened to the plain Markdown link the blockquote already contained. The iframe is the visually-hidden preview; the link is its visible fallback, so no content is lost. These sit under the client's own 'Relevant articles of interest:' / 'Further Reading & Resources' headings — author-written cross-links, not a theme-generated related-posts widget, so they were kept.",
+    "Decorative 'Further Reading' section-logo images (Further-Reading-LOGO*.webp/.jpeg) were dropped on 3 posts: they are branded graphics sitting above the client's own 'Relevant articles of interest:' heading and carry no information the heading does not. Their WordPress alt text was the article's own title, not a caption. Listed per-article under `dropped` — restore if the client wants the graphic.",
+    "Adjacent <strong>/<strong> runs (WordPress splits words across tags, e.g. 'statutory dema' + 'nd') were merged so the Markdown renders as one bold run instead of literal asterisks.",
+    "A <li> holding two <p> elements (linked title + description) became a loose list item with the description as an indented continuation paragraph, rather than welding the two sentences together.",
+    "Client typos and formatting quirks were NOT corrected: e.g. 'The short answer is , in most cases, no.' (can-ird-arrest-me-at-the-border-over-my-student-loan) and 'authored by Steve Kilgallon,.' (nz-student-loan-border-arrest) are verbatim from the source.",
+    "Verification: every post was re-checked by stripping all tags from the source HTML and diffing the word stream against the generated Markdown. Zero source words are missing from any of the 18 files.",
+    "No share buttons, navigation, comment forms or theme related-post widgets were present in `content.rendered`; nothing of that kind had to be removed."
+  ]
+}

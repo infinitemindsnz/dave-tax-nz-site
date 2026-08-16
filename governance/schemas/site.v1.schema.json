@@ -1,0 +1,620 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dave-tax-nz-site.fly.dev/schemas/site.v1.schema.json",
+  "title": "Dave Ananth tax site — governed site content model (src/data/site.yaml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "meta",
+    "brand",
+    "nav",
+    "hero",
+    "proof",
+    "expertise",
+    "story",
+    "insights",
+    "articlePages",
+    "contact",
+    "footer"
+  ],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lang",
+        "title",
+        "description",
+        "themeColor"
+      ],
+      "properties": {
+        "lang": {
+          "type": "string",
+          "pattern": "^[a-z]{2}(-[A-Za-z0-9]+)*$"
+        },
+        "title": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "description": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "themeColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+      }
+    },
+    "brand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "tagline",
+        "href",
+        "ariaLabel",
+        "logo"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "tagline": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "href": {
+          "$ref": "#/$defs/href"
+        },
+        "ariaLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "logo": {
+          "$ref": "#/$defs/image"
+        }
+      }
+    },
+    "nav": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ariaLabel",
+        "skipLabel",
+        "menuOpenLabel",
+        "menuCloseLabel",
+        "items",
+        "cta"
+      ],
+      "properties": {
+        "ariaLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "skipLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "menuOpenLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "menuCloseLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "href"
+            ],
+            "properties": {
+              "label": {
+                "$ref": "#/$defs/nonEmpty"
+              },
+              "href": {
+                "$ref": "#/$defs/anchorHref"
+              }
+            }
+          }
+        },
+        "cta": {
+          "$ref": "#/$defs/link"
+        }
+      }
+    },
+    "hero": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "headline",
+        "lead",
+        "alert",
+        "ctas",
+        "portrait",
+        "caption"
+      ],
+      "properties": {
+        "eyebrow": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "headline": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "lead": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "alert": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text",
+            "href"
+          ],
+          "properties": {
+            "text": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "href": {
+              "$ref": "#/$defs/href"
+            }
+          }
+        },
+        "ctas": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "href",
+              "variant",
+              "external",
+              "icon"
+            ],
+            "properties": {
+              "label": {
+                "$ref": "#/$defs/nonEmpty"
+              },
+              "href": {
+                "$ref": "#/$defs/href"
+              },
+              "variant": {
+                "enum": [
+                  "primary",
+                  "secondary"
+                ]
+              },
+              "external": {
+                "type": "boolean"
+              },
+              "icon": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/iconName"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "portrait": {
+          "$ref": "#/$defs/image"
+        },
+        "caption": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "role",
+            "note"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "role": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "note": {
+              "$ref": "#/$defs/nonEmpty"
+            }
+          }
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quote",
+        "author",
+        "mediaImage"
+      ],
+      "properties": {
+        "quote": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "author": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "role",
+            "image"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "role": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "image": {
+              "$ref": "#/$defs/image"
+            }
+          }
+        },
+        "mediaImage": {
+          "$ref": "#/$defs/image"
+        }
+      }
+    },
+    "expertise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "heading",
+        "intro",
+        "items"
+      ],
+      "properties": {
+        "eyebrow": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "heading": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "intro": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "number",
+              "icon",
+              "title",
+              "text",
+              "href",
+              "linkLabel"
+            ],
+            "properties": {
+              "number": {
+                "type": "string",
+                "pattern": "^\\d{2}$"
+              },
+              "icon": {
+                "$ref": "#/$defs/iconName"
+              },
+              "title": {
+                "$ref": "#/$defs/nonEmpty"
+              },
+              "text": {
+                "$ref": "#/$defs/nonEmpty"
+              },
+              "href": {
+                "$ref": "#/$defs/href"
+              },
+              "linkLabel": {
+                "$ref": "#/$defs/nonEmpty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "story": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "heading",
+        "body",
+        "credit",
+        "link"
+      ],
+      "properties": {
+        "eyebrow": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "heading": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "body": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "credit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "meta"
+          ],
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "meta": {
+              "$ref": "#/$defs/nonEmpty"
+            }
+          }
+        },
+        "link": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "href"
+          ],
+          "properties": {
+            "label": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "href": {
+              "$ref": "#/$defs/externalHref"
+            }
+          }
+        }
+      }
+    },
+    "insights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "heading",
+        "intro",
+        "filtersLabel",
+        "filters",
+        "articleLinkLabel"
+      ],
+      "properties": {
+        "eyebrow": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "heading": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "intro": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "filtersLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "filters": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/nonEmpty"
+          }
+        },
+        "articleLinkLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        }
+      }
+    },
+    "articlePages": {
+      "type": "object",
+      "additionalProperties": false,
+      "comment": "Chrome for the article surfaces (/articles/ and /articles/<slug>/). Mirrors the `articlePages` strictObject in src/data/schema.ts field-for-field. Four labels only: every other string on those pages is data (src/content/articles/*.md frontmatter and body, plus the `articles-advice` record in src/data/pages.yaml). `attributionLabel`/`attributionLinkLabel` frame the legally load-bearing source credit; `authoredLabel` is the value src/data/articles.yaml already uses in `type` for Dave's own pieces.",
+      "required": [
+        "indexLinkLabel",
+        "authoredLabel",
+        "attributionLabel",
+        "attributionLinkLabel"
+      ],
+      "properties": {
+        "indexLinkLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "authoredLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "attributionLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "attributionLinkLabel": {
+          "$ref": "#/$defs/nonEmpty"
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eyebrow",
+        "heading",
+        "intro",
+        "rows",
+        "action"
+      ],
+      "properties": {
+        "eyebrow": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "heading": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "intro": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "value",
+              "href"
+            ],
+            "properties": {
+              "label": {
+                "$ref": "#/$defs/nonEmpty"
+              },
+              "value": {
+                "$ref": "#/$defs/nonEmpty"
+              },
+              "href": {
+                "$ref": "#/$defs/href"
+              }
+            }
+          }
+        },
+        "action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "ctaLabel",
+            "ctaHref"
+          ],
+          "properties": {
+            "title": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "ctaLabel": {
+              "$ref": "#/$defs/nonEmpty"
+            },
+            "ctaHref": {
+              "$ref": "#/$defs/externalHref"
+            }
+          }
+        }
+      }
+    },
+    "footer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "logo",
+        "description",
+        "links",
+        "legal"
+      ],
+      "properties": {
+        "logo": {
+          "$ref": "#/$defs/image"
+        },
+        "description": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "links": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "legal": {
+          "$ref": "#/$defs/nonEmpty"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmpty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assetPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^assets/[A-Za-z0-9._/-]+$"
+    },
+    "href": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(#[A-Za-z][\\w-]*|https?://\\S+|mailto:\\S+|tel:\\+?[0-9]+)$"
+    },
+    "anchorHref": {
+      "type": "string",
+      "pattern": "^#[A-Za-z][\\w-]*$"
+    },
+    "externalHref": {
+      "type": "string",
+      "pattern": "^https://\\S+$"
+    },
+    "iconName": {
+      "enum": [
+        "ArrowRight",
+        "Briefcase",
+        "Check",
+        "EnvelopeSimple",
+        "FileText",
+        "GlobeHemisphereWest",
+        "List",
+        "Phone",
+        "Quotes",
+        "ShieldCheck",
+        "Student",
+        "X"
+      ]
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "src",
+        "alt",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "src": {
+          "$ref": "#/$defs/assetPath"
+        },
+        "alt": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "width": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "href",
+        "external"
+      ],
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/nonEmpty"
+        },
+        "href": {
+          "$ref": "#/$defs/href"
+        },
+        "external": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,92 @@
+---
+/**
+ * /<slug>/ — one migrated WordPress page.
+ *
+ * Seven routes, all from `src/data/pages.yaml`: /about-dave/, /contact/,
+ * /testimonials/, /student-loan-negotiations/,
+ * /ird-disputes-tax-penalties-negotiation/, /book-a-consultation/ and
+ * /thanks-consult/.
+ *
+ * EXCLUDED, and why — see src/lib/pages.ts:
+ *  - `home` is src/pages/index.astro, the signed-off homepage.
+ *  - `articles-advice` is src/pages/articles/index.astro, which already renders
+ *    that record's title, description and category filters over the real article
+ *    collection.
+ *
+ * COPY. Nothing on this page is written here. The <h1>, the eyebrow, every
+ * heading, paragraph, bullet, quote, attribution and button label comes from the
+ * page record, verbatim; the <title> and meta description are the WordPress
+ * title and excerpt. The only strings this file contributes are class names.
+ *
+ * LAYOUT. No new layout either. The reading column is the article detail page's:
+ * `.article-page` (which owns `--measure`), `.article-head` for the masthead and
+ * `.article-prose` for every block of body copy, all in src/styles-article.css.
+ * Around it is the site chrome the other inner pages use — the dark header band,
+ * the Contact section and the footer — and the page shell is `.section-shell`
+ * `.section-pad`, the frozen sheet's own container and vertical rhythm.
+ *
+ * Long pages stay readable because of that, not in spite of it: 38 sections all
+ * land in one 68ch measure at one type scale, headings resolve to h2/h3 by their
+ * shape in the source, and the heading-only sections that were chapter breaks in
+ * WordPress get a hairline rule so the page can be scanned.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import Contact from "../components/Contact.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import PageSections from "../components/sections/PageSections.astro";
+import { pages } from "../lib/content";
+import { ROUTED_PAGE_SLUGS, planPage, toParagraphs } from "../lib/pages";
+import { sitePath } from "../lib/urls";
+import type { PageSlug } from "../data/schema";
+import "../styles-article.css";
+
+export function getStaticPaths() {
+  return ROUTED_PAGE_SLUGS.map((slug) => ({ params: { slug }, props: { slug } }));
+}
+
+interface Props {
+  slug: PageSlug;
+}
+
+const { slug } = Astro.props;
+const page = pages[slug];
+const { masthead, body } = planPage(page);
+
+/**
+ * The WordPress excerpt is the meta description and nothing else. Most of these
+ * are WordPress's own truncation of the page and end in the literal "[…]"; shown
+ * as a standfirst they would restate the opening badly. Same call the article
+ * detail page makes, for the same reason.
+ */
+const lead = masthead.lead ? toParagraphs(masthead.lead) : [];
+---
+
+<BaseLayout title={page.title} description={page.description}>
+  <div id="top" class="dark-shell"><SiteHeader hrefBase={sitePath()} /></div>
+  <main id="main" class="article-page section-shell section-pad">
+    <header class="article-head">
+      {masthead.eyebrow && <p class="eyebrow eyebrow--red">{masthead.eyebrow}</p>}
+      <h1>{masthead.heading}</h1>
+    </header>
+    {
+      lead.length > 0 && (
+        <div class="article-prose">
+          {lead.map((lines) => (
+            <p>
+              {lines.map((line, index) => (
+                <>
+                  {index > 0 && <br />}
+                  {line}
+                </>
+              ))}
+            </p>
+          ))}
+        </div>
+      )
+    }
+    <PageSections sections={body} />
+  </main>
+  <Contact />
+  <SiteFooter />
+</BaseLayout>

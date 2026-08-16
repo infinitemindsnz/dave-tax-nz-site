@@ -1,0 +1,296 @@
+{
+  "generatedFrom": "https://davetaxnz.nz/wp-json/wp/v2/media",
+  "note": "Maps original WordPress upload URLs referenced by migrated content to local copies under public/assets/wp/.",
+  "media": {
+    "https://davetaxnz.nz/wp-content/uploads/2025/11/f30b96_a52f06055c53437b9f39de1507ca1c76.avif": {
+      "local": "/assets/wp/f30b96_a52f06055c53437b9f39de1507ca1c76.avif",
+      "alt": "",
+      "width": 1905,
+      "height": 541,
+      "bytes": 39604,
+      "mediaId": 39
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2025/12/Financial-distress-and-liquidation-effects-1-700x700.webp": {
+      "local": "/assets/wp/Financial-distress-and-liquidation-effects-1-700x700.webp",
+      "alt": "IRD Tax Debt Negotiation 1",
+      "width": 700,
+      "height": 700,
+      "bytes": 42322,
+      "mediaId": 508
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2025/12/Financial-distress-and-liquidation-effects-1.webp": {
+      "local": "/assets/wp/Financial-distress-and-liquidation-effects-1.webp",
+      "alt": "IRD Tax Debt Negotiation 1",
+      "width": 751,
+      "height": 1024,
+      "bytes": 67786,
+      "mediaId": 508
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2025/12/Financial-distress-and-liquidation-effects-2-700x700.webp": {
+      "local": "/assets/wp/Financial-distress-and-liquidation-effects-2-700x700.webp",
+      "alt": "IRD Tax Debt Negotiation 2",
+      "width": 700,
+      "height": 700,
+      "bytes": 26092,
+      "mediaId": 509
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/01/Tax-article-pic-1-1024x683.webp": {
+      "local": "/assets/wp/Tax-article-pic-1-1024x683.webp",
+      "alt": "IRD Tax Debt",
+      "width": 1024,
+      "height": 683,
+      "bytes": 34234,
+      "mediaId": 566
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/01/Tax-article-pic-1.webp": {
+      "local": "/assets/wp/Tax-article-pic-1.webp",
+      "alt": "IRD Tax Debt",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 65546,
+      "mediaId": 566
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/01/Tax-article-pic-2.webp": {
+      "local": "/assets/wp/Tax-article-pic-2.webp",
+      "alt": "IRD Tax Debt",
+      "width": 720,
+      "height": 480,
+      "bytes": 27280,
+      "mediaId": 562
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/01/ird-penalty.webp": {
+      "local": "/assets/wp/ird-penalty.webp",
+      "alt": "",
+      "width": 476,
+      "height": 495,
+      "bytes": 17416,
+      "mediaId": 604
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/02/Gemini_Generated_Image_yy4wzryy4wzryy4w-1024x559.webp": {
+      "local": "/assets/wp/Gemini_Generated_Image_yy4wzryy4wzryy4w-1024x559.webp",
+      "alt": "Tax Debt Enforcement",
+      "width": 1024,
+      "height": 559,
+      "bytes": 70304,
+      "mediaId": 787
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/02/Gemini_Generated_Image_zcfl0lzcfl0lzcfl-1024x559.webp": {
+      "local": "/assets/wp/Gemini_Generated_Image_zcfl0lzcfl0lzcfl-1024x559.webp",
+      "alt": "Tax Debt Enforcement",
+      "width": 1024,
+      "height": 559,
+      "bytes": 37562,
+      "mediaId": 745
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/02/Gemini_Generated_Image_zcfl0lzcfl0lzcfl.webp": {
+      "local": "/assets/wp/Gemini_Generated_Image_zcfl0lzcfl0lzcfl.webp",
+      "alt": "Tax Debt Enforcement",
+      "width": 1408,
+      "height": 768,
+      "bytes": 64446,
+      "mediaId": 745
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/03/Guy-Calculator-1024x676.webp": {
+      "local": "/assets/wp/Guy-Calculator-1024x676.webp",
+      "alt": "Student Loan Repayment",
+      "width": 1024,
+      "height": 676,
+      "bytes": 45886,
+      "mediaId": 844
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/03/Lady-IRD.webp": {
+      "local": "/assets/wp/Lady-IRD.webp",
+      "alt": "Student Loan Repayment",
+      "width": 1374,
+      "height": 1536,
+      "bytes": 74694,
+      "mediaId": 851
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/05/content.webp": {
+      "local": "/assets/wp/content.webp",
+      "alt": "Dave Ananth, tax barrister, IRD lawyer",
+      "width": 960,
+      "height": 615,
+      "bytes": 145450,
+      "mediaId": 894
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/05/pexels-donovan-kelly-110228397-26834716-scaled.jpg": {
+      "local": "/assets/wp/pexels-donovan-kelly-110228397-26834716-scaled.jpg",
+      "alt": "Dave Ananth, Student Loans Australia, Kiwis in Aussie, Tax Negotiator",
+      "width": 2560,
+      "height": 1707,
+      "bytes": 585005,
+      "mediaId": 904
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/05/pexels-kindelmedia-7773261-scaled.webp": {
+      "local": "/assets/wp/pexels-kindelmedia-7773261-scaled.webp",
+      "alt": "Dave Ananth, Airport Arrest, Student Loans, IRD Negotiator",
+      "width": 1920,
+      "height": 1440,
+      "bytes": 64232,
+      "mediaId": 901
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/4NMKSOJ_image_crop_67990-768x480-1.webp": {
+      "local": "/assets/wp/4NMKSOJ_image_crop_67990-768x480-1.webp",
+      "alt": "GST as working capital",
+      "width": 768,
+      "height": 480,
+      "bytes": 15972,
+      "mediaId": 1205
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Border-arrest-3-768x520.jpeg": {
+      "local": "/assets/wp/Border-arrest-3-768x520.jpeg",
+      "alt": "NZ Student Loan Border Arrest",
+      "width": 768,
+      "height": 520,
+      "bytes": 65591,
+      "mediaId": 1139
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-11-2026-06_29_05-PM-768x512.webp": {
+      "local": "/assets/wp/ChatGPT-Image-Jul-11-2026-06_29_05-PM-768x512.webp",
+      "alt": "GST as Working Capital",
+      "width": 768,
+      "height": 512,
+      "bytes": 31736,
+      "mediaId": 1035
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-11-2026-06_29_05-PM.webp": {
+      "local": "/assets/wp/ChatGPT-Image-Jul-11-2026-06_29_05-PM.webp",
+      "alt": "GST as Working Capital",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 142780,
+      "mediaId": 1035
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-29-2026-08_48_27-AM-768x512.webp": {
+      "local": "/assets/wp/ChatGPT-Image-Jul-29-2026-08_48_27-AM-768x512.webp",
+      "alt": "overseas student loan default",
+      "width": 768,
+      "height": 512,
+      "bytes": 13428,
+      "mediaId": 1145
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/ChatGPT-Image-Jul-29-2026-08_48_27-AM.webp": {
+      "local": "/assets/wp/ChatGPT-Image-Jul-29-2026-08_48_27-AM.webp",
+      "alt": "overseas student loan default",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 38638,
+      "mediaId": 1145
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-1024x559.webp": {
+      "local": "/assets/wp/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-1024x559.webp",
+      "alt": "NZ Student Loan Border Arrest",
+      "width": 1024,
+      "height": 559,
+      "bytes": 54928,
+      "mediaId": 1057
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-768x419.webp": {
+      "local": "/assets/wp/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-768x419.webp",
+      "alt": "NZ Student Loan Border Arrest",
+      "width": 768,
+      "height": 419,
+      "bytes": 37702,
+      "mediaId": 1057
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-scaled.webp": {
+      "local": "/assets/wp/Doctor-Arrested-NZ-Border-Arrest-Student-Loan-scaled.webp",
+      "alt": "NZ Student Loan Border Arrest",
+      "width": 1920,
+      "height": 1047,
+      "bytes": 140904,
+      "mediaId": 1057
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Further-Reading-LOGO-1-2-300x269.webp": {
+      "local": "/assets/wp/Further-Reading-LOGO-1-2-300x269.webp",
+      "alt": "GST as Working Capital",
+      "width": 300,
+      "height": 269,
+      "bytes": 6546,
+      "mediaId": 1203
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Further-Reading-LOGO-1-300x269.webp": {
+      "local": "/assets/wp/Further-Reading-LOGO-1-300x269.webp",
+      "alt": "NZ Student Loan Border arrest",
+      "width": 300,
+      "height": 269,
+      "bytes": 4346,
+      "mediaId": 1138
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Further-Reading-LOGO-300x269.jpeg": {
+      "local": "/assets/wp/Further-Reading-LOGO-300x269.jpeg",
+      "alt": "IRD Statutory Demand",
+      "width": 300,
+      "height": 269,
+      "bytes": 10488,
+      "mediaId": 1132
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Gemini_Generated_Image_hpaq5vhpaq5vhpaq.webp": {
+      "local": "/assets/wp/Gemini_Generated_Image_hpaq5vhpaq5vhpaq.webp",
+      "alt": "IRD Tax Debt",
+      "width": 1408,
+      "height": 768,
+      "bytes": 109050,
+      "mediaId": 991
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Stat-Demand-2-768x419.webp": {
+      "local": "/assets/wp/Stat-Demand-2-768x419.webp",
+      "alt": "IRD statutory demand",
+      "width": 768,
+      "height": 419,
+      "bytes": 39342,
+      "mediaId": 1103
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Stat-Demand-3-768x512.webp": {
+      "local": "/assets/wp/Stat-Demand-3-768x512.webp",
+      "alt": "IRD statutory demand",
+      "width": 768,
+      "height": 512,
+      "bytes": 15306,
+      "mediaId": 1105
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/07/Stat-Demand-scaled.webp": {
+      "local": "/assets/wp/Stat-Demand-scaled.webp",
+      "alt": "IRD Statutory Demand",
+      "width": 1920,
+      "height": 1047,
+      "bytes": 151022,
+      "mediaId": 1080
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/08/Crypto-1.webp": {
+      "local": "/assets/wp/Crypto-1.webp",
+      "alt": "NZ Crypto Tax Disposals",
+      "width": 759,
+      "height": 1017,
+      "bytes": 68390,
+      "mediaId": 1175
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/08/Crypto-2-768x512.webp": {
+      "local": "/assets/wp/Crypto-2-768x512.webp",
+      "alt": "NZ Crypto Tax Disposals",
+      "width": 768,
+      "height": 512,
+      "bytes": 37860,
+      "mediaId": 1176
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/08/Crypto-3-768x512.png": {
+      "local": "/assets/wp/Crypto-3-768x512.png",
+      "alt": "NZ Crypto Tax Disposals",
+      "width": 768,
+      "height": 512,
+      "bytes": 560069,
+      "mediaId": 1177
+    },
+    "https://davetaxnz.nz/wp-content/uploads/2026/08/NZ-Crypto-Tax-Disposals-300x298.jpg": {
+      "local": "/assets/wp/NZ-Crypto-Tax-Disposals-300x298.jpg",
+      "alt": "NZ Crypto Tax Disposals",
+      "width": 300,
+      "height": 298,
+      "bytes": 14333,
+      "mediaId": 1168
+    }
+  },
+  "skipped": [],
+  "broken": []
+}

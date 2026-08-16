@@ -1,0 +1,68 @@
+---
+/**
+ * `quote` section — one testimonial, as a card in the frozen sheet's own grid.
+ *
+ * /testimonials/ is 39 of these in a row. Set as full-measure blocks they are 39
+ * identical slabs; set on `.article-grid` / `.article-card` they are the same
+ * three-column ruled grid the homepage and /articles/ already use, so a reader
+ * can scan names and dates down a column. `.article-meta` is exactly the right
+ * header row for it: the attributed name in vermilion caps on the left, the date
+ * in muted type on the right.
+ *
+ * ATTRIBUTION IS LOAD-BEARING. `heading` is the client the testimonial is from
+ * and `meta` the month they gave it; both are rendered, never collapsed, and the
+ * quote text is verbatim.
+ *
+ * The quote mark is the same Phosphor "Quotes" glyph (fill weight) the homepage
+ * `.proof` band uses, path data copied from that component unchanged, at 28px
+ * rather than 45px because it sits inside a card column instead of its own
+ * 45px-wide grid track.
+ */
+import type { PageSection } from "../../data/schema";
+import { toParagraphs } from "../../lib/pages";
+
+interface Props {
+  section: PageSection;
+}
+
+const { section } = Astro.props;
+const paragraphs = toParagraphs(section.body ?? "");
+---
+
+<figure class="article-card quote-card">
+  {
+    section.heading && (
+      <div class="article-meta">
+        <span>{section.heading}</span>
+        {section.meta && <span>{section.meta}</span>}
+      </div>
+    )
+  }
+  <div class="quote-mark">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      fill="currentColor"
+      viewBox="0 0 256 256"
+      aria-hidden="true"
+      ><path
+        d="M116,72v88a48.05,48.05,0,0,1-48,48,8,8,0,0,1,0-16,32,32,0,0,0,32-32v-8H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56h60A16,16,0,0,1,116,72ZM216,56H156a16,16,0,0,0-16,16v64a16,16,0,0,0,16,16h60v8a32,32,0,0,1-32,32,8,8,0,0,0,0,16,48.05,48.05,0,0,0,48-48V72A16,16,0,0,0,216,56Z"
+      ></path></svg
+    >
+  </div>
+  <blockquote>
+    {
+      paragraphs.map((lines) => (
+        <p>
+          {lines.map((line, index) => (
+            <>
+              {index > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </p>
+      ))
+    }
+  </blockquote>
+</figure>

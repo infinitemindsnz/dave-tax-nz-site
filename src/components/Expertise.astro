@@ -1,0 +1,88 @@
+---
+/**
+ * Expertise section — port of the `Expertise` component in src/App.jsx.
+ *
+ * Markup contract (must not drift):
+ *   section.expertise.section-shell.section-pad#expertise
+ *     div.section-heading > p.eyebrow.eyebrow--red + h2 + p
+ *     div.expertise-grid > a.expertise-item ×N
+ *       span.expertise-item__number + <svg> + h3 + p + span.text-link > text + <svg>
+ *
+ * Icons were `@phosphor-icons/react@2.1.10` components. That dependency is gone,
+ * so the SVGs are inlined here verbatim from the package's `dist/defs/*.es.js`
+ * path data. The wrapper attributes reproduce what `lib/IconBase.es.js` rendered
+ * with no `IconContext` provider in the tree:
+ *   <svg xmlns width={size} height={size} fill="currentColor" viewBox="0 0 256 256">
+ * `size={34} weight="light"` for the card icons, `size={18}` (default weight
+ * "regular") for the trailing arrow.
+ */
+import { site } from "../lib/content";
+import { isInternalRoute, resolveInternalRoute } from "../lib/discovery";
+import type { IconName } from "../data/schema";
+
+/** Phosphor 2.1.10 "light" weight path data, copied byte-for-byte. */
+const CARD_ICON_PATHS: Partial<Record<IconName, string>> = {
+  Student:
+    "M225.9,58.31l-96-32a6,6,0,0,0-3.8,0l-96,32A6,6,0,0,0,26,64v80a6,6,0,0,0,12,0V72.32l38.68,12.9A62,62,0,0,0,99,174.75c-19.25,6.53-36,19.59-48,38A6,6,0,0,0,61,219.28C76.47,195.59,100.88,182,128,182s51.53,13.59,67,37.28A6,6,0,0,0,205,212.72c-12-18.38-28.73-31.44-48-38a62,62,0,0,0,22.27-89.53L225.9,69.69a6,6,0,0,0,0-11.38ZM178,120A50,50,0,1,1,88.63,89.2l37.47,12.49a6,6,0,0,0,3.8,0L167.37,89.2A49.78,49.78,0,0,1,178,120ZM128,89.68,51,64l77-25.68L205,64Z",
+  FileText:
+    "M212.24,83.76l-56-56A6,6,0,0,0,152,26H56A14,14,0,0,0,42,40V216a14,14,0,0,0,14,14H200a14,14,0,0,0,14-14V88A6,6,0,0,0,212.24,83.76ZM158,46.48,193.52,82H158ZM200,218H56a2,2,0,0,1-2-2V40a2,2,0,0,1,2-2h90V88a6,6,0,0,0,6,6h50V216A2,2,0,0,1,200,218Zm-34-82a6,6,0,0,1-6,6H96a6,6,0,0,1,0-12h64A6,6,0,0,1,166,136Zm0,32a6,6,0,0,1-6,6H96a6,6,0,0,1,0-12h64A6,6,0,0,1,166,168Z",
+  Briefcase:
+    "M106,112a6,6,0,0,1,6-6h32a6,6,0,0,1,0,12H112A6,6,0,0,1,106,112ZM230,72V200a14,14,0,0,1-14,14H40a14,14,0,0,1-14-14V72A14,14,0,0,1,40,58H82V48a22,22,0,0,1,22-22h48a22,22,0,0,1,22,22V58h42A14,14,0,0,1,230,72ZM94,58h68V48a10,10,0,0,0-10-10H104A10,10,0,0,0,94,48ZM38,72v42.79A186,186,0,0,0,128,138a185.91,185.91,0,0,0,90-23.22V72a2,2,0,0,0-2-2H40A2,2,0,0,0,38,72ZM218,200V128.37A198.12,198.12,0,0,1,128,150a198.05,198.05,0,0,1-90-21.62V200a2,2,0,0,0,2,2H216A2,2,0,0,0,218,200Z",
+};
+
+/** Phosphor 2.1.10 ArrowRight, "regular" weight. */
+const ARROW_RIGHT_PATH =
+  "M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z";
+
+const { eyebrow, heading, intro, items } = site.expertise;
+
+// A content-model icon with no inlined path would render an empty card slot, so
+// make it a build failure instead of a silent visual regression.
+const cards = items.map((item) => {
+  const iconPath = CARD_ICON_PATHS[item.icon];
+  if (!iconPath) {
+    throw new Error(
+      `src/data/site.yaml: expertise item "${item.title}" uses icon "${item.icon}", which has no inlined SVG path in src/components/Expertise.astro`,
+    );
+  }
+  // Cards 01 and 02 name a page of this site ("/student-loan-negotiations/"),
+  // which is the same practice-area page their old davetaxnz.nz permalink
+  // pointed at — now published here, so the card links inward. Card 03 is a
+  // mailto: and passes through untouched.
+  const href = isInternalRoute(item.href)
+    ? resolveInternalRoute(item.href, `src/data/site.yaml: expertise item "${item.title}"`)
+    : item.href;
+
+  // App.jsx: target={href.startsWith("http") ? "_blank" : undefined}. An
+  // in-repo page is not a new tab, and it now takes that same false branch.
+  // `rel` is unconditional there — including on the mailto: card — so it stays
+  // that way.
+  return { ...item, href, iconPath, external: href.startsWith("http") };
+});
+---
+
+<section id="expertise" class="expertise section-shell section-pad">
+  <div class="section-heading">
+    <p class="eyebrow eyebrow--red">{eyebrow}</p>
+    <h2>{heading}</h2>
+    <p>{intro}</p>
+  </div>
+  <div class="expertise-grid">
+    {
+      cards.map((card) => (
+        <a
+          class="expertise-item"
+          href={card.href}
+          target={card.external ? "_blank" : undefined}
+          rel="noreferrer"
+        >
+          <span class="expertise-item__number">{card.number}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" fill="currentColor" viewBox="0 0 256 256"><path d={card.iconPath} /></svg>
+          <h3>{card.title}</h3>
+          <p>{card.text}</p>
+          <span class="text-link">{card.linkLabel} <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d={ARROW_RIGHT_PATH} /></svg></span>
+        </a>
+      ))
+    }
+  </div>
+</section>

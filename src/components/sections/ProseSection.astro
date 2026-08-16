@@ -1,0 +1,49 @@
+---
+/**
+ * `prose` section — an optional heading plus body paragraphs.
+ *
+ * No layout of its own. The block IS `.article-prose` (src/styles-article.css),
+ * the long-form treatment the article detail page already uses: Source Serif 4
+ * at 1.12rem/1.72, capped at `--measure`, with the serif h2 (1.9rem) and h3
+ * (1.5rem) scale and the vermilion-on-links rule already defined there. That is
+ * what keeps a 38-section page readable — one measure, one type scale, and the
+ * 38px block rhythm the class already carries.
+ *
+ * `divider` marks a heading-only section, which in the source document is a
+ * chapter break rather than a paragraph ("Why Choose Me", "Frequently Asked
+ * Questions"). It gets the hairline rule the rest of the sheet uses for exactly
+ * that job — see `.article-prose.page-divider`.
+ *
+ * Copy is rendered verbatim. `toParagraphs` only separates what the extractor
+ * already separated: a blank line is a paragraph, a single newline is a line
+ * break the client typed.
+ */
+import type { PageSection } from "../../data/schema";
+import { toParagraphs, type HeadingLevel } from "../../lib/pages";
+
+interface Props {
+  section: PageSection;
+  level: HeadingLevel;
+  divider: boolean;
+}
+
+const { section, level, divider } = Astro.props;
+const Heading = level;
+const paragraphs = section.body ? toParagraphs(section.body) : [];
+---
+
+<section class={divider ? "article-prose page-divider" : "article-prose"}>
+  {section.heading && <Heading>{section.heading}</Heading>}
+  {
+    paragraphs.map((lines) => (
+      <p>
+        {lines.map((line, index) => (
+          <>
+            {index > 0 && <br />}
+            {line}
+          </>
+        ))}
+      </p>
+    ))
+  }
+</section>

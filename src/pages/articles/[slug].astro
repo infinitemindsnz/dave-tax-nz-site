@@ -1,0 +1,155 @@
+---
+/**
+ * /articles/<slug>/ — one migrated post.
+ *
+ * Reading order, top to bottom: category eyebrow, serif title, byline + date,
+ * the source credit, then the body.
+ *
+ * ATTRIBUTION. Many of these posts are reposts of Interest.co.nz, Stuff, RNZ,
+ * Newstalk ZB or Te Waha Nui reporting. That credit is legally load-bearing and
+ * this page carries it three times over, on purpose:
+ *
+ *  1. The `.article-attribution` block above the body names the publisher and
+ *     links their canonical original URL, from typed frontmatter. It is ruled
+ *     top and bottom at full measure — not collapsed, not a footnote.
+ *  2. The client's own attribution line survives verbatim inside the Markdown
+ *     body, exactly where they wrote it. Nothing here rewrites or removes it,
+ *     and the duplication is deliberate: the frontmatter is the machine-readable
+ *     claim, the body line is the client's own words.
+ *  3. The byline names Dave ONLY on posts with no attribution. On a repost the
+ *     byline is the date alone, so the page can never imply he authored another
+ *     newsroom's reporting.
+ *
+ * The body is rendered as-is. `heroImage` is not rendered and `excerpt` is not
+ * shown as a standfirst: three of the eighteen bodies already open with the
+ * featured image, and several excerpts are WordPress's truncated auto-summaries
+ * ("… […]") which would restate the first paragraph badly. The excerpt's job is
+ * the meta description and the index card, which is where it is used.
+ */
+import { render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import Contact from "../../components/Contact.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { site } from "../../lib/content";
+import {
+  articlesIndexPath,
+  displayDate,
+  machineDate,
+  publishedArticles,
+  type ArticleEntry,
+} from "../../lib/articles";
+import { machineDateTime } from "../../lib/discovery";
+import { resolveMediaUrl } from "../../lib/media";
+import { buildArticleStructuredData } from "../../lib/structured-data";
+import { absoluteUrl, sitePath } from "../../lib/urls";
+import "../../styles-article.css";
+
+export async function getStaticPaths() {
+  const entries = await publishedArticles();
+  return entries.map((entry) => ({ params: { slug: entry.data.slug }, props: { entry } }));
+}
+
+interface Props {
+  entry: ArticleEntry;
+}
+
+const { entry } = Astro.props;
+const { title, categories, publishedAt, updatedAt, excerpt, heroImage, attribution } = entry.data;
+const { brand, articlePages } = site;
+
+const { Content } = await render(entry);
+
+/**
+ * Head and structured data.
+ *
+ * `BaseLayout` already derives the canonical link from the route, so this page
+ * only has to say what kind of thing it is and hand over the article's own
+ * values: og:type=article, the article title and excerpt as og:title /
+ * og:description and the meta description, and the wall-clock publish and
+ * modification times.
+ *
+ * The share image is the post's featured image where it has one, swapped to the
+ * local copy that ships in this repo (src/lib/media.ts) so a crawler that
+ * cannot reach the client's WordPress host still gets an image. `alt` is empty
+ * on some upstream records, in which case the title describes the image.
+ *
+ * The JSON-LD graph is built in src/lib/structured-data.ts, which owns the
+ * attribution rule: on a repost the Article's author and publisher are the
+ * source, never Dave, and the original is linked as isBasedOn + citation.
+ */
+const shareImage = heroImage
+  ? {
+      src: resolveMediaUrl(heroImage.src, (path) => absoluteUrl(Astro.site, path)),
+      alt: heroImage.alt === "" ? title : heroImage.alt,
+    }
+  : undefined;
+
+const jsonLd = buildArticleStructuredData(Astro.site, entry.data);
+---
+
+<BaseLayout
+  title={title}
+  description={excerpt}
+  ogType="article"
+  image={shareImage}
+  publishedTime={machineDateTime(publishedAt)}
+  modifiedTime={machineDateTime(updatedAt)}
+  jsonLd={jsonLd}
+>
+  <div id="top" class="dark-shell"><SiteHeader hrefBase={sitePath()} /></div>
+  <main id="main" class="article-page section-shell section-pad">
+    <article>
+      <header class="article-head">
+        <p class="eyebrow eyebrow--red">{categories[0]}</p>
+        <h1>{title}</h1>
+        <p class="article-byline">
+          {
+            /* No name on a repost — the source credit directly below carries
+               the authorship claim. */
+            attribution === undefined && (
+              <>
+                <strong>{brand.name}</strong>
+                <span>{brand.tagline}</span>
+              </>
+            )
+          }
+          <time datetime={machineDate(publishedAt)}>{displayDate(publishedAt)}</time>
+        </p>
+        {
+          attribution !== undefined && (
+            <div class="article-attribution">
+              <p class="article-attribution__label">{articlePages.attributionLabel}</p>
+              <p class="article-attribution__source">{attribution.source}</p>
+              <a
+                class="text-link"
+                href={attribution.originalUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {articlePages.attributionLinkLabel}{" "}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  fill="currentColor"
+                  viewBox="0 0 256 256"
+                >
+                  <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
+                </svg>
+              </a>
+            </div>
+          )
+        }
+      </header>
+
+      <div class="article-prose"><Content /></div>
+
+      <div class="article-foot">
+        <a class="text-link" href={articlesIndexPath()}>{articlePages.indexLinkLabel}</a>
+      </div>
+    </article>
+  </main>
+  <Contact />
+  <SiteFooter />
+</BaseLayout>

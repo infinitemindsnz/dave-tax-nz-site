@@ -1,0 +1,57 @@
+---
+/**
+ * `cta` section — the client's call to action, in the frozen sheet's `.button`
+ * treatment inside its `.button-row`.
+ *
+ * `.button` (solid vermilion) rather than `.button--secondary`: the secondary
+ * variant is the dark-band pairing — `background:transparent` with an `#e8e8e8`
+ * border — and would be all but invisible on the paper page these routes render
+ * on. Vermilion stays action-only, which is what a cta is.
+ *
+ * TWO THINGS THIS DELIBERATELY DOES NOT DO.
+ *
+ * 1. `href` is rendered exactly as the content model stores it. Two of these
+ *    point at the client's live WordPress site (https://davetaxnz.nz/contact/,
+ *    https://davetaxnz.nz/book-a-consultation/) even though this build now
+ *    publishes /contact/ and /book-a-consultation/ itself. Repointing them is a
+ *    content decision, not a rendering one, and it belongs in pages.yaml where
+ *    it is reviewable — not in a template that silently rewrites the client's
+ *    links. External targets get target/rel, matching every other outbound link
+ *    on the site.
+ *
+ * 2. A cta with no `href` is a WordPress form's submit button (the schema says
+ *    so, and the `list` section directly above it is that form's field labels).
+ *    This is a static build with no form endpoint, so the label is rendered in
+ *    its button treatment as a real `type="submit"` control with nothing to
+ *    submit. It is inert. Wiring a form is out of scope here and is flagged in
+ *    the handoff rather than faked.
+ */
+import type { PageSection } from "../../data/schema";
+
+interface Props {
+  section: PageSection;
+}
+
+const { section } = Astro.props;
+const { href, body } = section;
+const external = href !== undefined && /^https?:\/\//.test(href);
+---
+
+<div class="button-row">
+  {
+    href === undefined ? (
+      <button class="button" type="submit">
+        {body}
+      </button>
+    ) : (
+      <a
+        class="button"
+        href={href}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noreferrer" : undefined}
+      >
+        {body}
+      </a>
+    )
+  }
+</div>

@@ -1,0 +1,127 @@
+---
+/**
+ * Articles & media section — port of `Insights()` in src/App.jsx.
+ *
+ * Markup parity notes (do not "improve" these):
+ *  - Class names, element order and attributes are byte-for-byte the ones the
+ *    React component emitted. `.article-card:not(:nth-child(3n+1))` in
+ *    styles.css keys off DOM position, so filtering MUST remove cards from the
+ *    DOM (as React did) rather than hide them with `display:none` — hidden
+ *    elements still count for :nth-child and the column rules would drift.
+ *  - The ArrowRight glyph was `<ArrowRight size={18} />` from
+ *    @phosphor-icons/react@2.1.10. It is inlined below verbatim: the "regular"
+ *    weight path plus IconBase's attribute set
+ *    (xmlns, width, height, fill="currentColor", viewBox="0 0 256 256").
+ *  - `{articleLinkLabel} <svg…>` keeps the single literal space JSX rendered
+ *    between the label text and the icon.
+ *
+ * ONE deliberate change from the React source: a card's link target. Five of the
+ * eight curated records point at posts that now have a page in this repo, so
+ * those cards link inward (no target="_blank", no rel) instead of bouncing the
+ * visitor out to the client's WordPress site. The three genuinely external media
+ * items — RNZ and Interest.co.nz — still open outward, because those articles
+ * are the publisher's and are not ours to re-host. See `migratedSlugForUrl`.
+ *
+ * Nothing else moves: the card's category, date, title, summary and type all
+ * still come from src/data/articles.yaml verbatim. This section stays the
+ * curated eight; /articles/ is the full index — and now says so, with a section
+ * link at the foot of the grid. Before it, the eight cards were the only way out
+ * of this section and the other ten posts had no route in from the homepage.
+ * Its label is `articlePages.indexLinkLabel`, the SAME governed string the
+ * article detail page's back link uses, because it is the same destination.
+ *
+ * All copy comes from the content model; nothing here is hardcoded.
+ */
+import { articles, site } from "../lib/content";
+import {
+  articlePath,
+  articlesIndexPath,
+  migratedSlugForUrl,
+  publishedArticles,
+} from "../lib/articles";
+// `.insights__more` — the section link's grid placement. src/styles.css is
+// frozen and has no rule for a fourth child of the `.insights` grid; every
+// other class this section uses is that sheet's own. See src/styles-article.css.
+import "../styles-article.css";
+
+const { insights, articlePages } = site;
+const filters = insights.filters;
+
+/**
+ * Resolve each curated record to the page it should link to. A record whose URL
+ * is a migrated davetaxnz.nz permalink links to the in-repo article; everything
+ * else keeps the external link exactly as the content model stores it.
+ */
+const slugs = new Set((await publishedArticles()).map((entry) => entry.data.slug));
+
+const cards = articles.map((article) => {
+  const slug = migratedSlugForUrl(article.url, slugs);
+  return slug === undefined
+    ? { article, href: article.url, external: true }
+    : { article, href: articlePath(slug), external: false };
+});
+
+/**
+ * Filter semantics, documented in src/data/site.yaml and src/data/articles.yaml:
+ * the first filter shows everything, "In the media" matches every article whose
+ * `type` is not "By Dave", and every other filter matches `category` exactly.
+ *
+ * These two constants are behaviour discriminators, not rendered copy — the
+ * visible labels still come from `insights.filters`.
+ */
+const ALL_FILTER = filters[0];
+const MEDIA_FILTER = "In the media";
+const AUTHORED_TYPE = "By Dave";
+
+function matches(article: (typeof articles)[number], filter: string): boolean {
+  if (filter === ALL_FILTER) return true;
+  if (filter === MEDIA_FILTER) return article.type !== AUTHORED_TYPE;
+  return article.category === filter;
+}
+
+// Precomputed at build time so the client script never re-implements the rule
+// (and never carries content strings): one array of card indices per filter.
+const groups = filters.map((filter) =>
+  cards.reduce<number[]>((indices, card, index) => {
+    if (matches(card.article, filter)) indices.push(index);
+    return indices;
+  }, []),
+);
+
+// The server-rendered grid is the default filter, exactly like the React
+// component's initial `useState(filters[0])`.
+const initial = cards.filter((card) => matches(card.article, ALL_FILTER));
+---
+
+<section id="insights" class="insights section-shell section-pad">
+  <div class="insights__intro"><p class="eyebrow eyebrow--red">{insights.eyebrow}</p><h2>{insights.heading}</h2><p>{insights.intro}</p></div>
+  <div class="filters" aria-label={insights.filtersLabel}>{filters.map((item, index) => (
+    <button type="button" class={index === 0 ? "filter filter--active" : "filter"} aria-pressed={index === 0 ? "true" : "false"}>{item}</button>
+  ))}</div>
+  <div class="article-grid">{initial.map(({ article, href, external }) => (
+    <article class="article-card"><div class="article-meta"><span>{article.category}</span><time>{article.date}</time></div><h3>{article.title}</h3><p>{article.summary}</p><span class="article-type">{article.type}</span><a class="text-link" href={href} {...(external ? { target: "_blank", rel: "noreferrer" } : {})}>{insights.articleLinkLabel} <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg></a></article>
+  ))}</div>
+  <a class="text-link insights__more" href={articlesIndexPath()}>{articlePages.indexLinkLabel} <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path></svg></a>
+</section>
+<script define:vars={{ groups }}>
+  // Replaces React's useState/useMemo filter. Cards are detached and
+  // re-attached (never hidden) so the :nth-child(3n+1) border rules keep
+  // matching the visible column layout.
+  const section = document.getElementById("insights");
+  if (section) {
+    const grid = section.querySelector(".article-grid");
+    const buttons = Array.from(section.querySelectorAll(".filter"));
+    const cards = grid ? Array.from(grid.children) : [];
+
+    buttons.forEach((button, index) => {
+      button.addEventListener("click", () => {
+        buttons.forEach((other, otherIndex) => {
+          const active = otherIndex === index;
+          other.className = active ? "filter filter--active" : "filter";
+          other.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        if (grid) grid.replaceChildren(...groups[index].map((cardIndex) => cards[cardIndex]));
+      });
+    });
+  }
+</script>

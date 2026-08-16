@@ -1,0 +1,51 @@
+---
+/**
+ * The body of a migrated page: every section after the masthead, in source
+ * order, each dispatched to the renderer for its kind.
+ *
+ * The only structural decision made here is grouping — a run of consecutive
+ * `quote` sections becomes one `.article-grid`, because a sequence of quotes is
+ * a sequence, not 39 unrelated blocks. Everything else renders one block per
+ * section, and nothing is reordered, merged or dropped.
+ *
+ * Vertical rhythm comes entirely from classes that already exist: `.article-prose`
+ * carries the 38px block rhythm, `.button-row` its 22px, and a heading-only
+ * section adds the hairline chapter rule. The page shell itself carries
+ * `.section-pad`. No new spacing scale.
+ */
+import type { PlannedSection } from "../../lib/pages";
+import { groupSections } from "../../lib/pages";
+import ProseSection from "./ProseSection.astro";
+import ListSection from "./ListSection.astro";
+import QuoteCard from "./QuoteCard.astro";
+import CtaSection from "./CtaSection.astro";
+
+interface Props {
+  sections: PlannedSection[];
+}
+
+const { sections } = Astro.props;
+const groups = groupSections(sections);
+---
+
+{
+  groups.map((group) =>
+    group.kind === "quotes" ? (
+      <div class="article-grid quote-grid">
+        {group.sections.map((section) => (
+          <QuoteCard section={section} />
+        ))}
+      </div>
+    ) : group.entry.section.kind === "list" ? (
+      <ListSection section={group.entry.section} level={group.entry.level} />
+    ) : group.entry.section.kind === "cta" ? (
+      <CtaSection section={group.entry.section} />
+    ) : (
+      <ProseSection
+        section={group.entry.section}
+        level={group.entry.level}
+        divider={group.entry.divider}
+      />
+    ),
+  )
+}

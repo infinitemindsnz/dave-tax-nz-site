@@ -1,0 +1,45 @@
+---
+/**
+ * Homepage — the Astro assembly of `App()` in src/App.jsx.
+ *
+ * App.jsx returned, in this exact order and with no wrapper of its own:
+ *   <a class="skip-link" href="#main">…</a>          ← owned by BaseLayout
+ *   <div id="top" class="dark-shell">
+ *     <Header /> <main id="main"><Hero /></main>
+ *   </div>
+ *   <Proof /> <Expertise /> <Stories /> <Insights /> <Contact /> <Footer />
+ *
+ * The `#top.dark-shell` wrapper is load-bearing twice over: `.dark-shell` paints
+ * the header + hero band (`background:var(--ink);color:white`), and `#top` is
+ * the target of the brand link. `<main id="main">` is the skip-link target and
+ * wraps the hero only — not the rest of the page — exactly as in React.
+ *
+ * No copy lives here. Sections read the content model themselves; this file is
+ * pure composition plus the structured-data graph handed to the layout.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import Hero from "../components/Hero.astro";
+import Proof from "../components/Proof.astro";
+import Expertise from "../components/Expertise.astro";
+import Story from "../components/Story.astro";
+import Insights from "../components/Insights.astro";
+import Contact from "../components/Contact.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { buildStructuredData } from "../lib/structured-data";
+
+const jsonLd = buildStructuredData(Astro.site);
+---
+
+<BaseLayout jsonLd={jsonLd}>
+  <div id="top" class="dark-shell">
+    <SiteHeader />
+    <main id="main"><Hero /></main>
+  </div>
+  <Proof />
+  <Expertise />
+  <Story />
+  <Insights />
+  <Contact />
+  <SiteFooter />
+</BaseLayout>

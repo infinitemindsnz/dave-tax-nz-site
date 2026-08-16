@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "contractId": "dave-tax-nz-site-content.v1",
+  "site": {
+    "path": "src/data/site.yaml",
+    "format": "yaml",
+    "schema": "governance/schemas/site.v1.schema.json"
+  },
+  "pages": {
+    "path": "src/data/pages.yaml",
+    "format": "yaml",
+    "schema": "governance/schemas/pages.v1.schema.json",
+    "comment": "The nine WordPress pages migrated from davetaxnz.nz, keyed by WordPress slug: home, about-dave, contact, testimonials, articles-advice, student-loan-negotiations, ird-disputes-tax-penalties-negotiation, book-a-consultation, thanks-consult. Every slug is required and no others are allowed — a page that silently stops being migrated is a content regression, not a smaller file. The copy is verbatim client copy including WordPress's truncation artefacts; testimonial names and dates in `quote` sections are attribution and are load-bearing. This file is a build input, not merely a validated artifact: /articles/ takes its page title, meta description and category filter strip from the `articles-advice` record, so a schema violation fails `astro build`."
+  },
+  "articles": {
+    "path": "src/data/articles.yaml",
+    "format": "yaml",
+    "schema": "governance/schemas/articles.v1.schema.json",
+    "comment": "The CURATED HOMEPAGE LIST — eight structured reference records (category, type, display date, title, summary, external https URL) rendered by the homepage Insights section. Most point at articles hosted by other publishers, which are theirs and not ours to re-host. This is a separate content source from the in-repo article corpus below: src/lib/articles.ts resolves a record whose URL is a davetaxnz.nz permalink to the matching in-repo page, and leaves every third-party URL pointing outward. These records also feed the renderer-owned discovery surface (rss.xml, llms.txt) enumerated in governance/renderer-manifest.v1.json."
+  },
+  "articleCollection": {
+    "glob": "src/content/articles/**/*.md",
+    "format": "markdown+frontmatter",
+    "loader": "src/content.config.ts",
+    "frontmatterSchema": "governance/schemas/article-frontmatter.v1.schema.json",
+    "markdownPolicy": "governance/markdown-policy.v1.json",
+    "routes": ["/articles/", "/articles/<slug>/"],
+    "comment": "The eighteen posts migrated from davetaxnz.nz/wp-json/wp/v2/posts, each rendered as a page in this repository. Two independent gates apply and both must pass: the typed frontmatter against the schema named above (src/content.config.ts is the enforcing zod strictObject), and the body's Markdown AST against the markdown policy. ATTRIBUTION IS LEGALLY LOAD-BEARING — twelve of the eighteen are reposts of Interest.co.nz, Stuff, RNZ, Newstalk ZB, Te Waha Nui or Stace Hammond reporting. The credit is carried twice on purpose: the frontmatter `attribution` object is the machine-readable claim, and the client's own attribution line survives verbatim in the body prose where they wrote it. Neither may be stripped, reworded or paraphrased by any operation. This collection supersedes the previous statement in version 1 of this contract that the repository had no Markdown content source; a markdown-policy.v1.json now exists and `markdown_policy_sha256` has a local binding. It does NOT supersede the writable policy: `article_publish` remains unauthorised (governance/writable-paths.v1.json, `documentedOperations`), and these files are human-owned."
+  },
+  "mediaManifest": {
+    "path": "src/data/media-manifest.json",
+    "format": "json",
+    "role": "renderer-input",
+    "comment": "Maps every WordPress upload URL referenced by migrated content to a local copy under public/assets/wp/. It is migration provenance and a build input (src/lib/media.ts imports it), NOT a governed content source: it contains no client copy and is bound through the renderer source globs and renderer_sha256, not through a content schema. governance/markdown-policy.v1.json nonetheless depends on it — every body image URL and every frontmatter heroImage.src must resolve here, so the site never hot-links an asset it does not serve."
+  },
+  "buildTimeValidator": {
+    "paths": ["src/data/schema.ts", "src/content.config.ts"],
+    "kind": "zod-strict-object",
+    "command": "npm run content:validate",
+    "comment": "TWO enforcing validators, one stance. src/data/schema.ts validates the YAML sources: src/lib/content.ts parses site.yaml, articles.yaml and pages.yaml through it, so an unknown key or a missing string fails `astro build` rather than shipping a degraded page. src/content.config.ts validates article frontmatter through Astro's content layer, with the same strictObject stance. `npm run content:validate` covers the three YAML files without a full build; article frontmatter is checked by `npm run build`. The JSON Schema files named above are the platform-facing mirror of both validators and MUST stay field-for-field identical to them, with one DECLARED exception documented in governance/schemas/article-frontmatter.v1.schema.json (the offset-free wall-clock date pattern is a strict subset of z.coerce.date()). Any other drift is a contract violation, not a discrepancy to reconcile silently."
+  },
+  "theme": {
+    "path": "src/styles.css",
+    "policy": "byte-frozen",
+    "comment": "src/styles.css is the client's own stylesheet, copied verbatim from the pre-Astro React source and design-frozen. It is a renderer input, never a governed content source. No proposal, patch or operation kind in this contract may modify it."
+  },
+  "themeExtension": {
+    "path": "src/styles-article.css",
+    "policy": "renderer-owned",
+    "comment": "The one stylesheet the article surfaces added, in the frozen sheet's visual language (Source Serif 4 body prose, Libre Franklin UI, vermilion #d23824 action-only, gold #c8963e focus-only, zero border-radius, hairline #b9b4ab rules, no shadows, no cards). It exists because article body prose is a genuinely new element with no class in the frozen sheet; every reused surface — .article-grid, .article-card, .article-meta, .article-type, .filters, .filter, .section-pad, .section-heading, .eyebrow, .text-link — still comes from src/styles.css untouched. It is a renderer source bound by renderer_sha256, not a content source, and no operation kind in this contract may modify it."
+  },
+  "writablePolicy": "governance/writable-paths.v1.json",
+  "markdownPolicy": "governance/markdown-policy.v1.json",
+  "candidateManifestSchema": "governance/schemas/candidate-manifest.v1.schema.json",
+  "rendererManifest": "governance/renderer-manifest.v1.json",
+  "approvalPolicy": "governance/approval-policy.v1.json"
+}

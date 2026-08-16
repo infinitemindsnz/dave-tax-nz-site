@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dave-tax-nz-site.fly.dev/schemas/article-frontmatter.v1.schema.json",
+  "title": "Dave Ananth tax site — governed article frontmatter (src/content/articles/*.md)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "slug",
+    "publishedAt",
+    "updatedAt",
+    "excerpt",
+    "categories",
+    "draft"
+  ],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "comment": "The permalink. src/lib/articles.ts fails the build when this disagrees with the filename, because the route is generated from the frontmatter and a drifted pair would publish the article at an address nothing links to."
+    },
+    "publishedAt": { "$ref": "#/$defs/wallClock" },
+    "updatedAt": { "$ref": "#/$defs/wallClock" },
+    "excerpt": {
+      "type": "string",
+      "minLength": 1,
+      "comment": "WordPress's own excerpt, verbatim. Several are truncated auto-summaries ending in \"[…]\"; they are preserved rather than rewritten and are used as the meta description and the index card summary, never as a standfirst."
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "comment": "The first entry is rendered as the card and detail-page eyebrow. Every entry is matched against the client's own filter list — the `list` section of the `articles-advice` record in src/data/pages.yaml — which is the authority for the filter strip on /articles/."
+    },
+    "attribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "originalUrl"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "originalUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://\\S+$"
+        }
+      },
+      "comment": "LEGALLY LOAD-BEARING. Twelve of the eighteen migrated posts are reposts of Interest.co.nz, Stuff, RNZ Nine to Noon, Newstalk ZB, Te Waha Nui or Stace Hammond reporting. `source` and `originalUrl` are required together: a half-filled attribution names a publisher without linking what it is crediting, which is worse than an absent block. The object is optional only because Dave's own six pieces credit nobody else. Its presence also flips three renderer behaviours — the card label becomes the publisher instead of the authored label, the byline drops Dave's name so the page cannot imply he wrote another newsroom's reporting, and the JSON-LD author/publisher becomes the source with the original linked as isBasedOn + citation. Stripping or paraphrasing this field silently changes an authorship claim. No operation may do it."
+    },
+    "heroImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["src", "alt"],
+      "properties": {
+        "src": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://\\S+$",
+          "comment": "The original WordPress upload URL. It is NOT rendered in the body — [slug].astro uses it only as the share image, resolved through src/data/media-manifest.json to the local copy under public/assets/wp/ so a crawler that cannot reach the client's WordPress host still gets an image. All 15 hero URLs currently resolve in that manifest."
+        },
+        "alt": {
+          "type": "string",
+          "comment": "Deliberately NOT minLength 1. Several upstream WordPress media records carry an empty alt, and the migration preserved that rather than inventing alternative text for the client. [slug].astro substitutes the article title when the value is empty."
+        },
+        "width": { "type": "integer", "exclusiveMinimum": 0 },
+        "height": { "type": "integer", "exclusiveMinimum": 0 }
+      }
+    },
+    "draft": {
+      "type": "boolean",
+      "comment": "Required and explicitly boolean rather than `const false`: the flag must be stated, not inferred from absence. src/lib/articles.ts filters drafts out of every surface — index, detail routes, sitemap, RSS and llms.txt — so a draft is unpublished everywhere at once or nowhere."
+    }
+  },
+  "$defs": {
+    "wallClock": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+      "comment": "WordPress's `date`/`modified`: the site's local (NZ) wall clock with NO zone offset, kept exactly as the extractor wrote it. `format: date-time` is deliberately NOT used — it requires an offset, and these values have none by design. Normalising to UTC would move several late-evening posts onto the next calendar day, changing the date the client published on."
+    }
+  },
+  "comment": "Platform-facing mirror of the `articles` collection schema in src/content.config.ts, which is the enforcing validator (a zod strictObject: an unknown or misspelled frontmatter key fails `astro build`). DECLARED DIVERGENCE, in the safe direction: `publishedAt`/`updatedAt` are `z.coerce.date()` in the validator, which accepts any string the Date constructor parses, while this schema pins the narrower offset-free wall-clock form the corpus actually uses. This mirror is therefore a strict SUBSET — anything that passes here passes the validator, never the reverse — so a publisher working from the mirror alone can never author frontmatter the build refuses. Every other field is field-for-field identical, and any drift other than this declared one is a contract violation, not a discrepancy to reconcile silently."
+}

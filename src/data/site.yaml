@@ -1,0 +1,253 @@
+# Governed content model for the Dave Ananth tax barrister site.
+#
+# Every user-visible string on the page lives here. Components read this file
+# through src/lib/content.ts and MUST NOT hardcode copy. Strings are copied
+# verbatim from the pre-Astro React source (src/App.jsx) and index.html,
+# including punctuation, en/em dashes and curly apostrophes. Do not "fix"
+# typography or copy here — this file is the source of truth for the rendered
+# page, and any edit is a visible content change.
+#
+# Validated at build time by src/data/schema.ts (strict: unknown keys throw).
+
+meta:
+  lang: "en"
+  title: "Dave Ananth | Tax Barrister & IRD Negotiator"
+  description: "Dave Ananth is a New Zealand tax barrister, former IRD prosecutor and specialist in student loan and Inland Revenue negotiations."
+  themeColor: "#111315"
+
+brand:
+  name: "Dave Ananth"
+  tagline: "Tax Barrister"
+  href: "#top"
+  ariaLabel: "Dave Ananth home"
+  logo:
+    src: "assets/dave-ananth-logo.webp"
+    alt: "Dave Ananth, Tax Barrister"
+    width: 150
+    height: 130
+
+nav:
+  ariaLabel: "Primary navigation"
+  skipLabel: "Skip to content"
+  menuOpenLabel: "Open menu"
+  menuCloseLabel: "Close menu"
+  # LABELS ARE THE CLIENT'S AND ARE UNCHANGED. Only the targets moved.
+  #
+  # These were five same-page anchors, because the site was one page. Four of
+  # the five now name a real route, because the WordPress page behind that label
+  # has been migrated and is published:
+  #
+  #   About Dave      → /about-dave/     (pages.yaml `about-dave`)
+  #   Client stories  → /testimonials/   (pages.yaml `testimonials`)
+  #   Articles & media→ /articles/       (the article index, 18 posts)
+  #   Contact         → /contact/        (pages.yaml `contact`)
+  #
+  # "Expertise" KEEPS its anchor: there is no migrated "expertise" page. The
+  # homepage section is the only thing that label can mean, and inventing a
+  # route for it would mean inventing a page. The two practice areas it covers
+  # are reachable from the cards in that section.
+  #
+  # The homepage sections (#about, #stories, #insights, #contact) all still
+  # exist and are still linked from within the page; nav is now wayfinding to
+  # pages rather than scroll control.
+  items:
+    - label: "About Dave"
+      href: "/about-dave/"
+    - label: "Expertise"
+      href: "#expertise"
+    - label: "Client stories"
+      href: "/testimonials/"
+    - label: "Articles & media"
+      href: "/articles/"
+    - label: "Contact"
+      href: "/contact/"
+  # DELIBERATELY STILL EXTERNAL. `book-a-consultation` is migrated, but the
+  # extractor could only carry its copy: the WordPress booking form survives in
+  # pages.yaml as a `list` of field labels ("Name:", "Email:", …) and a `cta`
+  # with no href. Pointing the site's primary conversion action at a page whose
+  # form cannot submit would break the client's booking funnel. This stays on
+  # the live WordPress form until a real form exists here.
+  cta:
+    label: "Book a free consultation"
+    href: "https://davetaxnz.nz/book-a-consultation/"
+    external: true
+
+hero:
+  eyebrow: "Former IRD prosecutor · 35+ years in tax law"
+  headline: "When IRD pressure rises, experience matters."
+  lead: "Dave Ananth resolves student loan debt, tax disputes and enforcement action with clear, practical advice."
+  alert:
+    text: "Received an IRD letter or worried about returning to New Zealand?"
+    href: "#expertise"
+  ctas:
+    - label: "Book a free consultation"
+      href: "https://davetaxnz.nz/book-a-consultation/"
+      variant: "primary"
+      external: true
+      icon: null
+    # The rendered label is preceded by a Phone icon and a literal space:
+    # `<svg …/> Call Dave` — preserve that space when porting.
+    - label: "Call Dave"
+      href: "tel:+64210216888"
+      variant: "secondary"
+      external: false
+      icon: "Phone"
+  portrait:
+    src: "assets/dave-ananth-hero.webp"
+    alt: "Dave Ananth in barrister attire"
+    width: 1280
+    height: 1198
+  caption:
+    name: "Dave Ananth"
+    role: "Tax Barrister"
+    note: "Former IRD prosecutor"
+
+proof:
+  quote: "“Securing expert tax advice early is critical. Once Inland Revenue initiates contact, delays can lead to escalation, increased penalties and restricted relief options.”"
+  author:
+    name: "Dave Ananth"
+    role: "Partner, Meridian Partners"
+    image:
+      src: "assets/dave-ananth-profile.webp"
+      alt: "Dave Ananth"
+      width: 1280
+      height: 1280
+  mediaImage:
+    src: "assets/media-lockup.png"
+    alt: "As seen in Newstalk ZB, Stuff, NZ Lawyer and The Post"
+    width: 402
+    height: 85
+
+expertise:
+  eyebrow: "Expertise"
+  heading: "A direct route through difficult IRD matters."
+  intro: "Dave works as a strategic buffer between you and Inland Revenue—assessing risk, preparing the case and leading negotiations."
+  # Cards 01 and 02 pointed at davetaxnz.nz/student-loan-negotiations/ and
+  # davetaxnz.nz/ird-disputes-tax-penalties-negotiation/ — the exact two
+  # WordPress permalinks whose pages are now migrated into pages.yaml under the
+  # SAME slugs and published at /student-loan-negotiations/ and
+  # /ird-disputes-tax-penalties-negotiation/. The card now goes to the page in
+  # this repo instead of bouncing the visitor back to the old site. Same
+  # destination, same copy, one hop fewer; no link is invented.
+  #
+  # Card 03 is untouched. Its href is a mailto: the client chose, not a
+  # placeholder, and there is no migrated "business tax matters" page to point
+  # it at.
+  items:
+    - number: "01"
+      icon: "Student"
+      title: "Student loan negotiations"
+      text: "Support for overseas borrowers facing compounding interest, penalties, enforcement or concerns about returning to New Zealand."
+      href: "/student-loan-negotiations/"
+      linkLabel: "Learn more"
+    - number: "02"
+      icon: "FileText"
+      title: "IRD disputes & tax debt"
+      text: "Strategic advice on tax arrears, investigations, statutory demands, payment arrangements, remission and enforcement action."
+      href: "/ird-disputes-tax-penalties-negotiation/"
+      linkLabel: "Learn more"
+    - number: "03"
+      icon: "Briefcase"
+      title: "Business tax matters"
+      text: "Practical, commercially aware advice for GST, PAYE, income tax, unfiled returns and business rehabilitation."
+      href: "mailto:dave@davetaxnz.nz?subject=Business%20tax%20matter"
+      linkLabel: "Learn more"
+
+story:
+  eyebrow: "Client story"
+  heading: "“Within just two days, the entire process was turned around.”"
+  body: "After decades of stress over an unresolved student loan, Dave handled the paperwork and IRD communication, helping the client reach a resolution within days."
+  credit:
+    name: "Jana R"
+    meta: "Student loan client · June 2025"
+  link:
+    label: "Read client experiences"
+    href: "https://davetaxnz.nz/testimonials/"
+
+insights:
+  eyebrow: "Latest thinking"
+  heading: "Articles & media"
+  intro: "Regularly updated guidance on IRD, tax and student loan issues—written by Dave or featuring his commentary."
+  filtersLabel: "Filter articles"
+  # The first entry is the default/"show everything" filter. "In the media"
+  # filters on article.type !== "By Dave"; every other value matches
+  # article.category exactly.
+  filters:
+    - "All"
+    - "Student loans"
+    - "IRD"
+    - "Tax"
+    - "In the media"
+  articleLinkLabel: "Read article"
+
+# Chrome for /articles/ and /articles/<slug>/. Four labels, nothing more: every
+# other string on those pages is data (src/content/articles/*.md frontmatter and
+# body, and the `articles-advice` record in pages.yaml).
+#
+# `attributionLabel` and `attributionLinkLabel` frame the source credit on a
+# detail page. Many posts are reposts of Interest.co.nz, Stuff, RNZ, Newstalk ZB
+# or Te Waha Nui reporting; that credit is legally load-bearing and is rendered
+# above the body, never collapsed or hidden.
+#
+# `authoredLabel` is not new copy — "By Dave" is the value articles.yaml already
+# uses in `type` for Dave's own pieces.
+#
+# `indexLinkLabel` is the label for ANY link to the article index: the back link
+# on a detail page, and the section link at the foot of the homepage "Articles &
+# media" grid. One destination, one wording — the homepage does not get a second
+# phrase invented for the same link.
+articlePages:
+  indexLinkLabel: "All articles"
+  authoredLabel: "By Dave"
+  attributionLabel: "Originally published by"
+  attributionLinkLabel: "Read the original"
+
+contact:
+  eyebrow: "Contact Dave"
+  heading: "Take the first step before the matter escalates."
+  intro: "Initial consultations are free and confidential. Tell Dave what has happened and he will explain the practical next step."
+  rows:
+    # KNOWN UPSTREAM DATA BUG — PRESERVED DELIBERATELY.
+    # The displayed number has 12 digits after "+64 " grouping while the tel:
+    # href has 11. src/App.jsx shipped phoneDisplay "+64 21 021 68888" against
+    # phoneHref "tel:+64210216888". Do not reconcile without the client's
+    # confirmation of the correct number.
+    - label: "Call Dave directly"
+      value: "+64 21 021 68888"
+      href: "tel:+64210216888"
+    - label: "Email Dave"
+      value: "dave@davetaxnz.nz"
+      href: "mailto:dave@davetaxnz.nz"
+    - label: "Auckland office"
+      value: "97 Great South Road, Epsom"
+      href: "https://www.google.com/maps/search/?api=1&query=97+Great+South+Road+Epsom+Auckland+1051"
+  action:
+    title: "Free 15-minute initial consultation"
+    ctaLabel: "Book a consultation"
+    ctaHref: "https://davetaxnz.nz/book-a-consultation/"
+
+footer:
+  logo:
+    src: "assets/dave-ananth-logo.webp"
+    alt: "Dave Ananth Tax Barrister"
+    width: 120
+    height: 105
+  description: "Tax Barrister specialising in student loan and tax debt negotiations. Former IRD prosecutor with 35+ years’ experience."
+  # AUDITED AGAINST THE MIGRATED ROUTES — UNCHANGED, DELIBERATELY.
+  # These are not dead same-page anchors like the nav's were. All three resolve
+  # today and none of them names a page of this site: Meridian Partners is the
+  # law firm's own profile of Dave on mplaw.nz, LinkedIn is his profile, and
+  # Email is a mailto:. There is nothing here to repoint at a migrated page, and
+  # adding page links the client never had would be inventing footer navigation
+  # rather than fixing it. Left exactly as the client wrote it.
+  links:
+    - label: "Meridian Partners"
+      href: "https://mplaw.nz/about-meridian-partners/dave-ananth/"
+      external: true
+    - label: "LinkedIn"
+      href: "https://www.linkedin.com/in/dave-ananth-6310b023/"
+      external: true
+    - label: "Email"
+      href: "mailto:dave@davetaxnz.nz"
+      external: false
+  legal: "© 2026 Dave Ananth Tax Services. Information on this site is general and is not legal advice."

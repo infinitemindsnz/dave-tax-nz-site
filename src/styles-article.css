@@ -1,0 +1,371 @@
+/*
+ * Article surface styles — the article index and the article detail page.
+ *
+ * src/styles.css is the client's own stylesheet and is BYTE-FROZEN. Everything
+ * these pages can express with a class that already exists there is reused
+ * unchanged: the layout shell (.section-shell), vertical rhythm (.section-pad),
+ * the dark header band (.dark-shell), the whole index grid (.insights,
+ * .filters, .filter, .filter--active, .article-grid, .article-card,
+ * .article-meta, .article-type), the eyebrow (.eyebrow) and the action link
+ * (.text-link). The index page adds no layout of its own at all.
+ *
+ * What is left is genuinely new: long-form body prose, which the single-page
+ * site never had; a page-level <h1> on the paper background, because the frozen
+ * `h1` rule is the dark hero's display size; and the source-credit block, which
+ * has no counterpart anywhere on the one-page site.
+ *
+ * Language rules (inherited, not reinvented — every value below is a custom
+ * property already declared on :root in src/styles.css):
+ *   body prose  Source Serif 4        var(--serif)
+ *   UI text     Libre Franklin        var(--sans)
+ *   vermilion   #d23824  ACTION ONLY  var(--red)   — links, nothing decorative
+ *   gold        #c8963e  FOCUS ONLY   var(--gold)  — the frozen sheet's
+ *                                     a:focus-visible rule already covers every
+ *                                     link here, so this file adds no focus
+ *                                     styles of its own and must not
+ *   rules       #b9b4ab  hairline     var(--rule)
+ *   border-radius: 0. No shadows. No cards.
+ */
+
+/* ---- Index ------------------------------------------------------------- */
+
+/* The index page's heading is an <h1>; the frozen `h1` rule is the dark hero's
+   display type (clamp 3rem–5.25rem, letter-spacing -.055em, max-width 800px).
+   Restate it as `.insights h2` so /articles/ and the homepage "Articles & media"
+   section read as one surface. */
+.article-index__title {
+  font-family: var(--serif);
+  font-size: clamp(2.6rem, 4vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: 0;
+  max-width: none;
+  margin: 0 0 24px;
+}
+
+/* The homepage "Articles & media" section link, at the foot of the card grid.
+   It is the one child of the frozen `.insights` grid that is not one of that
+   grid's three original blocks, so it is the one thing here with no class in
+   src/styles.css to reuse — `.text-link` styles it, and this rule only places
+   it. `.insights` is `280px 1fr` with `.insights__intro` spanning both rows, so
+   a fourth child auto-places into the narrow left column; it belongs under the
+   grid it summarises. A grid item is blockified (`.text-link` is inline-flex),
+   which is why `justify-self` is what keeps it at its own width.
+
+   No new colour, type step or spacing: this rule sets placement only. */
+.insights__more {
+  grid-column: 2;
+  justify-self: start;
+}
+
+/* At this breakpoint the frozen sheet collapses `.insights` to one column, so
+   there is no column 2 to sit in — asking for one would open an implicit track
+   and push the link off the measure. */
+@media (max-width: 980px) {
+  .insights__more {
+    grid-column: auto;
+  }
+}
+
+/* ---- Detail: masthead -------------------------------------------------- */
+
+.article-page {
+  /* One measure for every block in the reading column: prose, credit block,
+     images and the footer rule all end on the same vertical line. */
+  --measure: 68ch;
+}
+
+.article-head {
+  border-top: 2px solid var(--ink);
+  padding-top: 32px;
+}
+
+/* Same override as the index title, at reading scale rather than index scale. */
+.article-page .article-head h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.1rem, 3.4vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 22px 0 0;
+  max-width: 22ch;
+}
+
+/* Publisher and date. The name appears only on Dave's own pieces — a repost
+   shows the date and then the source credit below it, so the page can never
+   imply Dave authored another newsroom's reporting. */
+.article-byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 22px;
+  margin: 24px 0 0;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.article-byline strong {
+  color: #171717;
+}
+
+.article-byline time {
+  font-weight: 400;
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Source credit — LEGALLY LOAD-BEARING.
+   Many of these posts are reposts of Interest.co.nz, Stuff, RNZ, Newstalk ZB or
+   Te Waha Nui reporting, and the frontmatter records the publisher and the
+   canonical original URL. The block sits between the byline and the body at
+   full measure, ruled top and bottom: never collapsed, never behind a toggle,
+   never set as small print. */
+.article-attribution {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+  max-width: var(--measure);
+  margin: 28px 0 0;
+  padding: 24px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.article-attribution p {
+  margin: 0;
+}
+
+.article-attribution__label {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.article-attribution__source {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.3rem;
+  line-height: 1.3;
+}
+
+/* .text-link carries a margin-top for use at the foot of a card; the grid gap
+   is already providing the separation here. */
+.article-attribution .text-link {
+  margin-top: 8px;
+}
+
+/* ---- Detail: body prose ------------------------------------------------ */
+
+.article-prose {
+  font-family: var(--serif);
+  /* The font request in src/styles.css loads Source Serif 4 on a 500–600 weight
+     axis, so 500 is the real body weight and 600 the real emphasis weight. */
+  font-weight: 500;
+  font-size: 1.12rem;
+  line-height: 1.72;
+  max-width: var(--measure);
+  margin-top: 38px;
+}
+
+.article-prose > :first-child {
+  margin-top: 0;
+}
+
+.article-prose > :last-child {
+  margin-bottom: 0;
+}
+
+.article-prose p {
+  margin: 0 0 1.35em;
+}
+
+.article-prose h2,
+.article-prose h3,
+.article-prose h4,
+.article-prose h5,
+.article-prose h6 {
+  font-family: var(--serif);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 2em 0 0.65em;
+}
+
+.article-prose h2 {
+  font-size: 1.9rem;
+}
+
+.article-prose h3 {
+  font-size: 1.5rem;
+}
+
+.article-prose h4 {
+  font-size: 1.25rem;
+}
+
+.article-prose h5,
+.article-prose h6 {
+  font-size: 1.08rem;
+}
+
+/* 31 of the 85 migrated headings are written `## **Text**`, which renders a
+   <strong> inside the heading. Neutralise the doubled weight here rather than
+   editing the client's Markdown. */
+.article-prose :is(h2, h3, h4, h5, h6) strong {
+  font-weight: inherit;
+}
+
+.article-prose strong {
+  font-weight: 600;
+}
+
+/* Vermilion is reserved for actions. In prose, the only action is a link. */
+.article-prose a {
+  color: var(--red);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.article-prose a:hover {
+  color: var(--red-dark);
+}
+
+.article-prose ul,
+.article-prose ol {
+  margin: 0 0 1.35em;
+  padding-left: 1.25em;
+}
+
+.article-prose li {
+  margin-bottom: 0.5em;
+}
+
+.article-prose li::marker {
+  color: var(--muted);
+}
+
+/* Matches the frozen sheet's `blockquote` treatment (serif, italic) with the
+   hairline rule the rest of this file uses. */
+.article-prose blockquote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  margin: 1.8em 0;
+  padding-left: 24px;
+  border-left: 1px solid var(--rule);
+}
+
+.article-prose img {
+  width: 100%;
+  height: auto;
+  margin: 2em 0;
+}
+
+.article-prose hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2.5em 0;
+}
+
+/* ---- Detail: foot ------------------------------------------------------ */
+
+.article-foot {
+  max-width: var(--measure);
+  margin-top: 52px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+
+.article-foot .text-link {
+  margin-top: 0;
+}
+
+/* ---- Migrated page routes ---------------------------------------------- */
+
+/*
+ * /about-dave/, /contact/, /testimonials/, /student-loan-negotiations/,
+ * /ird-disputes-tax-penalties-negotiation/, /book-a-consultation/ and
+ * /thanks-consult/, rendered by src/pages/[slug].astro from src/data/pages.yaml.
+ *
+ * They add no layout. The reading column is the one above — .article-page for
+ * the measure, .article-head for the masthead, .article-prose for every block of
+ * body copy, its h2/h3 scale and its list rules — and a run of `quote` sections
+ * is laid out on the frozen sheet's own .article-grid / .article-card /
+ * .article-meta, so a testimonial reads exactly like an article card.
+ *
+ * What is left is the handful of things the frozen sheet has no rule for,
+ * because the one-page site's single pull quote (.proof) is one paragraph, sits
+ * in its own 45px grid track, and is never inside a card. Every value below is
+ * one the frozen sheet or this file already uses (38px, 24px, 18px, 14px, 1rem,
+ * 1.55, 1.35em, var(--rule)); no new spacing or type step is introduced.
+ */
+
+/* A `prose` section with a heading and no body was a chapter break in the
+   WordPress document, not a paragraph — on a 38-section page those are the only
+   scannable landmarks. Ruled like .article-foot, at the same measure. */
+.article-prose.page-divider {
+  margin-top: 50px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+
+/* Same block rhythm .article-prose carries, for the grid that is not one. */
+.quote-grid {
+  margin-top: 38px;
+}
+
+/* Stacked above the quote, not beside it. */
+.quote-card .quote-mark {
+  margin: 18px 0 14px;
+}
+
+/* .proof sets blockquote at 1.2rem in a 1.7fr track. In a 3-up card column, 39
+   of them at that size do not read; this is the size .article-card > p already
+   uses for card copy. */
+.quote-card blockquote {
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+/* blockquote is `margin:0` and the frozen sheet has no rule for a quote that
+   runs to more than one paragraph. Several testimonials do. */
+.quote-card blockquote p {
+  margin: 0 0 1.35em;
+}
+
+.quote-card blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Responsive -------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .article-page {
+    --measure: none;
+  }
+
+  .article-head {
+    padding-top: 24px;
+  }
+
+  .article-page .article-head h1 {
+    max-width: none;
+  }
+
+  .article-prose {
+    font-size: 1.06rem;
+    margin-top: 30px;
+  }
+
+  .article-prose blockquote {
+    padding-left: 20px;
+    font-size: 1.12rem;
+  }
+}

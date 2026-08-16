@@ -1,0 +1,23 @@
+---
+/**
+ * Site footer — port of `Footer()` in src/App.jsx.
+ *
+ * Markup parity notes:
+ *  - `<footer class="footer section-shell">` with four children in order:
+ *    logo image (width/height/alt intact), description paragraph, a bare
+ *    `<div>` of links, then the `<small>` legal line.
+ *  - Only links flagged `external: true` in the content model carry
+ *    target="_blank" rel="noreferrer" — the mailto link carries neither, as in
+ *    App.jsx.
+ *  - No icons in this section.
+ *
+ * All copy comes from the content model; nothing here is hardcoded.
+ */
+import { site } from "../lib/content";
+
+const { footer } = site;
+---
+
+<footer class="footer section-shell"><img src={footer.logo.src} alt={footer.logo.alt} width={footer.logo.width} height={footer.logo.height} /><p>{footer.description}</p><div>{footer.links.map((link) => (
+  <a href={link.href} {...(link.external ? { target: "_blank", rel: "noreferrer" } : {})}>{link.label}</a>
+))}</div><small>{footer.legal}</small></footer>

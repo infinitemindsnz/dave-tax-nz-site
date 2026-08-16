@@ -1,0 +1,41 @@
+---
+/**
+ * Client story section — port of the `Stories` component in src/App.jsx.
+ *
+ * Markup contract (must not drift):
+ *   section.stories#stories
+ *     div.section-shell.stories__inner
+ *       div > p.eyebrow.eyebrow--gold + h2
+ *       div.story-copy > p + p.story-credit(strong+span) + a.text-link.text-link--light
+ *
+ * `.story-copy > p:first-child` is styled by position, so the lead paragraph
+ * must stay the first child and `.story-credit` must stay a <p>.
+ *
+ * The trailing arrow was `<ArrowRight size={18} />` from
+ * `@phosphor-icons/react@2.1.10`. That dependency is gone, so the SVG is inlined
+ * from the package's `dist/defs/ArrowRight.es.js` ("regular" weight) with the
+ * wrapper attributes `lib/IconBase.es.js` emitted when no `IconContext` provider
+ * is present: xmlns, width/height = size, fill="currentColor", viewBox 0 0 256 256.
+ */
+import { site } from "../lib/content";
+
+/** Phosphor 2.1.10 ArrowRight, "regular" weight. */
+const ARROW_RIGHT_PATH =
+  "M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z";
+
+const { eyebrow, heading, body, credit, link } = site.story;
+---
+
+<section id="stories" class="stories">
+  <div class="section-shell stories__inner">
+    <div>
+      <p class="eyebrow eyebrow--gold">{eyebrow}</p>
+      <h2>{heading}</h2>
+    </div>
+    <div class="story-copy">
+      <p>{body}</p>
+      <p class="story-credit"><strong>{credit.name}</strong><span>{credit.meta}</span></p>
+      <a class="text-link text-link--light" href={link.href} target="_blank" rel="noreferrer">{link.label} <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d={ARROW_RIGHT_PATH} /></svg></a>
+    </div>
+  </div>
+</section>

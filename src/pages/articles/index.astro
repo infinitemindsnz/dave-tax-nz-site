@@ -1,0 +1,175 @@
+---
+/**
+ * /articles/ — the article index.
+ *
+ * The homepage's `Insights` section is a short curated list of eight records in
+ * src/data/articles.yaml, most of them pointing at other publishers' sites.
+ * This page is the real thing: every published entry in the `articles` content
+ * collection, each one linking to its own page in this repo.
+ *
+ * Visual language: no new layout. The page reuses the frozen sheet's `.insights`
+ * grid, `.filters` / `.filter` tab strip and `.article-grid` / `.article-card` /
+ * `.article-meta` / `.article-type` cards exactly as the homepage does, so the
+ * two surfaces are the same surface. The only new rule it needs is
+ * `.article-index__title`, because the page's heading is an <h1> and the frozen
+ * `h1` rule is the dark hero's display size.
+ *
+ * Copy: none is written here.
+ *  - Page title + meta description: the `articles-advice` record in pages.yaml
+ *    (the client's own WordPress page for this exact surface).
+ *  - Category filters: that record's list section, verbatim and in order.
+ *  - Eyebrow, intro, filter aria-label and card link label: site.insights, the
+ *    same strings the homepage section uses.
+ *  - Card text: the article frontmatter.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import Contact from "../../components/Contact.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { pages, site } from "../../lib/content";
+import {
+  articlePath,
+  articleTypeLabel,
+  displayDate,
+  machineDate,
+  publishedArticles,
+} from "../../lib/articles";
+import { sitePath } from "../../lib/urls";
+import "../../styles-article.css";
+
+const { insights, articlePages } = site;
+const page = pages["articles-advice"];
+
+/**
+ * The client's own filter list, from the `articles-advice` page record. The
+ * first entry ("All") is the default and matches everything; every other entry
+ * matches an article whose `categories` array contains it.
+ *
+ * Taking the list from the content model rather than deriving it from the
+ * articles is deliberate: the client chose this set and this order, including
+ * "Uncategorized", which WordPress recorded and the extractor preserved.
+ */
+const filterSection = page.sections.find((section) => section.kind === "list");
+if (!filterSection?.items) {
+  throw new Error(
+    'src/data/pages.yaml: the "articles-advice" record must contain a list section — ' +
+      "it is the category filter strip on /articles/",
+  );
+}
+const filters = filterSection.items;
+const ALL_FILTER = filters[0];
+
+const entries = await publishedArticles();
+
+/**
+ * Reachability guard. Every category an article carries must have a filter, or
+ * that category is invisible on this page. Fail the build rather than ship a
+ * silently unreachable facet.
+ */
+const filterSet = new Set(filters);
+for (const entry of entries) {
+  for (const category of entry.data.categories) {
+    if (!filterSet.has(category)) {
+      throw new Error(
+        `src/content/articles/${entry.id} carries category "${category}", which has no ` +
+          `filter in the "articles-advice" list section of src/data/pages.yaml. ` +
+          `Add it there or the category cannot be filtered on /articles/.`,
+      );
+    }
+  }
+}
+
+function matches(entry: (typeof entries)[number], filter: string): boolean {
+  return filter === ALL_FILTER || entry.data.categories.includes(filter);
+}
+
+/**
+ * Precomputed card indices per filter, exactly as src/components/Insights.astro
+ * does it. The frozen `.article-card:not(:nth-child(3n+1))` column rule keys off
+ * DOM position, so the client script must DETACH and re-attach cards rather than
+ * hide them — a `display:none` card still counts for :nth-child and the vertical
+ * rules would land in the wrong columns.
+ */
+const groups = filters.map((filter) =>
+  entries.reduce<number[]>((indices, entry, index) => {
+    if (matches(entry, filter)) indices.push(index);
+    return indices;
+  }, []),
+);
+
+const cards = entries.map((entry) => ({
+  href: articlePath(entry.data.slug),
+  category: entry.data.categories[0],
+  displayDate: displayDate(entry.data.publishedAt),
+  machineDate: machineDate(entry.data.publishedAt),
+  title: entry.data.title,
+  excerpt: entry.data.excerpt,
+  type: articleTypeLabel(entry, articlePages.authoredLabel),
+}));
+---
+
+<BaseLayout title={page.title} description={page.description}>
+  <div id="top" class="dark-shell"><SiteHeader hrefBase={sitePath()} /></div>
+  <main id="main" class="insights section-shell section-pad">
+    <div class="insights__intro">
+      <p class="eyebrow eyebrow--red">{insights.eyebrow}</p>
+      <h1 class="article-index__title">{page.title}</h1>
+      <p>{insights.intro}</p>
+    </div>
+    <div class="filters" aria-label={insights.filtersLabel}>{filters.map((item, index) => (
+      <button type="button" class={index === 0 ? "filter filter--active" : "filter"} aria-pressed={index === 0 ? "true" : "false"}>{item}</button>
+    ))}</div>
+    <div class="article-grid">
+      {
+        cards.map((card) => (
+          <article class="article-card">
+            <div class="article-meta">
+              <span>{card.category}</span>
+              <time datetime={card.machineDate}>{card.displayDate}</time>
+            </div>
+            <h3>{card.title}</h3>
+            <p>{card.excerpt}</p>
+            <span class="article-type">{card.type}</span>
+            <a class="text-link" href={card.href}>
+              {insights.articleLinkLabel}{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                fill="currentColor"
+                viewBox="0 0 256 256"
+              >
+                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
+              </svg>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </main>
+  <Contact />
+  <SiteFooter />
+</BaseLayout>
+
+<script define:vars={{ groups }}>
+  // Same mechanism as the homepage section: cards are detached and re-attached,
+  // never hidden, so the :nth-child(3n+1) border rules keep matching the visible
+  // column layout.
+  const main = document.getElementById("main");
+  if (main) {
+    const grid = main.querySelector(".article-grid");
+    const buttons = Array.from(main.querySelectorAll(".filter"));
+    const cards = grid ? Array.from(grid.children) : [];
+
+    buttons.forEach((button, index) => {
+      button.addEventListener("click", () => {
+        buttons.forEach((other, otherIndex) => {
+          const active = otherIndex === index;
+          other.className = active ? "filter filter--active" : "filter";
+          other.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        if (grid) grid.replaceChildren(...groups[index].map((cardIndex) => cards[cardIndex]));
+      });
+    });
+  }
+</script>

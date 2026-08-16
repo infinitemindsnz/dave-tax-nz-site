@@ -1,0 +1,133 @@
+---
+/**
+ * Site header — port of `Header()` in src/App.jsx.
+ *
+ * Element order, class names and attributes are copied from the React source:
+ *   header.site-header
+ *     a.brand > img
+ *     button.menu-button > span.sr-only + <List size={28} />
+ *     nav#site-nav.nav > a × 5
+ *     a.button (ActionLink, external)
+ *
+ * The page is responsible for wrapping this in `<div id="top" class="dark-shell">`.
+ *
+ * Icons: `@phosphor-icons/react` is gone. The two glyphs are inlined from
+ * @phosphor-icons/react@2.1.10 `dist/defs/{List,X}.es.js`, "regular" weight
+ * (the package default), with the exact attribute set IconBase emits:
+ * xmlns / width / height / fill="currentColor" / viewBox="0 0 256 256".
+ * `size={28}` and `size={26}` become width+height, as in the React render.
+ *
+ * Deviation from App.jsx (documented deliberately): React swapped List↔X on
+ * toggle, so only one <svg> was ever in the DOM. Without a component runtime
+ * both live in the markup and the script swaps `display`. The X starts at
+ * `display:none`, so the initial DOM paints identically; `.menu-button` is
+ * `display:none` above 980px anyway.
+ */
+import { site } from "../lib/content";
+import { isInternalRoute, resolveInternalRoute } from "../lib/discovery";
+
+interface Props {
+  /**
+   * Prefix for the in-page anchors the nav uses. Empty on the home page, where
+   * "#expertise" resolves in place and the markup must stay byte-identical to
+   * the React output. Any other page passes `sitePath()`, so a governed anchor
+   * navigates home and then scrolls, instead of pointing at a fragment that
+   * does not exist on that page. No copy changes: only the href is resolved
+   * against a different document.
+   */
+  hrefBase?: string;
+}
+
+const { hrefBase = "" } = Astro.props;
+
+const { brand, nav } = site;
+const { logo } = brand;
+const { cta } = nav;
+
+/**
+ * Three kinds of governed target, in the order the content model allows them:
+ *
+ *  - "#anchor" — resolved against `hrefBase`, as before. The brand link
+ *    ("#top") and the one remaining anchor nav item take this path.
+ *  - "/route/" — a page of this site. `resolveInternalRoute` applies the
+ *    configured `base` and fails the build if the route is not published, so
+ *    the header can never ship a nav item pointing at a 404.
+ *  - anything else — an absolute URL, mailto: or tel:, passed through.
+ */
+const resolve = (href: string, source: string) => {
+  if (href.startsWith("#")) return `${hrefBase}${href}`;
+  if (isInternalRoute(href)) return resolveInternalRoute(href, source);
+  return href;
+};
+---
+
+<header class="site-header">
+  <a class="brand" href={resolve(brand.href, "src/data/site.yaml: brand.href")} aria-label={brand.ariaLabel}
+    ><img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} /></a
+  >
+  <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav"
+    ><span class="sr-only">{nav.menuOpenLabel}</span><svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="28"
+      fill="currentColor"
+      viewBox="0 0 256 256"
+      ><path
+        d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"
+      ></path></svg
+    ><svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="26"
+      height="26"
+      fill="currentColor"
+      viewBox="0 0 256 256"
+      style="display:none"
+      ><path
+        d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"
+      ></path></svg
+    ></button
+  >
+  <nav id="site-nav" class="nav" aria-label={nav.ariaLabel}
+    >{nav.items.map((item) => <a href={resolve(item.href, `src/data/site.yaml: nav item "${item.label}"`)}>{item.label}</a>)}</nav
+  >
+  <a
+    class="button"
+    href={cta.href}
+    target={cta.external ? "_blank" : undefined}
+    rel={cta.external ? "noreferrer" : undefined}>{cta.label}</a
+  >
+</header>
+
+<script define:vars={{ openLabel: nav.menuOpenLabel, closeLabel: nav.menuCloseLabel }}>
+  (function () {
+    var header = document.querySelector(".site-header");
+    if (!header) return;
+    var button = header.querySelector(".menu-button");
+    var navEl = header.querySelector("#site-nav");
+    if (!button || !navEl) return;
+
+    var label = button.querySelector(".sr-only");
+    var icons = button.querySelectorAll("svg");
+    var listIcon = icons[0];
+    var closeIcon = icons[1];
+
+    function setOpen(open) {
+      button.setAttribute("aria-expanded", open ? "true" : "false");
+      if (label) label.textContent = open ? closeLabel : openLabel;
+      if (listIcon) listIcon.style.display = open ? "none" : "";
+      if (closeIcon) closeIcon.style.display = open ? "" : "none";
+      navEl.classList.toggle("nav--open", open);
+    }
+
+    button.addEventListener("click", function () {
+      setOpen(button.getAttribute("aria-expanded") !== "true");
+    });
+
+    // `close` in App.jsx: the brand link and every nav link dismiss the menu.
+    header.querySelectorAll(".brand, #site-nav a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        setOpen(false);
+      });
+    });
+  })();
+</script>

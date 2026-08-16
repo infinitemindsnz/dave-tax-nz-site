@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "contractId": "dave-tax-nz-site-content.v1",
+  "files": [
+    {
+      "path": "src/data/site.yaml",
+      "fields": [
+        {
+          "proposalField": "consultation_availability",
+          "operationKind": "public_hours_patch",
+          "jsonPointers": ["/contact/action/title"],
+          "writeMode": "atomic",
+          "comment": "This site has NO structured opening-hours record. The reference contract's `office_hours` field maps to a `/hours` array that does not exist here, and inventing one would require a schema change, not a policy entry. `/contact/action/title` (\"Free 15-minute initial consultation\") is the site's only governed availability statement and is the narrowest honest equivalent. Real opening hours require a src/data/schema.ts change plus contract version 2; version 1 must not be stretched to cover them."
+        },
+        {
+          "proposalField": "public_phone",
+          "operationKind": "public_phone_patch",
+          "jsonPointers": [
+            "/contact/rows/0/value",
+            "/contact/rows/0/href",
+            "/hero/ctas/1/href"
+          ],
+          "writeMode": "atomic",
+          "comment": "COUPLED SET — WRITE ATOMICALLY OR REFUSE. The public phone number is denormalised across three pointers: the human-readable display string, the contact-row tel: href, and the hero call-to-action tel: href. A patch that writes any subset leaves the site self-contradictory. THESE HAVE ALREADY DRIFTED UPSTREAM: src/App.jsx shipped display \"+64 21 021 68888\" (12 digits after the +64 grouping) against href \"tel:+64210216888\" (11 digits), and src/data/site.yaml preserves that bug deliberately rather than guessing the correct number. A publisher MUST NOT auto-reconcile the drift; correcting it is a client-confirmed content decision that arrives as an explicit phone patch covering all three pointers in one candidate."
+        }
+      ]
+    }
+  ],
+  "preconditions": [
+    {
+      "comment": "Two of the permitted pointers address array elements by index, so a reorder of `contact.rows` or `hero.ctas` would silently retarget this policy at the email row, the office row or the booking button. Before applying any patch, the publisher MUST assert every pointer/value pair below against the BASE revision and refuse the candidate on any mismatch. These are identity assertions, not content the policy may write.",
+      "path": "src/data/site.yaml",
+      "assertions": [
+        { "jsonPointer": "/contact/rows/0/label", "equals": "Call Dave directly" },
+        { "jsonPointer": "/hero/ctas/1/label", "equals": "Call Dave" },
+        { "jsonPointer": "/hero/ctas/1/variant", "equals": "secondary" }
+      ]
+    }
+  ],
+  "documentedOperations": [
+    {
+      "operationKind": "article_publish",
+      "permitted": false,
+      "comment": "DOCUMENTED, NOT AUTHORIZED. `files` above is the exhaustive allowlist and this entry is deliberately not in it: version 1 permits the four hours/phone pointers in src/data/site.yaml and nothing else. This block exists so that the shape of an operation this repository refuses is written down in public rather than left to a future implementer's inference — the same stance the reference contract takes toward `article_publish`. Migrating eighteen articles into src/content/articles did not widen this policy by a single path. Those files are human-owned: they were migrated by hand and are edited by hand. Widening the allowlist to cover them is a separate, deliberate decision requiring the preconditions below, a version 2 of this contract, and its own review.",
+      "wouldTarget": {
+        "comment": "What the operation WOULD address if it were ever permitted. Enumerated so a reviewer can see the blast radius of enabling it, not so a publisher can act on it.",
+        "paths": [
+          {
+            "path": "src/content/articles/<slug>.md",
+            "mode": "create-only",
+            "comment": "One new Markdown file per article. Create-only: modifying or deleting an existing article is a different operation with a different risk profile — an edit can silently alter or remove an attribution on already-published reporting — and would need its own documented entry. `<slug>` must satisfy the frontmatter `slug` pattern and must equal the filename, which src/lib/articles.ts already enforces at build time."
+          }
+        ],
+        "constrainedBy": [
+          "governance/schemas/article-frontmatter.v1.schema.json",
+          "governance/markdown-policy.v1.json"
+        ],
+        "wouldNotTarget": [
+          {
+            "path": "src/data/articles.yaml",
+            "reason": "The curated homepage list is a separate content source with its own editorial judgement — the client chose those eight records and their order. Publishing an article does not entitle a writer to promote it onto the homepage. That is a distinct decision and would be a distinct operation."
+          },
+          {
+            "path": "src/data/pages.yaml",
+            "reason": "Includes the `articles-advice` category filter list, which is the client's own chosen set and order (\"Uncategorized\" included, because WordPress recorded it). An article introducing a new category must NOT silently append to that list; a filter the client did not choose is a content change, not a side effect."
+          },
+          {
+            "path": "src/data/site.yaml",
+            "reason": "Holds the four article-surface labels in `articlePages`, including the two that frame the source-credit block. Those are site chrome, not article content."
+          },
+          {
+            "path": "src/data/media-manifest.json",
+            "reason": "Adding a manifest entry means adding a binary under public/assets/wp/. Asset ingestion is a separate capability with its own supply-chain surface; the markdown policy's requirement that every image URL already resolve here is a gate, and letting the same operation write the gate would defeat it."
+          },
+          {
+            "path": "src/styles.css",
+            "reason": "Byte-frozen client stylesheet. Refused to every operation kind regardless of approval."
+          },
+          {
+            "path": "src/styles-article.css",
+            "reason": "Renderer-owned. Bound by renderer_sha256, not a content source."
+          },
+          {
+            "path": "dist/**",
+            "reason": "Build output. Derived, never written directly."
+          }
+        ]
+      },
+      "approvalPolicy": {
+        "comment": "governance/approval-policy.v1.json already binds this operation kind to artifact class `article` and the ordered stages below, and governance/schemas/candidate-manifest.v1.schema.json already refuses any other stage list for it. Both are structural descriptions. Neither is a grant: a fully-approved article_publish candidate is still refused here, because this file does not list a path it may write.",
+        "requiredApprovalStages": ["legal_sign_off", "publication_approval"]
+      },
+      "preconditionsBeforeEnabling": [
+        "A separate Article Engine contract defining canonical author and reviewer identity. The frontmatter has no author or reviewedBy field; on a repost the JSON-LD author is derived from `attribution.source`, which is a publisher name, not a bound identity.",
+        "Source expiry and re-review state. Tax law changes and this corpus makes dated statutory claims (Section CB 4 of the Income Tax Act 2007, the 10-day statutory demand window). Nothing here records when a claim was last verified.",
+        "An executing verifier for governance/markdown-policy.v1.json. The policy is written down and checked by nobody — no code in this repository parses an article body against it.",
+        "An attribution-integrity check that refuses any diff touching a body attribution line or a frontmatter `attribution` object without an explicit approved attribution change. Twelve of the eighteen posts carry another newsroom's credit; an operation that can write article bodies can silently rewrite an authorship claim.",
+        "A schema-drift check binding governance/schemas/article-frontmatter.v1.schema.json to src/content.config.ts, and governance/schemas/pages.v1.schema.json to src/data/schema.ts. The field-for-field requirement is currently stated and unenforced.",
+        "A slug-collision and route-identity check at candidate time rather than build time. src/lib/articles.ts fails the build on a duplicate or filename/frontmatter mismatch, which refuses the candidate late and only if the publisher runs a build."
+      ]
+    }
+  ],
+  "default": "deny"
+}

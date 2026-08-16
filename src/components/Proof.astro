@@ -1,0 +1,40 @@
+---
+/**
+ * Proof — a 1:1 port of the `Proof()` component in src/App.jsx.
+ *
+ * `id="about"` is load-bearing: the primary nav links to `#about`. The four
+ * children are the four columns of the `.proof` grid in src/styles.css
+ * (`45px minmax(280px,1.7fr) 220px 1.4fr`), so their order is fixed.
+ *
+ * The quote mark was `<Quotes size={45} weight="fill" aria-hidden="true" />`
+ * from `@phosphor-icons/react@2.1.10`. React's `IconBase` rendered
+ *   <svg xmlns=… width=45 height=45 fill="currentColor" viewBox="0 0 256 256"
+ *        aria-hidden="true">
+ * — extra props land after `viewBox` — wrapping the "fill" weight path. The
+ * literal below reproduces that, path data copied verbatim from
+ * dist/defs/Quotes.es.js. Do not re-draw or re-minify it.
+ *
+ * Every user-visible string comes from the content model; nothing is hardcoded.
+ */
+import { site } from "../lib/content";
+
+const { proof } = site;
+const { author, mediaImage } = proof;
+---
+
+<section id="about" class="proof section-shell">
+  <div class="quote-mark"><svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M116,72v88a48.05,48.05,0,0,1-48,48,8,8,0,0,1,0-16,32,32,0,0,0,32-32v-8H40a16,16,0,0,1-16-16V72A16,16,0,0,1,40,56h60A16,16,0,0,1,116,72ZM216,56H156a16,16,0,0,0-16,16v64a16,16,0,0,0,16,16h60v8a32,32,0,0,1-32,32,8,8,0,0,0,0,16,48.05,48.05,0,0,0,48-48V72A16,16,0,0,0,216,56Z"></path></svg></div>
+  <blockquote>{proof.quote}</blockquote>
+  <div class="proof__identity"><img
+      src={author.image.src}
+      alt={author.image.alt}
+      width={author.image.width}
+      height={author.image.height}
+    /><p><strong>{author.name}</strong><span>{author.role}</span></p></div>
+  <div class="proof__media"><img
+      src={mediaImage.src}
+      alt={mediaImage.alt}
+      width={mediaImage.width}
+      height={mediaImage.height}
+    /></div>
+</section>
