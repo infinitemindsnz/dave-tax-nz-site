@@ -25,6 +25,26 @@ if [ -z "${FLY_API_TOKEN:-}" ]; then
   exit 2
 fi
 
+# `flyctl deploy --remote-only` uploads the WORKING TREE, not a commit. The
+# publisher passes PUBLISHER_COMMIT_SHA naming the governed commit it just made
+# and then records this deploy in the publication receipt. If HEAD is not that
+# commit, the receipt would name a governed commit as live while a different
+# tree was actually shipped — precisely the lie this script exists to prevent,
+# just one level up from the exit-code trap below.
+#
+# Unset is allowed so the script stays usable by hand; set-and-mismatched is not.
+if [ -n "${PUBLISHER_COMMIT_SHA:-}" ]; then
+  head_sha="$(git rev-parse HEAD)"
+  if [ "$head_sha" != "$PUBLISHER_COMMIT_SHA" ]; then
+    echo "deploy: HEAD is $head_sha but the publication is $PUBLISHER_COMMIT_SHA — refusing to deploy a tree the receipt would misname" >&2
+    exit 2
+  fi
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "deploy: working tree is dirty at $head_sha — the upload would not match the governed commit" >&2
+    exit 2
+  fi
+fi
+
 # flyctl emits PascalCase keys here ("Version"), which is easy to get wrong and
 # fails silently into 0 — which then reads as "release did not advance" and
 # fails a deploy that actually worked. Accept either casing, and make an
