@@ -1,0 +1,9 @@
+# The Dockerfile runs `npm install` and only then `COPY . .`. Without this file
+# the local darwin-arm64 node_modules is copied over the linux install that npm
+# just produced, and the Astro build dies in rollup's native module resolution —
+# the failure the Dockerfile's comment attributes to the lockfile.
+node_modules/
+dist/
+.astro/
+.git/
+.DS_Store
