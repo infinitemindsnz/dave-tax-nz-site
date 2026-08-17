@@ -6,13 +6,6 @@
       "path": "src/data/site.yaml",
       "fields": [
         {
-          "proposalField": "consultation_availability",
-          "operationKind": "public_hours_patch",
-          "jsonPointers": ["/contact/action/title"],
-          "writeMode": "atomic",
-          "comment": "This site has NO structured opening-hours record. The reference contract's `office_hours` field maps to a `/hours` array that does not exist here, and inventing one would require a schema change, not a policy entry. `/contact/action/title` (\"Free 15-minute initial consultation\") is the site's only governed availability statement and is the narrowest honest equivalent. Real opening hours require a src/data/schema.ts change plus contract version 2; version 1 must not be stretched to cover them."
-        },
-        {
           "proposalField": "public_phone",
           "operationKind": "public_phone_patch",
           "jsonPointers": [
@@ -38,6 +31,35 @@
     }
   ],
   "documentedOperations": [
+    {
+      "operationKind": "public_hours_patch",
+      "permitted": false,
+      "comment": "WITHDRAWN IN VERSION 1 — WAS PERMITTED, NOW REFUSED. This operation kind previously appeared in `files` above as proposalField `consultation_availability` mapped to the single pointer /contact/action/title. That mapping was WRONG AND DESTRUCTIVE and has been removed. The value at /contact/action/title is \"Free 15-minute initial consultation\" — a call-to-action for the client's booking funnel, NOT an opening-hours statement. An approved hours value such as \"Monday to Friday, 9am-5pm\" would therefore have OVERWRITTEN the client's free-consultation CTA with an hours string, and the verify-build gate would have reported the publication verified, because that gate proves the approved bytes landed at the approved pointer — it does not and cannot prove that the pointer means what the proposal field is named. No approval stage catches this either: an approver approves an hours STRING, never the pointer it lands on. The prior entry acknowledged the mismatch and argued the CTA was \"the narrowest honest equivalent\" availability statement. That reasoning is withdrawn: a call-to-action is not an availability record, and a near-miss pointer is more dangerous than no pointer at all, because it converts a request the contract should refuse into a silent, verified content loss. Because `files` is an exhaustive allowlist and this contract's `default` is deny (enforced by the publisher's policy loader), removing the entry means an hours request is now REFUSED as out-of-contract. That is the intended behaviour: fail closed, and let the client be asked for a real opening-hours record rather than have their CTA destroyed on their behalf.",
+      "wouldTarget": {
+        "comment": "Recorded so the next reader does not re-derive the same wrong mapping from the same scarcity of candidate pointers. There is no correct target in this repository today. Enumerated as a warning, not as a latent grant.",
+        "paths": [],
+        "wouldNotTarget": [
+          {
+            "path": "src/data/site.yaml#/contact/action/title",
+            "reason": "THE REMOVED MAPPING. Holds the booking call-to-action title (\"Free 15-minute initial consultation\"), rendered as the heading of the contact action block alongside ctaLabel and ctaHref. It is conversion copy, not availability. Writing hours here destroys the CTA and leaves the adjacent \"Book a consultation\" button labelled for an action the heading no longer describes."
+          },
+          {
+            "path": "src/data/site.yaml#/contact/rows/*",
+            "reason": "The three contact rows are phone, email and the Auckland office address — each a label/value/href triple. None is an hours field, and row indices are already load-bearing for the phone coupled set under `preconditions`. Appending an hours row would be a schema change and a new visible page element, not a patch."
+          },
+          {
+            "path": "src/data/pages.yaml",
+            "reason": "The migrated `contact` page's \"Contact Dave\" list carries \"Auckland Mobile\", \"Email\" and \"WhatsApp available\" — verbatim client copy, and still no hours. pages.yaml is not a writable path under any operation kind in this contract regardless."
+          }
+        ]
+      },
+      "preconditionsBeforeEnabling": [
+        "A REAL opening-hours field. src/data/schema.ts is a zod strictObject and defines no hours key anywhere in the site model, so there is currently no pointer an hours value can address without inventing one. Adding it is a content-model change requiring the client's actual opening hours, and it makes hours a newly rendered element on the page — a design and content decision, not a policy entry.",
+        "A materialiser for that new pointer in the publisher's code-owned MATERIALISERS table. The contract says which pointers a field owns; the publisher says what canonical bytes each pointer receives, and a contract pointer with no materialiser fails the policy load closed.",
+        "Version 2 of this contract, with its own review. Version 1 must not be stretched to cover an operation whose only previous target was the wrong one.",
+        "A semantic check binding each proposalField to the MEANING of its pointers, not merely to their existence. This bug was reachable precisely because every structural gate passed: the pointer existed, the grammar validated, the approval was genuine, the bytes changed as approved. Nothing in the chain asserted that a field named for availability writes to a field that holds availability."
+      ]
+    },
     {
       "operationKind": "article_publish",
       "permitted": false,

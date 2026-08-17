@@ -4,7 +4,8 @@
   "site": {
     "path": "src/data/site.yaml",
     "format": "yaml",
-    "schema": "governance/schemas/site.v1.schema.json"
+    "schema": "governance/schemas/site.v1.schema.json",
+    "comment": "The homepage content model, and the ONLY file in this contract any operation may write — governance/writable-paths.v1.json permits exactly the three coupled `public_phone` pointers here and nothing else in this repository. THIS SITE HAS NO OPENING-HOURS RECORD. src/data/schema.ts is a zod strictObject and defines no hours field anywhere in the model, and `/contact/action/title` (\"Free 15-minute initial consultation\") is the booking call-to-action heading, NOT an availability statement. A `consultation_availability` / `public_hours_patch` rule pointed at that CTA was removed from the writable policy for exactly this reason: it would have overwritten the client's free-consultation CTA with an hours string and passed verification, because the publisher's gates prove that approved bytes reached an approved pointer and cannot prove the pointer means what the proposal field is named. Hours requests are now refused as out-of-contract. Full rationale and the preconditions for ever re-enabling the operation are recorded under `documentedOperations` in the writable policy."
   },
   "pages": {
     "path": "src/data/pages.yaml",
