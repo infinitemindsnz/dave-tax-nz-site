@@ -13,8 +13,12 @@ eighteen posts under `src/content/articles/` remain human-owned files edited by
 hand.
 
 The content migration widened what this directory **describes**. It widened
-what it **permits** by nothing at all. `writable-paths.v1.json` still lists the
-same four JSON pointers it listed before a single article existed.
+what it **permits** for `article_publish` by nothing at all — that remains
+`permitted: false` with no writable path. Separately, a 2026-08-20 audit found
+that the original phone coupled set covered only 3 of 13 render-reachable
+phone occurrences; version 2 of `writable-paths.v1.json` closes that gap by
+declaring all thirteen, still under the single `public_phone_patch` operation
+kind and still nothing an approver did not explicitly approve.
 
 ## Canonical inputs
 
@@ -34,11 +38,17 @@ same four JSON pointers it listed before a single article existed.
 - `markdown-policy.v1.json` limits article bodies to a twelve-node Markdown
   AST. Raw HTML, MDX, code, tables, footnotes, reference definitions,
   strikethrough, depth-1 headings and non-HTTPS links all fail closed.
-- `writable-paths.v1.json` is an exhaustive allowlist. Version 1 permits only
-  `/contact/action/title`, `/contact/rows/0/value`, `/contact/rows/0/href`,
-  and `/hero/ctas/1/href` in `src/data/site.yaml`. Everything else, in every
-  file, is denied. Its `documentedOperations` block describes `article_publish`
-  with `permitted: false`.
+- `writable-paths.v1.json` is an exhaustive allowlist. Version 2 permits only
+  a closed, two-input `public_phone` patch (`display` plus `e164`) written
+  atomically across thirteen targets in three files — three pointers in
+  `src/data/site.yaml`, eight substring targets in `src/data/pages.yaml`, and
+  one substring target in each of two article bodies. Everything else, in
+  every file, is denied, and a closed-set precondition scans the base
+  revision and refuses the candidate if any render-reachable phone occurrence
+  exists outside those thirteen. Its `documentedOperations` block describes
+  `article_publish` with `permitted: false`, and records `public_hours_patch`
+  as fully withdrawn — the operation kind no longer exists anywhere else in
+  this directory (see "What version 2 may write" below).
 - `schemas/candidate-manifest.v1.schema.json` describes the artifact an
   approval decision binds.
 - `renderer-manifest.v1.json` pins the static renderer, Node version, build
@@ -88,48 +98,98 @@ must survive the round-trip unchanged. A length cap would eventually force a
 silent copy edit, and "improving" an excerpt is exactly the kind of small
 helpful change this contract exists to prevent.
 
-## What version 1 may write
+## What version 2 may write
 
-Two operation families, four JSON pointers, one file — the same four pointers
-this contract listed before a single article existed.
+One operation family, one closed two-input contract, thirteen targets across
+three files — the complete render-reachable coupled set, not the three
+pointers this contract listed before the 2026-08-20 audit.
 
-`public_phone_patch` writes the public phone number. That number is
-denormalised across three pointers — the display string in the contact row,
-the contact row's `tel:` href, and the hero call-to-action's `tel:` href — so
-the three are a **coupled set that must be written atomically**. A patch that
-lands a subset leaves the page contradicting itself.
+`public_phone_patch` writes the public phone number. A proposal supplies
+exactly two inputs — `display` (the human-readable string) and `e164` (bare
+E.164 digits, no `tel:` prefix) — and nothing else; there is no per-target
+override and no way to patch a subset. That number is denormalised across
+**thirteen render-reachable occurrences**, not three: the display string and
+two `tel:` hrefs in `src/data/site.yaml`; eight substring occurrences in
+`src/data/pages.yaml` — the `about-dave` and `contact` meta descriptions (each
+rendered three times as `<meta name=description>`, `og:description` and
+`twitter:description`) and six list/prose fragments; and one substring
+occurrence in each of two published article bodies. All thirteen are a
+**coupled set that must be written atomically** across all three files in one
+candidate. A patch that lands a subset leaves the site contradicting itself —
+which is exactly what a version-1-shaped patch, covering only the three
+`site.yaml` pointers, would have done: a fully-approved candidate would have
+left ten stale occurrences live, including both meta descriptions, while every
+structural gate reported success (`governance/evidence/2026-08-20-phone-and-hours-audit.v1.md`,
+finding 1).
+
+A JSON-pointer target (`render: "raw"` or `render: "tel"`) writes its field's
+entire value. A substring target (`render: "substring"`) — every `pages.yaml`
+target and both article targets — writes into a field or a Markdown body that
+holds more than the phone number, so the publisher must locate the declared
+`matchLiteral` inside the current value, require it to occur exactly once, and
+replace only that span. It must never overwrite the whole field or the whole
+body.
 
 They have already drifted. `src/App.jsx` shipped the display string
 `+64 21 021 68888` against the href `tel:+64210216888`: twelve digits against
 eleven. `src/data/site.yaml` preserves that bug on purpose rather than
-guessing which one is right. A publisher must not silently repair it. The
-correct number is a client-confirmed fact, and correcting it arrives as an
-explicit phone patch covering all three pointers in one candidate, approved
-like any other content change.
+guessing which one is right. A publisher must not silently repair it, and
+must never derive `e164` from `display` or vice versa — the closed contract
+has no default for either input. The correct number is a client-confirmed
+fact: both inputs arrive only as explicit, human-confirmed replacements in an
+approved candidate, and until one is approved every one of the thirteen
+targets keeps its current value unchanged, including on refusal.
 
-`public_hours_patch` is the harder mapping. This site has **no structured
-opening-hours record**. The reference contract's `office_hours` field targets a
-`/hours` array that simply does not exist here, and manufacturing one would be
-a schema change, not a policy entry. `/contact/action/title` — "Free 15-minute
-initial consultation" — is the only governed availability statement on the
-page, and it is the narrowest honest equivalent. Real opening hours require a
-change to `src/data/schema.ts` and a version 2 of this contract. Version 1
-must not be stretched to cover them.
+A **closed-set precondition** is what makes this a closed contract rather than
+an allowlist someone can silently outgrow: before applying any patch, the
+publisher scans the base revision's parsed `site.yaml`/`pages.yaml` data and
+the raw text of the two article bodies for both literals, and refuses the
+whole candidate if either occurrence count differs from the thirteen declared
+targets — whether an occurrence has gone missing or a new, undeclared one has
+appeared anywhere in the coupled surface.
 
-Two of the four permitted pointers address array elements by index. A reorder
-of `contact.rows` or `hero.ctas` would silently retarget the policy at the
-email row, the office address, or the booking button. `writable-paths.v1.json`
-therefore carries identity preconditions that the publisher must assert
-against the base revision before applying anything, and must refuse on any
-mismatch. Those assertions are read-only; they are not fields the policy may
-write.
+`public_hours_patch` is now **fully withdrawn**, not merely refused at the
+write gate. This site has **no structured opening-hours record** — the
+reference contract's `office_hours` field targets a `/hours` array that simply
+does not exist here, and manufacturing one would be a schema change, not a
+policy entry. `/contact/action/title` — "Free 15-minute initial consultation"
+— is a booking call-to-action, not an availability statement, and a version 1
+mapping that pointed the operation kind there was withdrawn for exactly that
+reason. Version 1 removed that mapping from `writable-paths.v1.json` but left
+the operation kind buildable and approvable everywhere else: it still appeared
+in `approval-policy.v1.json`'s `operations[]` and in the `operation_kind` enum
+and an `if`/`then` branch of `candidate-manifest.v1.schema.json`, so a
+candidate could still be constructed and genuinely approved before dying only
+at the final write gate (`governance/evidence/2026-08-20-phone-and-hours-audit.v1.md`,
+finding 2). Version 2 removes it from both — `public_hours_patch` no longer
+appears in `operations[]`, the enum, or any `if`/`then` branch. A candidate
+declaring it now fails structural schema validation before an approval stage
+is even computed. Real opening hours would require a change to
+`src/data/schema.ts` and a version 3 of this contract with its own approval
+policy entry and schema branch; version 2 must not be stretched to cover them.
 
-## What version 1 describes but does not permit
+Two of the thirteen targets — the `site.yaml` pointers addressing `contact.rows`
+and `hero.ctas` by index — address array elements by index. A reorder of
+either array would silently retarget the policy at the email row, the office
+address, or the booking button. `writable-paths.v1.json` therefore carries
+identity preconditions that the publisher must assert against the base
+revision before applying anything, and must refuse on any mismatch. Those
+assertions are read-only; they are not fields the policy may write.
 
-`writable-paths.v1.json` gained a `documentedOperations` block. It gained no
-paths.
+## What version 2 describes but does not permit
 
-The block describes `article_publish` with `permitted: false`: what it would
+`writable-paths.v1.json` carries a `documentedOperations` block for two
+operation kinds, and grants no paths for either.
+
+`public_hours_patch` is documented as **fully withdrawn**: no longer in
+`approval-policy.v1.json`'s `operations[]`, no longer in the `operation_kind`
+enum or any `if`/`then` branch of `candidate-manifest.v1.schema.json`, and its
+entry records the wrong CTA mapping it once had, why that was destructive, and
+the four preconditions (a real hours field, a materialiser, a version 3
+contract, a semantic pointer-meaning check) that would have to be met before
+re-introducing it as a new operation kind — not before restoring this one.
+
+`article_publish` remains documented with `permitted: false`: what it would
 target (`src/content/articles/<slug>.md`, **create-only** — editing or deleting
 an existing article can silently alter an attribution on already-published
 reporting and would need its own entry), what it would be constrained by (the
@@ -163,10 +223,11 @@ objects for exact preview identity, but no remote branch or commit is pushed
 before authenticated approval. The publisher must re-verify every approved
 digest before opening or merging a pull request.
 
-Every candidate declares exactly one closed operation family. Version 1
-recognizes `public_hours_patch`, `public_phone_patch`, and the structurally
-described but locally unauthorized `article_publish`; a broad site-record
-operation is deliberately invalid. `article_publish` is now structurally
+Every candidate declares exactly one closed operation family. Version 2
+recognizes `public_phone_patch` and the structurally described but locally
+unauthorized `article_publish`; `public_hours_patch` is no longer a
+recognized value at all — declaring it fails schema validation — and a broad
+site-record operation is deliberately invalid. `article_publish` is now structurally
 *coherent* here in a way it was not before — there is a Markdown content
 source, a frontmatter schema and a Markdown policy for it to bind. Coherent is
 not permitted. The only file that can permit anything is
@@ -440,6 +501,7 @@ authority.
 
 And to restate the thing this document exists to say: **none of the above
 grants any authority.** Describing an article surface is not permitting one.
-`writable-paths.v1.json` permits four JSON pointers in one file, `default` is
-`deny`, and the eighteen articles, nine page records and eight curated
-references in this repository are edited by hand by people.
+`writable-paths.v1.json` permits one closed, two-input `public_phone` patch
+over thirteen targets across three files, `default` is `deny`, and the
+eighteen articles, nine page records and eight curated references in this
+repository are edited by hand by people.

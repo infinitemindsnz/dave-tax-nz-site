@@ -1,6 +1,12 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "contractId": "dave-tax-nz-site-content.v1",
+  "changeLog": [
+    {
+      "version": 2,
+      "comment": "TWO CHANGES, BOTH GOVERNANCE-EVIDENCED (governance/evidence/2026-08-20-phone-and-hours-audit.v1.md). (1) `public_hours_patch` is now FULLY WITHDRAWN, not merely refused here: it is also removed from governance/approval-policy.v1.json's `operations[]` and from the `operation_kind` enum and `if`/`then` branch in governance/schemas/candidate-manifest.v1.schema.json, so the operation kind can no longer be built, approved, or even syntactically declared by any candidate — version 1 left those three files untouched, so an hours candidate could still be constructed and genuinely approved before dying at this file's write gate. (2) `public_phone` is redefined as a CLOSED, TWO-INPUT CONTRACT — exactly `display` and `e164`, nothing else — written over the COMPLETE coupled set of render-reachable phone occurrences rather than the three in `src/data/site.yaml` alone. The version 1 coupled set covered 3 of 13 render-reachable occurrences (audit finding 1); a fully-approved version 1 patch left 10 stale, including both meta-description surfaces. Version 2 declares all 13 as one atomic target set across three files, and adds a closed-set precondition that scans the base revision and refuses the candidate if any render-reachable phone occurrence exists outside the declared 13 — so an occurrence the policy does not know about blocks the write instead of silently surviving it."
+    }
+  ],
   "files": [
     {
       "path": "src/data/site.yaml",
@@ -8,33 +14,191 @@
         {
           "proposalField": "public_phone",
           "operationKind": "public_phone_patch",
-          "jsonPointers": [
-            "/contact/rows/0/value",
-            "/contact/rows/0/href",
-            "/hero/ctas/1/href"
+          "inputs": ["display", "e164"],
+          "targets": [
+            {
+              "jsonPointer": "/hero/ctas/1/href",
+              "input": "e164",
+              "render": "tel",
+              "matchLiteral": "tel:+64210216888"
+            },
+            {
+              "jsonPointer": "/contact/rows/0/value",
+              "input": "display",
+              "render": "raw",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/contact/rows/0/href",
+              "input": "e164",
+              "render": "tel",
+              "matchLiteral": "tel:+64210216888"
+            }
           ],
           "writeMode": "atomic",
-          "comment": "COUPLED SET — WRITE ATOMICALLY OR REFUSE. The public phone number is denormalised across three pointers: the human-readable display string, the contact-row tel: href, and the hero call-to-action tel: href. A patch that writes any subset leaves the site self-contradictory. THESE HAVE ALREADY DRIFTED UPSTREAM: src/App.jsx shipped display \"+64 21 021 68888\" (12 digits after the +64 grouping) against href \"tel:+64210216888\" (11 digits), and src/data/site.yaml preserves that bug deliberately rather than guessing the correct number. A publisher MUST NOT auto-reconcile the drift; correcting it is a client-confirmed content decision that arrives as an explicit phone patch covering all three pointers in one candidate."
+          "comment": "The original three pointers. `render: \"tel\"` means the materialiser writes the literal string \"tel:\" concatenated with the `e164` input verbatim — the proposal supplies bare E.164 digits, never a pre-formatted href, so a proposal cannot smuggle a non-tel: scheme into an href field. `render: \"raw\"` writes the `display` input verbatim. `matchLiteral` is the exact current value the publisher MUST find at that pointer in the base revision before writing; any other value at that pointer refuses the candidate (this is the auto-reconciliation guard from version 1, generalised to every target rather than restated per-target)."
+        }
+      ]
+    },
+    {
+      "path": "src/data/pages.yaml",
+      "fields": [
+        {
+          "proposalField": "public_phone",
+          "operationKind": "public_phone_patch",
+          "inputs": ["display", "e164"],
+          "targets": [
+            {
+              "jsonPointer": "/about-dave/description",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/about-dave/sections/2/items/0",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/contact/description",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/contact/sections/3/body",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/student-loan-negotiations/sections/5/items/0",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/student-loan-negotiations/sections/36/items/0",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/ird-disputes-tax-penalties-negotiation/sections/3/items/0",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            },
+            {
+              "jsonPointer": "/ird-disputes-tax-penalties-negotiation/sections/36/items/0",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            }
+          ],
+          "writeMode": "atomic",
+          "comment": "NEW IN VERSION 2. Eight of the thirteen render-reachable occurrences (audit IDs G1-G8): the `/contact/` and `/about-dave/` meta descriptions (each rendered three times — `<meta name=description>`, `og:description`, `twitter:description`), and six list/prose fragments across `about-dave`, `student-loan-negotiations` and `ird-disputes-tax-penalties-negotiation`. `render: \"substring\"` means the field holds MORE than the phone number — a full sentence or a labelled list item (`\"Auckland Mobile: +64 21 021 68888\"`) — so the materialiser MUST locate `matchLiteral` inside the field's current string value, verify it occurs EXACTLY ONCE, and replace only that span with the `display` input; it must never overwrite the whole field. `pages.yaml` is not otherwise writable by any operation kind — this is the sole authorised write surface in this file, and it is scoped to these eight exact pointer+literal pairs. All eight targets use `display`; none of the DIAL/e164 form appears anywhere in pages.yaml (confirmed by the audit's built-output reconciliation), so `e164` has no target in this file and a proposal supplying it is accepted but has nothing to write here."
+        }
+      ]
+    },
+    {
+      "path": "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+      "fields": [
+        {
+          "proposalField": "public_phone",
+          "operationKind": "public_phone_patch",
+          "inputs": ["display", "e164"],
+          "targets": [
+            {
+              "textMatch": "body",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            }
+          ],
+          "writeMode": "atomic",
+          "comment": "NEW IN VERSION 2 (audit ID A1). `textMatch: \"body\"` addresses the rendered Markdown body as raw text rather than a JSON pointer, because Markdown prose has no addressable field for a `- Phone: …` list item. `matchLiteral` must occur EXACTLY ONCE in the file; the materialiser replaces only that span. Frontmatter (`draft`, `attribution`, `slug`, etc.) is never in scope for this proposalField and this target may not touch it. This does not authorise `article_publish` or any other article-body edit: it is a single-literal substring replacement of the public phone number, scoped by this one target, in a file that otherwise remains human-owned per governance/content-contract.v1.json's `articleCollection` entry."
+        }
+      ]
+    },
+    {
+      "path": "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md",
+      "fields": [
+        {
+          "proposalField": "public_phone",
+          "operationKind": "public_phone_patch",
+          "inputs": ["display", "e164"],
+          "targets": [
+            {
+              "textMatch": "body",
+              "input": "display",
+              "render": "substring",
+              "matchLiteral": "+64 21 021 68888"
+            }
+          ],
+          "writeMode": "atomic",
+          "comment": "NEW IN VERSION 2 (audit ID A2). Same rule as the sibling article target above, applied to the other published article body carrying the number."
         }
       ]
     }
   ],
   "preconditions": [
     {
-      "comment": "Two of the permitted pointers address array elements by index, so a reorder of `contact.rows` or `hero.ctas` would silently retarget this policy at the email row, the office row or the booking button. Before applying any patch, the publisher MUST assert every pointer/value pair below against the BASE revision and refuse the candidate on any mismatch. These are identity assertions, not content the policy may write.",
+      "comment": "Two of the site.yaml pointers address array elements by index, so a reorder of `contact.rows` or `hero.ctas` would silently retarget this policy at the email row, the office row or the booking button. Before applying any patch, the publisher MUST assert every pointer/value pair below against the BASE revision and refuse the candidate on any mismatch. These are identity assertions, not content the policy may write.",
       "path": "src/data/site.yaml",
       "assertions": [
         { "jsonPointer": "/contact/rows/0/label", "equals": "Call Dave directly" },
         { "jsonPointer": "/hero/ctas/1/label", "equals": "Call Dave" },
         { "jsonPointer": "/hero/ctas/1/variant", "equals": "secondary" }
       ]
+    },
+    {
+      "comment": "CLOSED-SET PRECONDITION — the mechanism that makes this a closed contract rather than an allowlist someone can silently outgrow. Before applying any public_phone_patch, the publisher MUST scan the base revision for both phone literals across every render-reachable source — src/data/site.yaml and src/data/pages.yaml parsed as DATA (walking every string value; this deliberately excludes YAML comments, so the preserve-the-bug comment at src/data/site.yaml is not counted) plus the raw Markdown body text of every file under src/content/articles/**/*.md — and count occurrences of each literal separately. It MUST refuse the candidate outright, before evaluating any target, if either count differs from the expectation below. A drift in either direction is refused: fewer occurrences means a declared target no longer exists in the base revision (stale policy, must not write blind); more occurrences means an undeclared, out-of-set occurrence has appeared somewhere in the coupled surface (the exact failure mode this precondition exists to catch) and the candidate is refused as out-of-contract rather than silently leaving the new occurrence stale, exactly like a hitherto-undiscovered fourteenth occurrence would be.",
+      "kind": "closed_set_occurrence_scan",
+      "scanSources": {
+        "parsedData": ["src/data/site.yaml", "src/data/pages.yaml"],
+        "rawText": ["src/content/articles/**/*.md"]
+      },
+      "expectedOccurrences": [
+        {
+          "literal": "+64 21 021 68888",
+          "count": 11,
+          "comment": "The display form: 1 in site.yaml (/contact/rows/0/value) + 8 in pages.yaml (G1-G8) + 2 in article bodies (A1-A2)."
+        },
+        {
+          "literal": "tel:+64210216888",
+          "count": 2,
+          "comment": "The dialable form, always inside a tel: href: /hero/ctas/1/href and /contact/rows/0/href in site.yaml. No other file contains this literal in any form, dial or bare-digit."
+        }
+      ],
+      "totalDeclaredTargets": 13,
+      "onMismatch": "refuse_whole_candidate"
     }
   ],
+  "inputContracts": {
+    "public_phone": {
+      "comment": "CLOSED, TWO-INPUT CONTRACT. A public_phone_patch proposal supplies exactly these two fields and no others; there is no third field, no per-target override, and no way to patch a subset of the 13 targets above — `writeMode: \"atomic\"` applies across all three files together, not per-file. Neither input has a default. The publisher must never derive `e164` from `display` or vice versa: the two literals are already known to disagree (12 digits vs 11 — see the site.yaml comment this contract preserves), and silently deriving one from the other is exactly the auto-reconciliation every version of this policy has refused. Both values arrive only as explicit, human-confirmed replacements in an approved candidate; until such a candidate is approved, every one of the 13 targets keeps its current value unchanged — refusal (including a closed-set refusal above) never triggers a partial or best-effort write.",
+      "inputs": {
+        "display": {
+          "type": "string",
+          "minLength": 1,
+          "comment": "The human-readable phone number exactly as it will appear in visible copy and meta descriptions. Written verbatim (render: \"raw\") or as a located substring (render: \"substring\"); never reformatted, never used to build a tel: href."
+        },
+        "e164": {
+          "type": "string",
+          "pattern": "^\\+[1-9][0-9]{6,14}$",
+          "comment": "Bare E.164 digits with a leading '+', no spaces, no 'tel:' prefix — the materialiser prepends 'tel:' at each render: \"tel\" target. Never used to build display copy."
+        }
+      }
+    }
+  },
   "documentedOperations": [
     {
       "operationKind": "public_hours_patch",
       "permitted": false,
-      "comment": "WITHDRAWN IN VERSION 1 — WAS PERMITTED, NOW REFUSED. This operation kind previously appeared in `files` above as proposalField `consultation_availability` mapped to the single pointer /contact/action/title. That mapping was WRONG AND DESTRUCTIVE and has been removed. The value at /contact/action/title is \"Free 15-minute initial consultation\" — a call-to-action for the client's booking funnel, NOT an opening-hours statement. An approved hours value such as \"Monday to Friday, 9am-5pm\" would therefore have OVERWRITTEN the client's free-consultation CTA with an hours string, and the verify-build gate would have reported the publication verified, because that gate proves the approved bytes landed at the approved pointer — it does not and cannot prove that the pointer means what the proposal field is named. No approval stage catches this either: an approver approves an hours STRING, never the pointer it lands on. The prior entry acknowledged the mismatch and argued the CTA was \"the narrowest honest equivalent\" availability statement. That reasoning is withdrawn: a call-to-action is not an availability record, and a near-miss pointer is more dangerous than no pointer at all, because it converts a request the contract should refuse into a silent, verified content loss. Because `files` is an exhaustive allowlist and this contract's `default` is deny (enforced by the publisher's policy loader), removing the entry means an hours request is now REFUSED as out-of-contract. That is the intended behaviour: fail closed, and let the client be asked for a real opening-hours record rather than have their CTA destroyed on their behalf.",
+      "withdrawalStatus": "fully_withdrawn_v2",
+      "comment": "WITHDRAWN IN VERSION 1, WITHDRAWAL COMPLETED IN VERSION 2. This operation kind previously appeared in `files` above as proposalField `consultation_availability` mapped to the single pointer /contact/action/title. That mapping was WRONG AND DESTRUCTIVE and was removed in version 1. The value at /contact/action/title is \"Free 15-minute initial consultation\" — a call-to-action for the client's booking funnel, NOT an opening-hours statement. An approved hours value such as \"Monday to Friday, 9am-5pm\" would therefore have OVERWRITTEN the client's free-consultation CTA with an hours string, and the verify-build gate would have reported the publication verified, because that gate proves the approved bytes landed at the approved pointer — it does not and cannot prove that the pointer means what the proposal field is named. No approval stage catches this either: an approver approves an hours STRING, never the pointer it lands on. Version 1 removed the mapping from this file but left the operation kind constructible, approvable and schema-valid everywhere else in the governance directory (governance/evidence/2026-08-20-phone-and-hours-audit.v1.md, finding 2) — an approver could still be asked to sign off a candidate that would only die at this file's write gate. Version 2 completes the withdrawal: `public_hours_patch` no longer appears in governance/approval-policy.v1.json's `operations[]`, and no longer appears in the `operation_kind` enum or in any `if`/`then` branch of governance/schemas/candidate-manifest.v1.schema.json. A candidate declaring this operation kind now fails structural schema validation before an approval stage is even computed. Because `files` remains an exhaustive allowlist and this contract's `default` is deny, an hours request was already refused at the write gate; it is now also refused at candidate construction.",
       "wouldTarget": {
         "comment": "Recorded so the next reader does not re-derive the same wrong mapping from the same scarcity of candidate pointers. There is no correct target in this repository today. Enumerated as a warning, not as a latent grant.",
         "paths": [],
@@ -49,21 +213,21 @@
           },
           {
             "path": "src/data/pages.yaml",
-            "reason": "The migrated `contact` page's \"Contact Dave\" list carries \"Auckland Mobile\", \"Email\" and \"WhatsApp available\" — verbatim client copy, and still no hours. pages.yaml is not a writable path under any operation kind in this contract regardless."
+            "reason": "The migrated `contact` page's \"Contact Dave\" list carries \"Auckland Mobile\", \"Email\" and \"WhatsApp available\" — verbatim client copy, and still no hours. pages.yaml is writable in version 2, but ONLY for the eight public_phone substring targets declared above; an hours patch is a different operationKind and this file is not in its (non-existent) allowlist."
           }
         ]
       },
       "preconditionsBeforeEnabling": [
         "A REAL opening-hours field. src/data/schema.ts is a zod strictObject and defines no hours key anywhere in the site model, so there is currently no pointer an hours value can address without inventing one. Adding it is a content-model change requiring the client's actual opening hours, and it makes hours a newly rendered element on the page — a design and content decision, not a policy entry.",
         "A materialiser for that new pointer in the publisher's code-owned MATERIALISERS table. The contract says which pointers a field owns; the publisher says what canonical bytes each pointer receives, and a contract pointer with no materialiser fails the policy load closed.",
-        "Version 2 of this contract, with its own review. Version 1 must not be stretched to cover an operation whose only previous target was the wrong one.",
+        "A version 3 of this contract, its own approval-policy operation entry, and its own candidate-manifest schema branch, with their own review. Version 2 must not be stretched to cover an operation whose only previous target was the wrong one, and whose enum member and if/then branch were deliberately removed rather than left dormant.",
         "A semantic check binding each proposalField to the MEANING of its pointers, not merely to their existence. This bug was reachable precisely because every structural gate passed: the pointer existed, the grammar validated, the approval was genuine, the bytes changed as approved. Nothing in the chain asserted that a field named for availability writes to a field that holds availability."
       ]
     },
     {
       "operationKind": "article_publish",
       "permitted": false,
-      "comment": "DOCUMENTED, NOT AUTHORIZED. `files` above is the exhaustive allowlist and this entry is deliberately not in it: version 1 permits the four hours/phone pointers in src/data/site.yaml and nothing else. This block exists so that the shape of an operation this repository refuses is written down in public rather than left to a future implementer's inference — the same stance the reference contract takes toward `article_publish`. Migrating eighteen articles into src/content/articles did not widen this policy by a single path. Those files are human-owned: they were migrated by hand and are edited by hand. Widening the allowlist to cover them is a separate, deliberate decision requiring the preconditions below, a version 2 of this contract, and its own review.",
+      "comment": "DOCUMENTED, NOT AUTHORIZED. `files` above is the exhaustive allowlist and this entry is deliberately not in it: version 2 permits the thirteen public_phone targets across src/data/site.yaml, src/data/pages.yaml and two article bodies, and nothing else. This block exists so that the shape of an operation this repository refuses is written down in public rather than left to a future implementer's inference — the same stance the reference contract takes toward `article_publish`. Migrating eighteen articles into src/content/articles did not widen this policy by a single path, and neither did widening the phone coupled set to include two of those articles' bodies: those two targets are scoped to a single pre-existing literal substring each, under `public_phone_patch`, not a grant to `article_publish` or to editing article bodies generally. Those files are human-owned: they were migrated by hand and are edited by hand. Widening the allowlist to cover new articles, or to cover edits to an existing article beyond the single phone literal above, is a separate, deliberate decision requiring the preconditions below, a version 3 of this contract, and its own review.",
       "wouldTarget": {
         "comment": "What the operation WOULD address if it were ever permitted. Enumerated so a reviewer can see the blast radius of enabling it, not so a publisher can act on it.",
         "paths": [
@@ -84,7 +248,7 @@
           },
           {
             "path": "src/data/pages.yaml",
-            "reason": "Includes the `articles-advice` category filter list, which is the client's own chosen set and order (\"Uncategorized\" included, because WordPress recorded it). An article introducing a new category must NOT silently append to that list; a filter the client did not choose is a content change, not a side effect."
+            "reason": "Includes the `articles-advice` category filter list, which is the client's own chosen set and order (\"Uncategorized\" included, because WordPress recorded it). An article introducing a new category must NOT silently append to that list; a filter the client did not choose is a content change, not a side effect. The eight public_phone_patch substring targets in this file are a narrow, separate, already-declared exception and do not widen this refusal."
           },
           {
             "path": "src/data/site.yaml",

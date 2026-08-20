@@ -46,7 +46,7 @@
     "candidate_id": { "$ref": "#/$defs/id" },
     "artifact_class": { "enum": ["site_block_patch", "article"] },
     "operation_kind": {
-      "enum": ["public_hours_patch", "public_phone_patch", "article_publish"]
+      "enum": ["public_phone_patch", "article_publish"]
     },
     "firm_id": { "$ref": "#/$defs/id" },
     "site_id": { "$ref": "#/$defs/id" },
@@ -166,22 +166,6 @@
           "changed_paths": {
             "type": "array",
             "items": { "$ref": "#/$defs/pathChangeSha256" }
-          }
-        }
-      }
-    },
-    {
-      "if": { "type": "object", "properties": { "operation_kind": { "const": "public_hours_patch" } } },
-      "then": {
-        "type": "object",
-        "properties": {
-          "artifact_class": { "const": "site_block_patch" },
-          "required_approval_stages": {
-            "type": "array",
-            "prefixItems": [{ "const": "publication_approval" }],
-            "items": false,
-            "minItems": 1,
-            "maxItems": 1
           }
         }
       }
