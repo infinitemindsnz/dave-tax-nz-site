@@ -16,7 +16,7 @@ The content migration widened what this directory **describes**. It widened
 what it **permits** for `article_publish` by nothing at all — that remains
 `permitted: false` with no writable path. Separately, a 2026-08-20 audit found
 that the original phone coupled set covered only 3 of 13 render-reachable
-phone occurrences; version 2 of `writable-paths.v1.json` closes that gap by
+phone occurrences; version 2 of `writable-paths.v1.json` closed that gap by
 declaring all thirteen, still under the single `public_phone_patch` operation
 kind and still nothing an approver did not explicitly approve.
 
@@ -40,7 +40,7 @@ kind and still nothing an approver did not explicitly approve.
   strikethrough, depth-1 headings and non-HTTPS links all fail closed.
 - `writable-paths.v1.json` is an exhaustive allowlist. Version 2 permits only
   a closed, two-input `public_phone` patch (`display` plus `e164`) written
-  atomically across thirteen targets in three files — three pointers in
+  atomically across thirteen targets in four files — three pointers in
   `src/data/site.yaml`, eight substring targets in `src/data/pages.yaml`, and
   one substring target in each of two article bodies. Everything else, in
   every file, is denied, and a closed-set precondition scans the base
@@ -48,7 +48,7 @@ kind and still nothing an approver did not explicitly approve.
   exists outside those thirteen. Its `documentedOperations` block describes
   `article_publish` with `permitted: false`, and records `public_hours_patch`
   as fully withdrawn — the operation kind no longer exists anywhere else in
-  this directory (see "What version 2 may write" below).
+  this directory (see "What version 3 may write" below).
 - `schemas/candidate-manifest.v1.schema.json` describes the artifact an
   approval decision binds.
 - `renderer-manifest.v1.json` pins the static renderer, Node version, build
@@ -98,10 +98,10 @@ must survive the round-trip unchanged. A length cap would eventually force a
 silent copy edit, and "improving" an excerpt is exactly the kind of small
 helpful change this contract exists to prevent.
 
-## What version 2 may write
+## What version 3 may write
 
 One operation family, one closed two-input contract, thirteen targets across
-three files — the complete render-reachable coupled set, not the three
+four files — the complete render-reachable coupled set, not the three
 pointers this contract listed before the 2026-08-20 audit.
 
 `public_phone_patch` writes the public phone number. A proposal supplies
@@ -114,7 +114,7 @@ two `tel:` hrefs in `src/data/site.yaml`; eight substring occurrences in
 rendered three times as `<meta name=description>`, `og:description` and
 `twitter:description`) and six list/prose fragments; and one substring
 occurrence in each of two published article bodies. All thirteen are a
-**coupled set that must be written atomically** across all three files in one
+**coupled set that must be written atomically** across all four files in one
 candidate. A patch that lands a subset leaves the site contradicting itself —
 which is exactly what a version-1-shaped patch, covering only the three
 `site.yaml` pointers, would have done: a fully-approved candidate would have
@@ -141,12 +141,42 @@ approved candidate, and until one is approved every one of the thirteen
 targets keeps its current value unchanged, including on refusal.
 
 A **closed-set precondition** is what makes this a closed contract rather than
-an allowlist someone can silently outgrow: before applying any patch, the
-publisher scans the base revision's parsed `site.yaml`/`pages.yaml` data and
-the raw text of the two article bodies for both literals, and refuses the
-whole candidate if either occurrence count differs from the thirteen declared
-targets — whether an occurrence has gone missing or a new, undeclared one has
-appeared anywhere in the coupled surface.
+an allowlist someone can silently outgrow. Version 2 enumerated the sources to
+scan, which reopened the hole it existed to close: an enumerated list only sees
+the files someone remembered to list, so a phone number added to
+`src/data/articles.yaml`, or to an article's frontmatter `excerpt` — which
+renders as the meta description, `og:description`, `twitter:description`, the
+JSON-LD description and the RSS item — passed the scan untouched and would have
+been left stale by an otherwise complete thirteen-target write.
+
+Version 3 replaces the enumeration with an **exhaustive accounting rule**.
+Before applying any patch, the publisher scans *every* file in the repository —
+starting at the root and removing only the declared `scanExclusions`
+(`node_modules/`, `.git/`, `dist/`, `.astro/`, `governance/`, `tests/`, each with
+a stated reason) — for both literals in raw text. Every occurrence it finds must
+be accounted for as either a declared target counted in `expectedOccurrences`,
+or an explicitly declared entry in `nonRenderingOccurrences` (today: the
+preserve-the-bug YAML comment in `site.yaml` and the module doc comment in
+`src/lib/structured-data.ts`, neither of which renders). An occurrence that is
+neither refuses the whole candidate.
+
+Scanning from the root rather than from a list of roots matters: an earlier draft
+of version 3 scanned `src/` and `public/`, which left `worker/index.js` — the
+runtime that serves every response — outside the scan. A new top-level directory
+that reaches rendered output is now in scope the moment it exists, and excluding
+it is a reviewed edit rather than an omission nobody notices.
+
+A `nonRenderingOccurrences` entry is **comment-scoped**, not path-scoped: every
+occurrence it covers must sit on a comment line. A path-scoped allowlist leaves
+the totals balanced when a comment occurrence is *replaced* by a live one — a
+regression this repository has already seen, when a hardcoded
+`const telephone = "+64 21 021 68888"` briefly replaced the value derived from
+the `tel:` href in `src/lib/structured-data.ts`, keeping the file's count at one
+while the JSON-LD telephone silently became the 12-digit display form.
+This inverts the burden of proof: a new render-reachable occurrence anywhere in
+the tree fails closed by default instead of needing to have been anticipated by
+a file list. Counts are still refused in both directions — a missing occurrence
+means a declared target is stale and must not be written blind.
 
 `public_hours_patch` is now **fully withdrawn**, not merely refused at the
 write gate. This site has **no structured opening-hours record** — the
@@ -166,7 +196,7 @@ appears in `operations[]`, the enum, or any `if`/`then` branch. A candidate
 declaring it now fails structural schema validation before an approval stage
 is even computed. Real opening hours would require a change to
 `src/data/schema.ts` and a version 3 of this contract with its own approval
-policy entry and schema branch; version 2 must not be stretched to cover them.
+policy entry and schema branch; version 3 must not be stretched to cover them.
 
 Two of the thirteen targets — the `site.yaml` pointers addressing `contact.rows`
 and `hero.ctas` by index — address array elements by index. A reorder of
@@ -176,7 +206,7 @@ identity preconditions that the publisher must assert against the base
 revision before applying anything, and must refuse on any mismatch. Those
 assertions are read-only; they are not fields the policy may write.
 
-## What version 2 describes but does not permit
+## What version 3 describes but does not permit
 
 `writable-paths.v1.json` carries a `documentedOperations` block for two
 operation kinds, and grants no paths for either.
@@ -502,6 +532,6 @@ authority.
 And to restate the thing this document exists to say: **none of the above
 grants any authority.** Describing an article surface is not permitting one.
 `writable-paths.v1.json` permits one closed, two-input `public_phone` patch
-over thirteen targets across three files, `default` is `deny`, and the
+over thirteen targets across four files, `default` is `deny`, and the
 eighteen articles, nine page records and eight curated references in this
 repository are edited by hand by people.

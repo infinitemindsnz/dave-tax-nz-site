@@ -1,10 +1,14 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "contractId": "dave-tax-nz-site-content.v1",
   "changeLog": [
     {
       "version": 2,
-      "comment": "TWO CHANGES, BOTH GOVERNANCE-EVIDENCED (governance/evidence/2026-08-20-phone-and-hours-audit.v1.md). (1) `public_hours_patch` is now FULLY WITHDRAWN, not merely refused here: it is also removed from governance/approval-policy.v1.json's `operations[]` and from the `operation_kind` enum and `if`/`then` branch in governance/schemas/candidate-manifest.v1.schema.json, so the operation kind can no longer be built, approved, or even syntactically declared by any candidate — version 1 left those three files untouched, so an hours candidate could still be constructed and genuinely approved before dying at this file's write gate. (2) `public_phone` is redefined as a CLOSED, TWO-INPUT CONTRACT — exactly `display` and `e164`, nothing else — written over the COMPLETE coupled set of render-reachable phone occurrences rather than the three in `src/data/site.yaml` alone. The version 1 coupled set covered 3 of 13 render-reachable occurrences (audit finding 1); a fully-approved version 1 patch left 10 stale, including both meta-description surfaces. Version 2 declares all 13 as one atomic target set across three files, and adds a closed-set precondition that scans the base revision and refuses the candidate if any render-reachable phone occurrence exists outside the declared 13 — so an occurrence the policy does not know about blocks the write instead of silently surviving it."
+      "comment": "TWO CHANGES, BOTH GOVERNANCE-EVIDENCED (governance/evidence/2026-08-20-phone-and-hours-audit.v1.md). (1) `public_hours_patch` is now FULLY WITHDRAWN, not merely refused here: it is also removed from governance/approval-policy.v1.json's `operations[]` and from the `operation_kind` enum and `if`/`then` branch in governance/schemas/candidate-manifest.v1.schema.json, so the operation kind can no longer be built, approved, or even syntactically declared by any candidate — version 1 left those three files untouched, so an hours candidate could still be constructed and genuinely approved before dying at this file's write gate. (2) `public_phone` is redefined as a CLOSED, TWO-INPUT CONTRACT — exactly `display` and `e164`, nothing else — written over the COMPLETE coupled set of render-reachable phone occurrences rather than the three in `src/data/site.yaml` alone. The version 1 coupled set covered 3 of 13 render-reachable occurrences (audit finding 1); a fully-approved version 1 patch left 10 stale, including both meta-description surfaces. Version 2 declares all 13 as one atomic target set across four files, and adds a closed-set precondition that scans the base revision and refuses the candidate if any render-reachable phone occurrence exists outside the declared 13 — so an occurrence the policy does not know about blocks the write instead of silently surviving it."
+    },
+    {
+      "version": 3,
+      "comment": "ADVERSARIAL REVIEW OF VERSION 2 (phase adversarial-review). Version 2 closed the hours affordance correctly, but three of its guarantees were prose the machine never checked. (1) CLOSED-SET SCAN WAS NOT CLOSED: `scanSources` enumerated site.yaml, pages.yaml and article BODY text, so a phone number added to src/data/articles.yaml or to an article's frontmatter `excerpt` was invisible to it. Verified empirically: injecting one occurrence into each produced seven occurrences in rendered output (dist/client/index.html, articles/index.html, the article page and rss.xml) while the governance suite stayed green at 36/36. Replaced with an exhaustive accounting rule over `scanRoots` plus an explicit `nonRenderingOccurrences` allowlist. (2) SUBSET-WRITE WAS SCHEMA-VALID: `writeMode: \"atomic\"` was repeated per file entry and the cross-file guarantee lived only in an inputContracts comment, so a candidate manifest declaring `changed_paths: [\"src/data/site.yaml\"]` validated and would have written 3 of 13 occurrences. Added `coupledSet` here and a binding `changed_paths` constraint in the candidate-manifest schema's public_phone_patch branch. (3) STALE POLICY WAS UNDETECTABLE: the manifest carried `writable_policy_sha256` with nothing to compare it against and no version field, so a publisher still holding version 1 (3 targets) produced a structurally valid candidate. Added a required `writable_policy_version` pinned to this file's `schemaVersion`."
     }
   ],
   "files": [
@@ -14,7 +18,10 @@
         {
           "proposalField": "public_phone",
           "operationKind": "public_phone_patch",
-          "inputs": ["display", "e164"],
+          "inputs": [
+            "display",
+            "e164"
+          ],
           "targets": [
             {
               "jsonPointer": "/hero/ctas/1/href",
@@ -46,7 +53,10 @@
         {
           "proposalField": "public_phone",
           "operationKind": "public_phone_patch",
-          "inputs": ["display", "e164"],
+          "inputs": [
+            "display",
+            "e164"
+          ],
           "targets": [
             {
               "jsonPointer": "/about-dave/description",
@@ -108,7 +118,10 @@
         {
           "proposalField": "public_phone",
           "operationKind": "public_phone_patch",
-          "inputs": ["display", "e164"],
+          "inputs": [
+            "display",
+            "e164"
+          ],
           "targets": [
             {
               "textMatch": "body",
@@ -128,7 +141,10 @@
         {
           "proposalField": "public_phone",
           "operationKind": "public_phone_patch",
-          "inputs": ["display", "e164"],
+          "inputs": [
+            "display",
+            "e164"
+          ],
           "targets": [
             {
               "textMatch": "body",
@@ -148,37 +164,100 @@
       "comment": "Two of the site.yaml pointers address array elements by index, so a reorder of `contact.rows` or `hero.ctas` would silently retarget this policy at the email row, the office row or the booking button. Before applying any patch, the publisher MUST assert every pointer/value pair below against the BASE revision and refuse the candidate on any mismatch. These are identity assertions, not content the policy may write.",
       "path": "src/data/site.yaml",
       "assertions": [
-        { "jsonPointer": "/contact/rows/0/label", "equals": "Call Dave directly" },
-        { "jsonPointer": "/hero/ctas/1/label", "equals": "Call Dave" },
-        { "jsonPointer": "/hero/ctas/1/variant", "equals": "secondary" }
+        {
+          "jsonPointer": "/contact/rows/0/label",
+          "equals": "Call Dave directly"
+        },
+        {
+          "jsonPointer": "/hero/ctas/1/label",
+          "equals": "Call Dave"
+        },
+        {
+          "jsonPointer": "/hero/ctas/1/variant",
+          "equals": "secondary"
+        }
       ]
     },
     {
-      "comment": "CLOSED-SET PRECONDITION — the mechanism that makes this a closed contract rather than an allowlist someone can silently outgrow. Before applying any public_phone_patch, the publisher MUST scan the base revision for both phone literals across every render-reachable source — src/data/site.yaml and src/data/pages.yaml parsed as DATA (walking every string value; this deliberately excludes YAML comments, so the preserve-the-bug comment at src/data/site.yaml is not counted) plus the raw Markdown body text of every file under src/content/articles/**/*.md — and count occurrences of each literal separately. It MUST refuse the candidate outright, before evaluating any target, if either count differs from the expectation below. A drift in either direction is refused: fewer occurrences means a declared target no longer exists in the base revision (stale policy, must not write blind); more occurrences means an undeclared, out-of-set occurrence has appeared somewhere in the coupled surface (the exact failure mode this precondition exists to catch) and the candidate is refused as out-of-contract rather than silently leaving the new occurrence stale, exactly like a hitherto-undiscovered fourteenth occurrence would be.",
+      "comment": "CLOSED-SET PRECONDITION — the mechanism that makes this a closed contract rather than an allowlist someone can silently outgrow. VERSION 2 ENUMERATED THE SOURCES TO SCAN, WHICH REOPENED THE HOLE IT EXISTED TO CLOSE: an enumerated list only sees the files someone remembered to list, so a phone number added to src/data/articles.yaml, or to an article's frontmatter `excerpt` (which renders as the meta description, og:description, twitter:description, the JSON-LD articleBody description and the RSS item), passed the scan untouched and would have been left stale by an otherwise complete 13-target write. Version 3 replaces the enumeration with an EXHAUSTIVE ACCOUNTING RULE over the whole render-reachable tree: before applying any public_phone_patch, the publisher MUST scan EVERY file under the roots in `scanRoots` for both literals in RAW TEXT, and every occurrence found MUST be accounted for as either (a) a declared target counted in `expectedOccurrences`, or (b) an explicitly declared entry in `nonRenderingOccurrences`. An occurrence that is neither refuses the whole candidate. This inverts the burden: a new render-reachable occurrence anywhere in the tree fails closed by default instead of needing to have been anticipated by a file list. `expectedOccurrences` counts DATA occurrences (parsed YAML/JSON string leaves plus Markdown file text), which is why the comment-borne occurrences in src/data/site.yaml and src/lib/structured-data.ts are declared separately under `nonRenderingOccurrences` rather than counted here. A drift in either direction is refused: fewer occurrences means a declared target no longer exists in the base revision (stale policy, must not write blind); more means an undeclared occurrence has appeared in the coupled surface.",
       "kind": "closed_set_occurrence_scan",
-      "scanSources": {
-        "parsedData": ["src/data/site.yaml", "src/data/pages.yaml"],
-        "rawText": ["src/content/articles/**/*.md"]
-      },
       "expectedOccurrences": [
         {
           "literal": "+64 21 021 68888",
           "count": 11,
-          "comment": "The display form: 1 in site.yaml (/contact/rows/0/value) + 8 in pages.yaml (G1-G8) + 2 in article bodies (A1-A2)."
+          "comment": "The display form, counted as data: 1 in site.yaml (/contact/rows/0/value) + 8 in pages.yaml (G1-G8) + 2 in article files (A1-A2). Excludes the 2 comment-borne occurrences declared under nonRenderingOccurrences."
         },
         {
           "literal": "tel:+64210216888",
           "count": 2,
-          "comment": "The dialable form, always inside a tel: href: /hero/ctas/1/href and /contact/rows/0/href in site.yaml. No other file contains this literal in any form, dial or bare-digit."
+          "comment": "The dialable form, always inside a tel: href: /hero/ctas/1/href and /contact/rows/0/href in site.yaml. Excludes the 1 comment-borne occurrence declared under nonRenderingOccurrences. No file outside src/data/site.yaml contains this literal in any form, dial or bare-digit."
         }
       ],
       "totalDeclaredTargets": 13,
-      "onMismatch": "refuse_whole_candidate"
+      "onMismatch": "refuse_whole_candidate",
+      "scanRootsComment": "Every render-reachable byte of this site is produced from these two roots — src/ holds the content model, the article collection, the components and the head-only structured-data/llms/RSS emitters; public/ is copied verbatim into dist/. governance/, tests/, scripts/ and dist/ are deliberately OUT of scope: the governance files quote both literals as policy data (matchLiteral, evidence tables) and are never rendered, and dist/ is derived output, not a source.",
+      "parsedDataSources": [
+        "src/data/site.yaml",
+        "src/data/pages.yaml",
+        "src/data/articles.yaml",
+        "src/data/media-manifest.json"
+      ],
+      "rawTextSources": [
+        "src/content/articles/**/*.md"
+      ],
+      "rawTextComment": "Markdown files are counted as ENTIRE FILE TEXT, frontmatter included. Version 2 said \"body text\", and the reference implementation stripped frontmatter accordingly — but `excerpt` is frontmatter and it renders, so body-only counting left a render-reachable field outside the closed set. There is no phone number in any article's frontmatter today; counting the whole file keeps it that way by refusing the candidate if one appears. The glob is recursive: any depth under src/content/articles is in scope.",
+      "nonRenderingOccurrences": [
+        {
+          "path": "src/data/site.yaml",
+          "literals": {
+            "+64 21 021 68888": 1,
+            "tel:+64210216888": 1
+          },
+          "reason": "The preserve-the-bug YAML comment above the contact rows, recording that the displayed number has one more digit than the dialable one and that the two must not be reconciled without the client. YAML comments are not parsed into the data model and never render. Declared here so the raw-text accounting rule can subtract them rather than mistake them for undeclared targets."
+        },
+        {
+          "path": "src/lib/structured-data.ts",
+          "literals": {
+            "+64 21 021 68888": 1
+          },
+          "reason": "The module doc comment explaining that `telephone` in the JSON-LD is derived from the tel: href rather than the displayed value. It is a TypeScript block comment; the module hardcodes no phone number and reads every value from src/data/site.yaml. Nothing here renders."
+        }
+      ],
+      "nonRenderingComment": "EXHAUSTIVE, AND COMMENT-SCOPED. An occurrence of either literal under `scanRoots` that is not counted in `expectedOccurrences` and not listed here refuses the whole candidate. Every occurrence an entry here covers MUST sit on a comment line — a `#` line in YAML, a `//`, `/*` or `*` line in TypeScript/JavaScript. The publisher MUST verify that, not merely that the file's total is unchanged: a path-scoped allowlist leaves the counts balanced when a comment occurrence is REPLACED by a live one, which is a real regression this repository has already seen — a hardcoded `const telephone = \"+64 21 021 68888\"` briefly replaced the value derived from the tel: href in src/lib/structured-data.ts, keeping the file's count at 1 while the JSON-LD telephone silently became the 12-digit display form instead of the dialable one. Adding an entry here is a deliberate, reviewed assertion that the occurrence cannot reach rendered output — never a way to quiet a scan failure.",
+      "onUnaccountedOccurrence": "refuse_whole_candidate",
+      "nonRenderingOccurrenceRule": "must_be_comment_line",
+      "scanExclusions": [
+        {
+          "path": "node_modules",
+          "reason": "Third-party dependencies, not repository content and never a source of the client's phone number."
+        },
+        {
+          "path": ".git",
+          "reason": "Version-control internals. Historical objects legitimately contain former values; scanning them would refuse every candidate forever."
+        },
+        {
+          "path": "dist",
+          "reason": "Build output. Derived from the sources scanned below, never written directly — the whole point of the scan is to fix the sources so the output follows."
+        },
+        {
+          "path": ".astro",
+          "reason": "Astro's build cache. Derived, like dist."
+        },
+        {
+          "path": "governance",
+          "reason": "The policy documents themselves, which quote both literals as DATA — every matchLiteral in this file, the audit's occurrence tables, the README's worked examples. None of it renders. Scanning them would make the contract refuse itself."
+        },
+        {
+          "path": "tests",
+          "reason": "The governance suite reads both literals from this contract rather than hardcoding them, but a future fixture legitimately might. Test fixtures do not render."
+        }
+      ],
+      "scanExclusionsComment": "INVERTED IN VERSION 3.1. Version 3 replaced an enumerated file list with an enumerated ROOT list (`scanRoots: [\"src\", \"public\"]`), which is the same fail-open pattern one level up: a new top-level directory that reaches rendered output — an edge handler, a functions/ directory, a second asset root — is invisible to the scan by default, exactly as src/data/articles.yaml was invisible under version 2. The scan now starts at the REPOSITORY ROOT and removes only the paths declared here, each with a stated reason. A new directory is therefore in scope the moment it exists, and excluding it is a deliberate, reviewed edit to this list rather than an omission nobody notices. Note that worker/index.js and astro.config.mjs are on the render path and are now scanned; neither contains a phone literal today, and the scan is what keeps it that way."
     }
   ],
   "inputContracts": {
     "public_phone": {
-      "comment": "CLOSED, TWO-INPUT CONTRACT. A public_phone_patch proposal supplies exactly these two fields and no others; there is no third field, no per-target override, and no way to patch a subset of the 13 targets above — `writeMode: \"atomic\"` applies across all three files together, not per-file. Neither input has a default. The publisher must never derive `e164` from `display` or vice versa: the two literals are already known to disagree (12 digits vs 11 — see the site.yaml comment this contract preserves), and silently deriving one from the other is exactly the auto-reconciliation every version of this policy has refused. Both values arrive only as explicit, human-confirmed replacements in an approved candidate; until such a candidate is approved, every one of the 13 targets keeps its current value unchanged — refusal (including a closed-set refusal above) never triggers a partial or best-effort write.",
+      "comment": "CLOSED, TWO-INPUT CONTRACT. A public_phone_patch proposal supplies exactly these two fields and no others; there is no third field, no per-target override, and no way to patch a subset of the 13 targets above — see `coupledSet`, which binds all four files into one atomic write and is enforced by the candidate-manifest schema's `changed_paths` constraint. Neither input has a default. The publisher must never derive `e164` from `display` or vice versa: the two literals are already known to disagree (12 digits vs 11 — see the site.yaml comment this contract preserves), and silently deriving one from the other is exactly the auto-reconciliation every version of this policy has refused. Note that neither value appears in the candidate manifest as a field: the approved bytes are bound by `diff_sha256` and the per-path blob hashes in `changed_paths`, so an approver approves the exact resulting bytes rather than a re-typed number. Both values arrive only as explicit, human-confirmed replacements in an approved candidate; until such a candidate is approved, every one of the 13 targets keeps its current value unchanged — refusal (including a closed-set refusal above) never triggers a partial or best-effort write.",
       "inputs": {
         "display": {
           "type": "string",
@@ -274,7 +353,10 @@
       },
       "approvalPolicy": {
         "comment": "governance/approval-policy.v1.json already binds this operation kind to artifact class `article` and the ordered stages below, and governance/schemas/candidate-manifest.v1.schema.json already refuses any other stage list for it. Both are structural descriptions. Neither is a grant: a fully-approved article_publish candidate is still refused here, because this file does not list a path it may write.",
-        "requiredApprovalStages": ["legal_sign_off", "publication_approval"]
+        "requiredApprovalStages": [
+          "legal_sign_off",
+          "publication_approval"
+        ]
       },
       "preconditionsBeforeEnabling": [
         "A separate Article Engine contract defining canonical author and reviewer identity. The frontmatter has no author or reviewedBy field; on a repost the JSON-LD author is derived from `attribution.source`, which is a publisher name, not a bound identity.",
@@ -286,5 +368,19 @@
       ]
     }
   ],
-  "default": "deny"
+  "default": "deny",
+  "coupledSet": {
+    "coupledSetId": "public_phone.v3",
+    "proposalField": "public_phone",
+    "operationKind": "public_phone_patch",
+    "writeMode": "atomic_across_files",
+    "paths": [
+      "src/data/site.yaml",
+      "src/data/pages.yaml",
+      "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+      "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md"
+    ],
+    "totalTargets": 13,
+    "comment": "THE ATOMICITY DECLARATION VERSION 2 ONLY IMPLIED. Every `writeMode: \"atomic\"` in `files[]` above is scoped to its own file entry; nothing in that structure said the four files move together, and a machine reading `files[]` alone would have seen four independently atomic writes. This block is the authoritative statement: a public_phone_patch writes ALL of `paths` and ALL `totalTargets` targets in one commit, or it writes nothing. There is no per-file, per-target or best-effort mode, and a partial application is a contract violation, not a degraded success. The candidate-manifest schema enforces the manifest half of this — `changed_paths` for a public_phone_patch must be exactly these paths, each with `change: \"modify\"` — so a subset candidate now fails structural validation before approval rather than at, or after, the write."
+  }
 }

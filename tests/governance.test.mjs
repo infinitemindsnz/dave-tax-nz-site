@@ -8,6 +8,14 @@
 // occurrence set must stay exactly in sync with the real files, and the
 // closed-set refusal rule must actually reject a base revision that drifts
 // from what the policy expects.
+//
+// The load-bearing test here is "every phone occurrence under the scan roots
+// is accounted for": it walks the whole render-reachable tree rather than a
+// list of files someone remembered to write down. An earlier revision of this
+// suite scanned an enumerated source list and stayed green at 36/36 while two
+// injected occurrences (src/data/articles.yaml and an article frontmatter
+// `excerpt`) reached seven places in rendered output, including the homepage
+// and rss.xml. Do not narrow that walk back to a file list.
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -23,16 +31,26 @@ const writablePaths = readJson("writable-paths.v1.json");
 const approvalPolicy = readJson("approval-policy.v1.json");
 const candidateManifestSchema = readJson("schemas", "candidate-manifest.v1.schema.json");
 
-const siteYaml = parseYaml(readFileSync(path.join(root, "src", "data", "site.yaml"), "utf8"));
-const pagesYaml = parseYaml(readFileSync(path.join(root, "src", "data", "pages.yaml"), "utf8"));
+/** Every file under `dir`, recursively, as paths relative to the repository root. */
+function walkFiles(dir, skip = new Set()) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (skip.has(entry.name)) continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkFiles(full, skip));
+    else if (entry.isFile()) out.push(path.relative(root, full).split(path.sep).join("/"));
+  }
+  return out;
+}
 
-const articlesDir = path.join(root, "src", "content", "articles");
-const articleFiles = readdirSync(articlesDir).filter((name) => name.endsWith(".md"));
-
-function stripFrontmatter(markdown) {
-  if (!markdown.startsWith("---")) return markdown;
-  const end = markdown.indexOf("\n---", 3);
-  return end === -1 ? markdown : markdown.slice(end + 4);
+/** `src/content/articles/**\/*.md` and friends, without pulling in a glob dependency. */
+function globToRegExp(glob) {
+  const source = glob
+    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+    .replace(/\*\*\//g, "(?:.+/)?")
+    .replace(/\*\*/g, ".*")
+    .replace(/\*/g, "[^/]*");
+  return new RegExp(`^${source}$`);
 }
 
 function countLiteralInString(value, literal) {
@@ -64,18 +82,73 @@ function resolveJsonPointer(root, pointer) {
     .reduce((node, segment) => (Array.isArray(node) ? node[Number(segment)] : node[segment]), root);
 }
 
-/** Returns { [literal]: occurrenceCount } across site.yaml, pages.yaml and every article body. */
-function actualOccurrenceCounts(literals) {
-  const articleBodies = articleFiles.map((name) =>
-    stripFrontmatter(readFileSync(path.join(articlesDir, name), "utf8")),
-  );
-  const countAcrossSources = (literal) =>
-    countLiteralInData(siteYaml, literal) +
-    countLiteralInData(pagesYaml, literal) +
-    articleBodies.reduce((sum, body) => sum + countLiteralInString(body, literal), 0);
+const scanPrecondition = writablePaths.preconditions.find((p) => p.kind === "closed_set_occurrence_scan");
+const literals = scanPrecondition.expectedOccurrences.map((entry) => entry.literal);
 
-  return Object.fromEntries(literals.map((literal) => [literal, countAcrossSources(literal)]));
+/** Parsed YAML/JSON for any declared source, parsed once per file. */
+const parsedSources = new Map();
+function parseSource(rel) {
+  if (!parsedSources.has(rel)) {
+    const text = readFileSync(path.join(root, rel), "utf8");
+    parsedSources.set(rel, rel.endsWith(".json") ? JSON.parse(text) : parseYaml(text));
+  }
+  return parsedSources.get(rel);
 }
+
+const siteYaml = parseSource("src/data/site.yaml");
+
+/**
+ * ONE walk of the scan roots, and the raw literal counts it finds.
+ *
+ * Starts at the repository root and removes only the declared `scanExclusions`,
+ * so a new top-level directory is in scope the moment it exists rather than
+ * needing to have been listed. Files are read as bytes and only decoded when a
+ * literal actually appears: public/ is ~3MB of images, and decoding all of it
+ * to look for two ASCII strings dominated the suite's runtime for no benefit.
+ */
+const excluded = new Set(scanPrecondition.scanExclusions.map((entry) => entry.path));
+const scanRootFiles = walkFiles(root, excluded).filter(
+  (rel) => !excluded.has(rel.split("/")[0]) && !excluded.has(rel),
+);
+const rawText = new Map();
+const rawCounts = new Map();
+for (const rel of scanRootFiles) {
+  const bytes = readFileSync(path.join(root, rel));
+  if (!literals.some((literal) => bytes.includes(literal))) continue;
+  const text = bytes.toString("utf8");
+  rawText.set(rel, text);
+  const counts = {};
+  for (const literal of literals) {
+    const found = countLiteralInString(text, literal);
+    if (found > 0) counts[literal] = found;
+  }
+  rawCounts.set(rel, counts);
+}
+
+/**
+ * Article files, derived from the contract's own `rawTextSources` glob rather
+ * than a hardcoded directory and extension, so the policy stays the single
+ * source of truth if that glob is ever broadened.
+ */
+const articleGlobs = scanPrecondition.rawTextSources.map(globToRegExp);
+const articleFiles = scanRootFiles.filter((rel) => articleGlobs.some((re) => re.test(rel)));
+
+/**
+ * { [literal]: occurrenceCount } as DATA, exactly as the contract's
+ * `expectedOccurrences` counts it: parsed string leaves of every declared
+ * parsedDataSource (so YAML comments are excluded) plus whole article file text
+ * (frontmatter INCLUDED — `excerpt` is frontmatter and it renders as the meta
+ * description, og:/twitter:description, the JSON-LD description and the RSS item).
+ */
+const actualCounts = Object.fromEntries(
+  literals.map((literal) => [
+    literal,
+    scanPrecondition.parsedDataSources.reduce(
+      (sum, rel) => sum + countLiteralInData(parseSource(rel), literal),
+      0,
+    ) + articleFiles.reduce((sum, rel) => sum + (rawCounts.get(rel)?.[literal] ?? 0), 0),
+  ]),
+);
 
 /** Mirrors writable-paths.v1.json's closed_set_occurrence_scan precondition: refuse on any count mismatch. */
 function evaluateClosedSetScan(actualCounts, expectedOccurrences) {
@@ -129,7 +202,6 @@ test("public_phone_patch declares the complete 13-occurrence coupled set", () =>
   const targets = allPhonePatchTargets();
   assert.equal(targets.length, 13);
 
-  const scanPrecondition = writablePaths.preconditions.find((p) => p.kind === "closed_set_occurrence_scan");
   assert.ok(scanPrecondition, "expected a closed_set_occurrence_scan precondition");
   assert.equal(scanPrecondition.totalDeclaredTargets, 13);
 
@@ -138,12 +210,12 @@ test("public_phone_patch declares the complete 13-occurrence coupled set", () =>
 });
 
 test("declared phone occurrences match the current repository content exactly", () => {
-  const scanPrecondition = writablePaths.preconditions.find((p) => p.kind === "closed_set_occurrence_scan");
-  const literals = scanPrecondition.expectedOccurrences.map((entry) => entry.literal);
-  const actual = actualOccurrenceCounts(literals);
-
   for (const { literal, count } of scanPrecondition.expectedOccurrences) {
-    assert.equal(actual[literal], count, `expected ${count} occurrences of ${JSON.stringify(literal)}, found ${actual[literal]}`);
+    assert.equal(
+      actualCounts[literal],
+      count,
+      `expected ${count} occurrences of ${JSON.stringify(literal)}, found ${actualCounts[literal]}`,
+    );
   }
 });
 
@@ -172,24 +244,20 @@ test("every declared phone target's matchLiteral is exactly where the policy say
 
   for (const { file, target } of scenarios) {
     await t.test(`${file}${target.jsonPointer} contains "${target.matchLiteral}"`, () => {
-      const data = file === "src/data/site.yaml" ? siteYaml : pagesYaml;
-      const value = resolveJsonPointer(data, target.jsonPointer);
+      const value = resolveJsonPointer(parseSource(file), target.jsonPointer);
       assert.equal(typeof value, "string", `${target.jsonPointer} must resolve to a string`);
 
       if (target.render === "raw") {
         assert.equal(value, target.matchLiteral, "a raw-render target must equal the literal exactly");
       } else {
-        assert.equal(
-          countLiteralInString(value, target.matchLiteral),
-          1,
-          `a substring target's literal must occur exactly once, found ${countLiteralInString(value, target.matchLiteral)}`,
-        );
+        const found = countLiteralInString(value, target.matchLiteral);
+        assert.equal(found, 1, `a substring target's literal must occur exactly once, found ${found}`);
       }
     });
   }
 });
 
-test("every declared article body target's matchLiteral occurs exactly once", async (t) => {
+test("every declared article target's matchLiteral occurs exactly once in the whole file", async (t) => {
   const articleTargets = writablePaths.files
     .filter((file) => file.path.startsWith("src/content/articles/"))
     .map((file) => ({
@@ -200,19 +268,19 @@ test("every declared article body target's matchLiteral occurs exactly once", as
   assert.equal(articleTargets.length, 2);
 
   for (const { file, target } of articleTargets) {
-    await t.test(`${file} body contains "${target.matchLiteral}" exactly once`, () => {
-      const body = stripFrontmatter(readFileSync(path.join(root, file), "utf8"));
-      assert.equal(countLiteralInString(body, target.matchLiteral), 1);
+    // Whole file, frontmatter included: a second occurrence appearing in
+    // `excerpt` renders as the meta description and must refuse the candidate,
+    // not slip past a body-only count.
+    await t.test(`${file} contains "${target.matchLiteral}" exactly once`, () => {
+      assert.equal(rawCounts.get(file)?.[target.matchLiteral] ?? 0, 1);
     });
   }
 });
 
 test("closed-set occurrence scan refuses the candidate on any drift", async (t) => {
-  const expectedOccurrences = writablePaths.preconditions.find(
-    (p) => p.kind === "closed_set_occurrence_scan",
-  ).expectedOccurrences;
-  const [displayLiteral, telLiteral] = expectedOccurrences.map((entry) => entry.literal);
-  const actual = actualOccurrenceCounts([displayLiteral, telLiteral]);
+  const expectedOccurrences = scanPrecondition.expectedOccurrences;
+  const [displayLiteral, telLiteral] = literals;
+  const actual = actualCounts;
 
   const scenarios = [
     {
@@ -245,7 +313,7 @@ test("closed-set occurrence scan refuses the candidate on any drift", async (t) 
   for (const { name, counts, expectRefused } of scenarios) {
     await t.test(name, () => {
       const result = evaluateClosedSetScan(counts, expectedOccurrences);
-      assert.equal(result.refused, expectRefused);
+      assert.equal(result.refused, expectRefused, result.mismatches.join("; "));
     });
   }
 });
@@ -261,5 +329,190 @@ test("current site content is unchanged from the audited baseline", async (t) =>
 
   await t.test("the booking CTA that public_hours_patch would have overwritten is untouched", () => {
     assert.equal(resolveJsonPointer(siteYaml, "/contact/action/title"), "Free 15-minute initial consultation");
+  });
+});
+
+test("every phone occurrence under the scan roots is accounted for", async (t) => {
+  // THE CLOSED-SET GUARANTEE, ENFORCED AGAINST THE REAL TREE.
+  //
+  // This is the test that makes the contract closed rather than an allowlist
+  // that can silently outgrow itself. It does not consult a list of files to
+  // check; it walks every file under `scanRoots` and demands that each phone
+  // occurrence it finds is either counted in `expectedOccurrences` or declared
+  // in `nonRenderingOccurrences`. An occurrence that is neither fails here.
+  const declaredData = new Set(scanPrecondition.parsedDataSources);
+  const nonRendering = new Map(
+    scanPrecondition.nonRenderingOccurrences.map((entry) => [entry.path, entry.literals]),
+  );
+
+  assert.ok(scanRootFiles.length > 0, "expected the scan roots to contain files");
+
+  await t.test("no occurrence sits in an undeclared file", () => {
+    const undeclared = [...rawCounts.keys()].filter(
+      (rel) =>
+        !declaredData.has(rel) && !nonRendering.has(rel) && !articleGlobs.some((re) => re.test(rel)),
+    );
+    assert.deepEqual(
+      undeclared,
+      [],
+      `phone occurrences found in files the closed-set scan does not declare: ${undeclared.join(", ")}. ` +
+        "Either add the file to parsedDataSources/rawTextSources and declare its targets, or — only if it " +
+        "genuinely cannot render — add it to nonRenderingOccurrences.",
+    );
+  });
+
+  await t.test("declared non-rendering occurrences match reality exactly", async (tt) => {
+    // A file can hold both kinds at once: src/data/site.yaml carries one real
+    // target and one comment-borne mention of each literal. The raw count must
+    // therefore equal the file's parsed-data count plus its declared
+    // non-rendering count — never just one of the two.
+    for (const [rel, expected] of nonRendering) {
+      await tt.test(rel, () => {
+        const actual = rawCounts.get(rel) ?? {};
+        const data = declaredData.has(rel) ? parseSource(rel) : null;
+        for (const [literal, count] of Object.entries(expected)) {
+          const inData = data === null ? 0 : countLiteralInData(data, literal);
+          assert.equal(
+            actual[literal] ?? 0,
+            count + inData,
+            `${rel}: expected ${count} non-rendering + ${inData} data occurrence(s) of ${JSON.stringify(literal)}, found ${actual[literal] ?? 0} raw`,
+          );
+        }
+      });
+    }
+  });
+
+  await t.test("every declared non-rendering occurrence really sits in a comment", () => {
+    // A path-scoped allowlist is not enough. `nonRenderingOccurrences` says a
+    // file's occurrences are comments, so the totals stay balanced even if a
+    // comment occurrence is REPLACED by a live one — the count never moves.
+    // That is not hypothetical: a hardcoded `const telephone = "+64 21 021
+    // 68888"` was briefly introduced into src/lib/structured-data.ts, replacing
+    // the value derived from the tel: href. The count stayed at 1 and every
+    // other assertion here passed, while the JSON-LD telephone silently became
+    // the 12-digit display form instead of the dialable one. Checking that each
+    // declared occurrence is on a comment line is what catches that.
+    const commentLine = {
+      ".yaml": (line) => line.trimStart().startsWith("#"),
+      ".yml": (line) => line.trimStart().startsWith("#"),
+      ".ts": (line) => /^(?:\/\/|\/\*|\*)/.test(line.trimStart()),
+      ".js": (line) => /^(?:\/\/|\/\*|\*)/.test(line.trimStart()),
+      ".mjs": (line) => /^(?:\/\/|\/\*|\*)/.test(line.trimStart()),
+    };
+
+    for (const [rel, expected] of nonRendering) {
+      const isComment = commentLine[path.extname(rel)];
+      assert.ok(isComment, `no comment syntax known for ${rel} — extend commentLine before allowlisting it`);
+
+      const lines = (rawText.get(rel) ?? "").split("\n");
+      for (const [literal, declared] of Object.entries(expected)) {
+        // Count the occurrences that ARE on comment lines. Requiring this to
+        // equal the declared count catches both directions: a comment
+        // occurrence replaced by live code (count falls), and a comment that
+        // quietly went away. A live occurrence added alongside the comment
+        // moves the raw tree total instead, which the next subtest catches.
+        const inComments = lines
+          .filter((line) => isComment(line))
+          .reduce((sum, line) => sum + countLiteralInString(line, literal), 0);
+        assert.equal(
+          inComments,
+          declared,
+          `${rel}: declared ${declared} non-rendering (comment) occurrence(s) of ${JSON.stringify(literal)}, ` +
+            `found ${inComments}. A non-rendering allowlist entry may only cover comments — if the literal now ` +
+            "appears in live code, it must be a declared target or must not exist.",
+        );
+      }
+    }
+  });
+
+  await t.test("raw tree total equals declared data targets plus declared non-rendering occurrences", async (tt) => {
+    for (const { literal, count } of scanPrecondition.expectedOccurrences) {
+      await tt.test(JSON.stringify(literal), () => {
+        const rawTotal = [...rawCounts.values()].reduce((sum, byLiteral) => sum + (byLiteral[literal] ?? 0), 0);
+        const declaredNonRendering = [...nonRendering.values()].reduce(
+          (sum, byLiteral) => sum + (byLiteral[literal] ?? 0),
+          0,
+        );
+        assert.equal(
+          rawTotal,
+          count + declaredNonRendering,
+          `${literal}: raw tree has ${rawTotal}, contract accounts for ${count} target(s) + ${declaredNonRendering} non-rendering`,
+        );
+      });
+    }
+  });
+});
+
+test("the coupled set is atomic across exactly the files that declare targets", () => {
+  const coupled = writablePaths.coupledSet;
+  assert.ok(coupled, "expected a coupledSet declaration");
+  assert.equal(coupled.writeMode, "atomic_across_files");
+  assert.equal(coupled.operationKind, "public_phone_patch");
+
+  const declaringFiles = writablePaths.files
+    .filter((file) => file.fields.some((field) => field.operationKind === "public_phone_patch"))
+    .map((file) => file.path);
+  assert.deepEqual(
+    [...coupled.paths].sort(),
+    [...declaringFiles].sort(),
+    "coupledSet.paths must be exactly the files declaring public_phone_patch targets",
+  );
+  assert.equal(coupled.totalTargets, allPhonePatchTargets().length);
+  assert.equal(coupled.totalTargets, scanPrecondition.totalDeclaredTargets);
+});
+
+test("the candidate manifest binds a phone patch to the whole coupled set", async (t) => {
+  // Structural assertions, not a validator run: the suite stays dependency-free.
+  // These fail if someone relaxes the constraint that makes a subset-write,
+  // a foreign path, or a create/delete escalation refuse at schema validation.
+  const branch = candidateManifestSchema.allOf.find(
+    (entry) => entry.if?.properties?.operation_kind?.const === "public_phone_patch",
+  );
+  assert.ok(branch, "expected a public_phone_patch branch");
+  const changed = branch.then.properties.changed_paths;
+  assert.ok(changed, "the public_phone_patch branch must constrain changed_paths");
+
+  const coupled = writablePaths.coupledSet;
+
+  await t.test("cannot declare fewer or more paths than the coupled set", () => {
+    assert.equal(changed.minItems, coupled.paths.length);
+    assert.equal(changed.maxItems, coupled.paths.length);
+    assert.equal(changed.uniqueItems, true);
+  });
+
+  await t.test("every coupled path is individually required", () => {
+    const required = changed.allOf.map((entry) => entry.contains.properties.path.const);
+    assert.deepEqual([...required].sort(), [...coupled.paths].sort());
+  });
+
+  await t.test("no path outside the coupled set is permitted", () => {
+    assert.deepEqual([...changed.items.properties.path.enum].sort(), [...coupled.paths].sort());
+  });
+
+  await t.test("a phone patch may only modify, never add or delete", () => {
+    assert.equal(changed.items.properties.change.const, "modify");
+  });
+});
+
+test("the candidate manifest pins the writable policy version it was built against", async (t) => {
+  const pinned = candidateManifestSchema.properties.writable_policy_version;
+
+  await t.test("the field exists and is required", () => {
+    assert.ok(pinned, "expected a writable_policy_version property");
+    assert.ok(
+      candidateManifestSchema.required.includes("writable_policy_version"),
+      "writable_policy_version must be required — an optional pin is not a pin",
+    );
+  });
+
+  await t.test("the pin tracks this contract's actual schemaVersion", () => {
+    // Guards the drift that a digest field alone could not catch: a publisher
+    // still holding an older writable policy declares an older version here and
+    // fails schema validation instead of writing a stale subset of targets.
+    assert.equal(
+      pinned.const,
+      writablePaths.schemaVersion,
+      "bump writable_policy_version in the candidate manifest schema whenever writable-paths.v1.json's schemaVersion changes",
+    );
   });
 });

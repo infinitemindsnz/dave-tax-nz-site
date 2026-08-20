@@ -23,6 +23,7 @@
     "candidate_tree_oid",
     "changed_paths",
     "diff_sha256",
+    "writable_policy_version",
     "writable_policy_sha256",
     "content_schema_sha256",
     "markdown_policy_sha256",
@@ -41,17 +42,42 @@
     "required_approval_stages"
   ],
   "properties": {
-    "kind": { "const": "site_candidate_v1" },
-    "schema_version": { "const": 1 },
-    "candidate_id": { "$ref": "#/$defs/id" },
-    "artifact_class": { "enum": ["site_block_patch", "article"] },
-    "operation_kind": {
-      "enum": ["public_phone_patch", "article_publish"]
+    "kind": {
+      "const": "site_candidate_v1"
     },
-    "firm_id": { "$ref": "#/$defs/id" },
-    "site_id": { "$ref": "#/$defs/id" },
-    "repository_id": { "$ref": "#/$defs/id" },
-    "object_format": { "enum": ["sha1", "sha256"] },
+    "schema_version": {
+      "const": 1
+    },
+    "candidate_id": {
+      "$ref": "#/$defs/id"
+    },
+    "artifact_class": {
+      "enum": [
+        "site_block_patch",
+        "article"
+      ]
+    },
+    "operation_kind": {
+      "enum": [
+        "public_phone_patch",
+        "article_publish"
+      ]
+    },
+    "firm_id": {
+      "$ref": "#/$defs/id"
+    },
+    "site_id": {
+      "$ref": "#/$defs/id"
+    },
+    "repository_id": {
+      "$ref": "#/$defs/id"
+    },
+    "object_format": {
+      "enum": [
+        "sha1",
+        "sha256"
+      ]
+    },
     "target_branch": {
       "type": "string",
       "minLength": 1,
@@ -59,38 +85,91 @@
       "pattern": "^[a-z0-9][a-z0-9._/-]*$",
       "not": {
         "anyOf": [
-          { "pattern": "/$" },
-          { "pattern": "\\.$" },
-          { "pattern": "\\.lock(?:/|$)" },
-          { "pattern": "(?:^|/)\\." },
-          { "pattern": "\\.\\." },
-          { "pattern": "//" },
-          { "pattern": "@\\{" }
+          {
+            "pattern": "/$"
+          },
+          {
+            "pattern": "\\.$"
+          },
+          {
+            "pattern": "\\.lock(?:/|$)"
+          },
+          {
+            "pattern": "(?:^|/)\\."
+          },
+          {
+            "pattern": "\\.\\."
+          },
+          {
+            "pattern": "//"
+          },
+          {
+            "pattern": "@\\{"
+          }
         ]
       }
     },
-    "canonical_base_url": { "$ref": "#/$defs/canonicalUrl" },
-    "deployment_target_id": { "$ref": "#/$defs/id" },
-    "base_commit_oid": { "$ref": "#/$defs/gitOid" },
-    "base_tree_oid": { "$ref": "#/$defs/gitOid" },
-    "candidate_commit_oid": { "$ref": "#/$defs/gitOid" },
-    "candidate_tree_oid": { "$ref": "#/$defs/gitOid" },
+    "canonical_base_url": {
+      "$ref": "#/$defs/canonicalUrl"
+    },
+    "deployment_target_id": {
+      "$ref": "#/$defs/id"
+    },
+    "base_commit_oid": {
+      "$ref": "#/$defs/gitOid"
+    },
+    "base_tree_oid": {
+      "$ref": "#/$defs/gitOid"
+    },
+    "candidate_commit_oid": {
+      "$ref": "#/$defs/gitOid"
+    },
+    "candidate_tree_oid": {
+      "$ref": "#/$defs/gitOid"
+    },
     "changed_paths": {
       "type": "array",
       "minItems": 1,
       "maxItems": 64,
-      "items": { "$ref": "#/$defs/pathChange" }
+      "items": {
+        "$ref": "#/$defs/pathChange"
+      }
     },
-    "diff_sha256": { "$ref": "#/$defs/sha256" },
-    "writable_policy_sha256": { "$ref": "#/$defs/sha256" },
-    "content_schema_sha256": { "$ref": "#/$defs/sha256" },
-    "markdown_policy_sha256": { "$ref": "#/$defs/sha256" },
-    "renderer_sha256": { "$ref": "#/$defs/sha256" },
-    "theme_sha256": { "$ref": "#/$defs/sha256" },
-    "package_lock_sha256": { "$ref": "#/$defs/sha256" },
-    "preview_dist_tree_sha256": { "$ref": "#/$defs/sha256" },
-    "source_pack_sha256": { "$ref": "#/$defs/sha256" },
-    "claim_ledger_sha256": { "$ref": "#/$defs/sha256" },
+    "diff_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "writable_policy_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "writable_policy_version": {
+      "type": "integer",
+      "const": 3,
+      "$comment": "The `schemaVersion` of governance/writable-paths.v1.json this candidate was built against. `writable_policy_sha256` alone could not catch a stale publisher: it is a digest with nothing in the manifest to compare it to, so a publisher still holding version 1 of the writable policy — which declared 3 of the 13 coupled phone targets — produced a structurally valid candidate that would have left 10 occurrences stale. Pinning the version makes a stale publisher fail schema validation at candidate construction. tests/governance.test.mjs asserts this const equals the writable policy's actual schemaVersion, so the two cannot drift apart silently."
+    },
+    "content_schema_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "markdown_policy_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "renderer_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "theme_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "package_lock_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "preview_dist_tree_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "source_pack_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "claim_ledger_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
     "source_snapshots": {
       "type": "array",
       "minItems": 1,
@@ -99,104 +178,269 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["source_id", "snapshot_sha256"],
+        "required": [
+          "source_id",
+          "snapshot_sha256"
+        ],
         "properties": {
-          "source_id": { "$ref": "#/$defs/id" },
-          "snapshot_sha256": { "$ref": "#/$defs/sha256" }
+          "source_id": {
+            "$ref": "#/$defs/id"
+          },
+          "snapshot_sha256": {
+            "$ref": "#/$defs/sha256"
+          }
         }
       }
     },
     "classification": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["level", "compartments"],
+      "required": [
+        "level",
+        "compartments"
+      ],
       "properties": {
-        "level": { "const": "public" },
-        "compartments": { "type": "array", "maxItems": 0 }
+        "level": {
+          "const": "public"
+        },
+        "compartments": {
+          "type": "array",
+          "maxItems": 0
+        }
       }
     },
     "asset_hashes": {
       "type": "array",
       "maxItems": 128,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/sha256" }
+      "items": {
+        "$ref": "#/$defs/sha256"
+      }
     },
     "canonical_urls": {
       "type": "array",
       "minItems": 1,
       "maxItems": 64,
       "uniqueItems": true,
-      "items": { "$ref": "#/$defs/canonicalUrl" }
+      "items": {
+        "$ref": "#/$defs/canonicalUrl"
+      }
     },
-    "approval_policy_version": { "$ref": "#/$defs/id" },
-    "approval_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "approval_policy_version": {
+      "$ref": "#/$defs/id"
+    },
+    "approval_policy_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
     "required_approval_stages": {
       "type": "array",
       "minItems": 1,
       "maxItems": 2,
-      "items": { "enum": ["legal_sign_off", "publication_approval"] }
+      "items": {
+        "enum": [
+          "legal_sign_off",
+          "publication_approval"
+        ]
+      }
     }
   },
   "allOf": [
     {
-      "if": { "type": "object", "properties": { "object_format": { "const": "sha1" } } },
+      "if": {
+        "type": "object",
+        "properties": {
+          "object_format": {
+            "const": "sha1"
+          }
+        }
+      },
       "then": {
         "type": "object",
         "properties": {
-          "base_commit_oid": { "$ref": "#/$defs/gitOidSha1" },
-          "base_tree_oid": { "$ref": "#/$defs/gitOidSha1" },
-          "candidate_commit_oid": { "$ref": "#/$defs/gitOidSha1" },
-          "candidate_tree_oid": { "$ref": "#/$defs/gitOidSha1" },
+          "base_commit_oid": {
+            "$ref": "#/$defs/gitOidSha1"
+          },
+          "base_tree_oid": {
+            "$ref": "#/$defs/gitOidSha1"
+          },
+          "candidate_commit_oid": {
+            "$ref": "#/$defs/gitOidSha1"
+          },
+          "candidate_tree_oid": {
+            "$ref": "#/$defs/gitOidSha1"
+          },
           "changed_paths": {
             "type": "array",
-            "items": { "$ref": "#/$defs/pathChangeSha1" }
+            "items": {
+              "$ref": "#/$defs/pathChangeSha1"
+            }
           }
         }
       }
     },
     {
-      "if": { "type": "object", "properties": { "object_format": { "const": "sha256" } } },
+      "if": {
+        "type": "object",
+        "properties": {
+          "object_format": {
+            "const": "sha256"
+          }
+        }
+      },
       "then": {
         "type": "object",
         "properties": {
-          "base_commit_oid": { "$ref": "#/$defs/gitOidSha256" },
-          "base_tree_oid": { "$ref": "#/$defs/gitOidSha256" },
-          "candidate_commit_oid": { "$ref": "#/$defs/gitOidSha256" },
-          "candidate_tree_oid": { "$ref": "#/$defs/gitOidSha256" },
+          "base_commit_oid": {
+            "$ref": "#/$defs/gitOidSha256"
+          },
+          "base_tree_oid": {
+            "$ref": "#/$defs/gitOidSha256"
+          },
+          "candidate_commit_oid": {
+            "$ref": "#/$defs/gitOidSha256"
+          },
+          "candidate_tree_oid": {
+            "$ref": "#/$defs/gitOidSha256"
+          },
           "changed_paths": {
             "type": "array",
-            "items": { "$ref": "#/$defs/pathChangeSha256" }
+            "items": {
+              "$ref": "#/$defs/pathChangeSha256"
+            }
           }
         }
       }
     },
     {
-      "if": { "type": "object", "properties": { "operation_kind": { "const": "public_phone_patch" } } },
-      "then": {
+      "if": {
         "type": "object",
         "properties": {
-          "artifact_class": { "const": "site_block_patch" },
-          "required_approval_stages": {
-            "type": "array",
-            "prefixItems": [{ "const": "publication_approval" }],
-            "items": false,
-            "minItems": 1,
-            "maxItems": 1
+          "operation_kind": {
+            "const": "public_phone_patch"
           }
         }
-      }
-    },
-    {
-      "if": { "type": "object", "properties": { "operation_kind": { "const": "article_publish" } } },
+      },
       "then": {
         "type": "object",
         "properties": {
-          "artifact_class": { "const": "article" },
+          "artifact_class": {
+            "const": "site_block_patch"
+          },
           "required_approval_stages": {
             "type": "array",
             "prefixItems": [
-              { "const": "legal_sign_off" },
-              { "const": "publication_approval" }
+              {
+                "const": "publication_approval"
+              }
+            ],
+            "items": false,
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "changed_paths": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "enum": [
+                    "src/data/site.yaml",
+                    "src/data/pages.yaml",
+                    "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+                    "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md"
+                  ]
+                },
+                "change": {
+                  "const": "modify"
+                }
+              }
+            },
+            "allOf": [
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "const": "src/data/site.yaml"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "const": "src/data/pages.yaml"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "const": "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "const": "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            ],
+            "$comment": "THE COUPLED SET, ENFORCED. governance/writable-paths.v1.json `coupledSet` declares that a public_phone_patch writes all four files and all thirteen targets atomically or writes nothing. Before version 3 that was prose: `changed_paths` inherited only the global `minItems: 1`, so a manifest declaring just src/data/site.yaml validated and would have written 3 of 13 occurrences, leaving both meta-description surfaces and two article bodies advertising the old number. The `contains` clauses require each of the four paths to be present, min/maxItems and the `path` enum forbid any fifth or foreign path (src/styles.css is byte-frozen, worker/index.js is not content), and `change: \"modify\"` forbids a phone patch from declaring an `add` or a `delete` — a phone-number change must never create or remove a file."
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "operation_kind": {
+            "const": "article_publish"
+          }
+        }
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "artifact_class": {
+            "const": "article"
+          },
+          "required_approval_stages": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "const": "legal_sign_off"
+              },
+              {
+                "const": "publication_approval"
+              }
             ],
             "items": false,
             "minItems": 2,
@@ -242,52 +486,131 @@
     "blob": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["oid", "sha256", "mode", "size_bytes"],
+      "required": [
+        "oid",
+        "sha256",
+        "mode",
+        "size_bytes"
+      ],
       "properties": {
-        "oid": { "$ref": "#/$defs/gitOid" },
-        "sha256": { "$ref": "#/$defs/sha256" },
-        "mode": { "const": "100644" },
-        "size_bytes": { "type": "integer", "minimum": 0, "maximum": 1048576 }
+        "oid": {
+          "$ref": "#/$defs/gitOid"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "mode": {
+          "const": "100644"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1048576
+        }
       }
     },
     "pathChange": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "change", "before", "after"],
+      "required": [
+        "path",
+        "change",
+        "before",
+        "after"
+      ],
       "properties": {
-        "path": { "$ref": "#/$defs/path" },
-        "change": { "enum": ["add", "modify", "delete"] },
-        "before": { "oneOf": [{ "$ref": "#/$defs/blob" }, { "type": "null" }] },
-        "after": { "oneOf": [{ "$ref": "#/$defs/blob" }, { "type": "null" }] }
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "change": {
+          "enum": [
+            "add",
+            "modify",
+            "delete"
+          ]
+        },
+        "before": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/blob"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "after": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/blob"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
       },
       "allOf": [
         {
-          "if": { "type": "object", "properties": { "change": { "const": "add" } } },
+          "if": {
+            "type": "object",
+            "properties": {
+              "change": {
+                "const": "add"
+              }
+            }
+          },
           "then": {
             "type": "object",
             "properties": {
-              "before": { "type": "null" },
-              "after": { "$ref": "#/$defs/blob" }
+              "before": {
+                "type": "null"
+              },
+              "after": {
+                "$ref": "#/$defs/blob"
+              }
             }
           }
         },
         {
-          "if": { "type": "object", "properties": { "change": { "const": "modify" } } },
+          "if": {
+            "type": "object",
+            "properties": {
+              "change": {
+                "const": "modify"
+              }
+            }
+          },
           "then": {
             "type": "object",
             "properties": {
-              "before": { "$ref": "#/$defs/blob" },
-              "after": { "$ref": "#/$defs/blob" }
+              "before": {
+                "$ref": "#/$defs/blob"
+              },
+              "after": {
+                "$ref": "#/$defs/blob"
+              }
             }
           }
         },
         {
-          "if": { "type": "object", "properties": { "change": { "const": "delete" } } },
+          "if": {
+            "type": "object",
+            "properties": {
+              "change": {
+                "const": "delete"
+              }
+            }
+          },
           "then": {
             "type": "object",
             "properties": {
-              "before": { "$ref": "#/$defs/blob" },
-              "after": { "type": "null" }
+              "before": {
+                "$ref": "#/$defs/blob"
+              },
+              "after": {
+                "type": "null"
+              }
             }
           }
         }
@@ -295,36 +618,94 @@
     },
     "blobSha1": {
       "allOf": [
-        { "$ref": "#/$defs/blob" },
-        { "type": "object", "properties": { "oid": { "$ref": "#/$defs/gitOidSha1" } } }
+        {
+          "$ref": "#/$defs/blob"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "oid": {
+              "$ref": "#/$defs/gitOidSha1"
+            }
+          }
+        }
       ]
     },
     "blobSha256": {
       "allOf": [
-        { "$ref": "#/$defs/blob" },
-        { "type": "object", "properties": { "oid": { "$ref": "#/$defs/gitOidSha256" } } }
+        {
+          "$ref": "#/$defs/blob"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "oid": {
+              "$ref": "#/$defs/gitOidSha256"
+            }
+          }
+        }
       ]
     },
     "pathChangeSha1": {
       "allOf": [
-        { "$ref": "#/$defs/pathChange" },
+        {
+          "$ref": "#/$defs/pathChange"
+        },
         {
           "type": "object",
           "properties": {
-            "before": { "oneOf": [{ "$ref": "#/$defs/blobSha1" }, { "type": "null" }] },
-            "after": { "oneOf": [{ "$ref": "#/$defs/blobSha1" }, { "type": "null" }] }
+            "before": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/blobSha1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "after": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/blobSha1"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           }
         }
       ]
     },
     "pathChangeSha256": {
       "allOf": [
-        { "$ref": "#/$defs/pathChange" },
+        {
+          "$ref": "#/$defs/pathChange"
+        },
         {
           "type": "object",
           "properties": {
-            "before": { "oneOf": [{ "$ref": "#/$defs/blobSha256" }, { "type": "null" }] },
-            "after": { "oneOf": [{ "$ref": "#/$defs/blobSha256" }, { "type": "null" }] }
+            "before": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/blobSha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "after": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/blobSha256"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
           }
         }
       ]
