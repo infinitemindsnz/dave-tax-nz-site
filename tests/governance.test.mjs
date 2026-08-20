@@ -17,7 +17,7 @@
 // `excerpt`) reached seven places in rendered output, including the homepage
 // and rss.xml. Do not narrow that walk back to a file list.
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -31,14 +31,25 @@ const writablePaths = readJson("writable-paths.v1.json");
 const approvalPolicy = readJson("approval-policy.v1.json");
 const candidateManifestSchema = readJson("schemas", "candidate-manifest.v1.schema.json");
 
-/** Every file under `dir`, recursively, as paths relative to the repository root. */
-function walkFiles(dir, skip = new Set()) {
+/**
+ * Every file under `dir`, recursively, as paths relative to `base` (the
+ * repository root). `skip` is matched against each entry's full path
+ * relative to `base`, not its basename, so an excluded top-level directory
+ * like `tests` does not also swallow an unrelated nested `public/tests`.
+ * Symlinks are resolved with `statSync` (which follows them) rather than
+ * the non-following `Dirent` type checks, since Astro dereferences symlinks
+ * into the published output — a symlinked file must be scanned like any
+ * other file, not silently dropped.
+ */
+function walkFiles(dir, skip = new Set(), base = dir) {
   const out = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (skip.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...walkFiles(full, skip));
-    else if (entry.isFile()) out.push(path.relative(root, full).split(path.sep).join("/"));
+    const rel = path.relative(base, full).split(path.sep).join("/");
+    if (skip.has(rel)) continue;
+    const stats = entry.isSymbolicLink() ? statSync(full) : entry;
+    if (stats.isDirectory()) out.push(...walkFiles(full, skip, base));
+    else if (stats.isFile()) out.push(rel);
   }
   return out;
 }
@@ -107,9 +118,7 @@ const siteYaml = parseSource("src/data/site.yaml");
  * to look for two ASCII strings dominated the suite's runtime for no benefit.
  */
 const excluded = new Set(scanPrecondition.scanExclusions.map((entry) => entry.path));
-const scanRootFiles = walkFiles(root, excluded).filter(
-  (rel) => !excluded.has(rel.split("/")[0]) && !excluded.has(rel),
-);
+const scanRootFiles = walkFiles(root, excluded);
 const rawText = new Map();
 const rawCounts = new Map();
 for (const rel of scanRootFiles) {
