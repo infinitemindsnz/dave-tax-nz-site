@@ -22,6 +22,8 @@ npm run dev
 ## Production checks
 
 ```bash
+npm run content:validate
+npm run test:governance
 npm run build
 npm run test:sites
 ```

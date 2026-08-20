@@ -1,0 +1,36 @@
+name: Governed content CI
+
+# Gate schema and coupled-set violations on every candidate branch before a
+# publisher or approver ever sees it: astro-conversion is the working branch
+# for this content model, and governed/* branches are where approved
+# candidates land. See governance/writable-paths.v1.json's
+# closed_set_occurrence_scan precondition for why a build-only check is not
+# enough on its own.
+on:
+  push:
+    branches:
+      - astro-conversion
+      - "governed/**"
+  pull_request:
+    branches:
+      - astro-conversion
+      - "governed/**"
+
+concurrency:
+  group: governed-content-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run content:validate
+      - run: npm run test:governance
+      - run: npm run build
+      - run: npm run test:sites
