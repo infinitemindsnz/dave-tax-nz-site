@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://dave-tax-nz-site.fly.dev/schemas/candidate-manifest.v1.schema.json",
+  "$id": "https://dave-tax-nz-site.vercel.app/schemas/candidate-manifest.v1.schema.json",
   "title": "Assistant Platform SiteCandidateManifestV1",
   "type": "object",
   "additionalProperties": false,

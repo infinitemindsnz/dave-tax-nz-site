@@ -3,10 +3,9 @@ name: Governed content CI
 # Gate schema and coupled-set violations on every candidate branch before a
 # publisher or approver ever sees it: astro-conversion is the working branch
 # for this content model, and governed/* branches are where approved
-# candidates land. main is also gated here because deploy.yml ships from
-# main on every push — without main in this trigger list, the governance
-# suite never runs on the branch that actually publishes, and a violation
-# merged straight to main would deploy unchecked. See
+# candidates land. Both long-lived branches remain gated because Vercel ships
+# from the configured production branch after a protected merge; a violation
+# merged directly into either branch must never deploy unchecked. See
 # governance/writable-paths.v1.json's closed_set_occurrence_scan
 # precondition for why a build-only check is not enough on its own.
 on:

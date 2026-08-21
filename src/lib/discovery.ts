@@ -37,7 +37,7 @@ export interface SiteRoute {
  *
  * `articlePath()` in src/lib/articles.ts is what an `href` needs: it has the
  * configured `base` applied already. `absoluteUrl()` applies the base itself,
- * so feeding it that value would double the prefix on the GitHub Pages deploy.
+ * so feeding it that value would duplicate the configured base path.
  * Stripping the base back off — rather than re-typing "articles/<slug>/" here —
  * keeps one definition of the route shape in the repo.
  */

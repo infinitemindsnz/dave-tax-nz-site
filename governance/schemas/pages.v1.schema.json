@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://dave-tax-nz-site.fly.dev/schemas/pages.v1.schema.json",
+  "$id": "https://dave-tax-nz-site.vercel.app/schemas/pages.v1.schema.json",
   "title": "Dave Ananth tax site — governed page copy (src/data/pages.yaml)",
   "type": "object",
   "additionalProperties": false,

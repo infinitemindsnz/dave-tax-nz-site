@@ -416,19 +416,16 @@ constraint.
 
 ## Renderer and environment
 
-`astro.config.mjs` resolves `base` from `process.env.GITHUB_ACTIONS`: set, it
-builds for the GitHub Pages sub-path; unset, it builds for `/`. The build is
-therefore not environment-independent, and a preview tree digest is only
-comparable to a production tree digest when both were produced under the same
-setting. `renderer-manifest.v1.json` pins `GITHUB_ACTIONS` as required-unset
-for governed builds.
+`astro.config.mjs` fixes `base` to `/` for the generated Vercel origin. Preview
+and production builds therefore share the same public path layout, and their
+tree digests are directly comparable when the source and toolchain match.
 
 `npm run build` writes more than the static site: `dist/client` is the Astro
 output, and `scripts/prepare-sites-build.mjs` then copies `worker/index.js` to
 `dist/server/index.js` and `.openai/hosting.json` to `dist/.openai/`. The
 manifest records `dist` as the output directory and `dist/client` as the
-static root, because the Docker image and the Pages workflow both publish the
-latter.
+static root. Vercel publishes that static root, while the extra server and
+hosting files preserve the local Sites handoff required by this repository.
 
 The build emits twenty HTML pages — the homepage, `/articles/`, and one page
 per published article — plus a discovery surface (`llms.txt`, `robots.txt`,

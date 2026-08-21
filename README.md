@@ -27,3 +27,9 @@ npm run test:governance
 npm run build
 npm run test:sites
 ```
+
+## Deployment
+
+Production is a static Vercel project at
+`https://dave-tax-nz-site.vercel.app`. Vercel deploys the protected
+`astro-conversion` branch after the governed content check succeeds.

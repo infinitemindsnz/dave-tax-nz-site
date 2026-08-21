@@ -12,8 +12,8 @@
   "staticRootDirectory": "dist/client",
   "outputDigest": "sha256-tree-v1",
   "buildEnvironment": {
-    "comment": "astro.config.mjs resolves `base` from process.env.GITHUB_ACTIONS: set, it builds for the GitHub Pages sub-path \"/dave-tax-nz-redesign/\"; unset, it builds for \"/\". The build is therefore NOT environment-independent, and a preview tree digest is only comparable to a production tree digest when both were produced under the same setting. Governed builds run with GITHUB_ACTIONS unset.",
-    "requiredUnset": ["GITHUB_ACTIONS"],
+    "comment": "astro.config.mjs fixes `base` to \"/\" for the generated Vercel origin, so preview and production builds use the same public path layout.",
+    "requiredUnset": [],
     "resolvedBase": "/"
   },
   "sourceGlobs": [
@@ -104,7 +104,7 @@
       "reason": "Repository tooling and documentation. Not read by the build."
     },
     {
-      "paths": ["Dockerfile", "fly.toml", "nginx.conf", ".github/workflows/deploy.yml"],
+      "paths": ["vercel.json"],
       "reason": "Deployment topology, downstream of the renderer. A deployment change does not alter dist and is out of scope for a content candidate."
     }
   ]

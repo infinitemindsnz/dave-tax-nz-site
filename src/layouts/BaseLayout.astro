@@ -57,7 +57,7 @@ const {
 } = Astro.props;
 
 // `Astro.site` is set in astro.config.mjs; `Astro.url.pathname` already carries
-// the configured `base`, so this stays correct on the GitHub Pages deploy.
+// the configured `base`, so this stays correct on the generated Vercel origin.
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 
 // Assets are referenced site-relative in the markup ("assets/…", exactly as in
