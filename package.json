@@ -25,5 +25,8 @@
   "devDependencies": {
     "@astrojs/check": "0.9.4",
     "typescript": "5.9.3"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.62.2"
   }
 }
