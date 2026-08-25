@@ -88,7 +88,7 @@ hero:
     # The rendered label is preceded by a Phone icon and a literal space:
     # `<svg …/> Call Dave` — preserve that space when porting.
     - label: "Call Dave"
-      href: "tel:+64210216888"
+      href: "tel:+642102168888"
       variant: "secondary"
       external: false
       icon: "Phone"
@@ -213,8 +213,8 @@ contact:
     # phoneHref "tel:+64210216888". Do not reconcile without the client's
     # confirmation of the correct number.
     - label: "Call Dave directly"
-      value: "+64 21 021 68888"
-      href: "tel:+64210216888"
+      value: "+64 (21) 021 68888"
+      href: "tel:+642102168888"
     - label: "Email Dave"
       value: "dave@davetaxnz.nz"
       href: "mailto:dave@davetaxnz.nz"

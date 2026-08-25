@@ -141,7 +141,7 @@ I offer a **free, no-obligation consultation** for overseas-based borrowers. We 
 
 **Call or message me today:**
 
-- Phone: +64 21 021 68888
+- Phone: +64 (21) 021 68888
 - Email: dave@davetaxnz.nz
 - Website: davetaxnz.nz/book-a-consultation
 

@@ -62,6 +62,6 @@ IRD would rather have a resolved debt than an arrested borrower. That gives us r
 
 I offer a free, no-obligation consultation for overseas borrowers. Tell me your situation and I will tell you honestly what your risk is and what we can do about it. Most matters can be resolved quickly and remotely — you do not need to be in New Zealand.
 
-- Phone: +64 21 021 68888
+- Phone: +64 (21) 021 68888
 - Email: dave@davetaxnz.nz
 - Website: davetaxnz.nz/book-a-consultation
