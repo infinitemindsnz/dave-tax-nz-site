@@ -2,23 +2,22 @@ name: Governed content CI
 
 # Gate schema and coupled-set violations on every candidate branch before a
 # publisher or approver ever sees it: astro-conversion is the working branch
-# for this content model, and governed/* branches are where approved
-# candidates land. Both long-lived branches remain gated because Vercel ships
-# from the configured production branch after a protected merge; a violation
-# merged directly into either branch must never deploy unchecked. See
-# governance/writable-paths.v1.json's closed_set_occurrence_scan
-# precondition for why a build-only check is not enough on its own.
+# for this content model, and governed/* branches are submitted as pull
+# requests. Long-lived branches validate their current tree. Governed pull
+# requests validate the audited base policy, the complete coupled changed-file
+# boundary, and the candidate build; the candidate tree is expected not to
+# contain the base policy's old phone literal. See writable-paths.v1.json's
+# closed_set_occurrence_scan precondition for why a build-only check is not
+# enough on its own.
 on:
   push:
     branches:
       - main
       - astro-conversion
-      - "governed/**"
   pull_request:
     branches:
       - main
       - astro-conversion
-      - "governed/**"
 
 concurrency:
   group: governed-content-ci-${{ github.workflow }}-${{ github.ref }}
@@ -29,12 +28,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run content:validate
-      - run: npm run test:governance
+      - name: Verify governed candidate boundary
+        if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'governed/') }}
+        env:
+          GOVERNED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GOVERNED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/verify-governed-candidate-ci.mjs
+      - name: Test audited governance base for governed candidates
+        if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'governed/') }}
+        env:
+          GOVERNED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          base_dir="$(mktemp -d)"
+          cleanup() {
+            git worktree remove --force "$base_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          git worktree add --detach "$base_dir" "$GOVERNED_BASE_SHA"
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$base_dir/node_modules"
+          npm --prefix "$base_dir" run test:governance
+      - name: Test governance on the checked-out tree
+        if: ${{ github.event_name != 'pull_request' || !startsWith(github.head_ref, 'governed/') }}
+        run: npm run test:governance
       - run: npm run build
       - run: npm run test:sites
