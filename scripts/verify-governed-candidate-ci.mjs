@@ -21,9 +21,18 @@ const policy = JSON.parse(git("show", `${baseSha}:governance/writable-paths.v1.j
 assert.equal(policy?.coupledSet?.operationKind, "public_phone_patch", "base policy has no active phone coupled set");
 assert.equal(policy?.coupledSet?.writeMode, "atomic_across_files", "base policy phone write is not atomic");
 
-const expectedPaths = [...policy.coupledSet.paths].sort();
-assert.ok(expectedPaths.length > 0, "base policy coupled set is empty");
-assert.equal(new Set(expectedPaths).size, expectedPaths.length, "base policy coupled paths are duplicated");
+const phonePaths = [...policy.coupledSet.paths].sort();
+assert.ok(phonePaths.length > 0, "base policy coupled set is empty");
+assert.equal(new Set(phonePaths).size, phonePaths.length, "base policy coupled paths are duplicated");
+
+// The text-patch surface is absent in base policies before writable-paths v4;
+// a candidate can only claim the shape its own base revision declares.
+const textPatchFiles = Array.isArray(policy?.textPatch?.files) ? [...policy.textPatch.files].sort() : null;
+if (textPatchFiles !== null) {
+  assert.equal(policy.textPatch.operationKind, "site_text_patch", "base policy textPatch has the wrong operation kind");
+  assert.ok(textPatchFiles.length > 0, "base policy textPatch file allowlist is empty");
+  assert.equal(new Set(textPatchFiles).size, textPatchFiles.length, "base policy textPatch files are duplicated");
+}
 
 const statusLines = git("diff", "--name-status", "--no-renames", baseSha, headSha)
   .trim()
@@ -37,13 +46,33 @@ const changedPaths = statusLines.map((line) => {
   return fields[1];
 });
 
-assert.deepEqual(
-  [...changedPaths].sort(),
-  expectedPaths,
-  "governed candidate changed-file set must equal the complete base-policy coupled set",
-);
-
 const changedGovernance = changedPaths.filter((entry) => entry === "governance" || entry.startsWith("governance/"));
 assert.deepEqual(changedGovernance, [], "a governed candidate may not modify its own authority policy");
 
-process.stdout.write(`Governed candidate boundary verified across ${changedPaths.length} coupled files.\n`);
+// Operation dispatch by changed-file shape. A candidate is either the complete
+// phone coupled set (all four files, exactly), or a nonempty subset of the
+// base policy's textPatch file allowlist. Nothing in between: a three-of-four
+// phone candidate must NOT fall through into the text-patch branch unless
+// every changed file is genuinely inside the text allowlist — and the two
+// article files never are, so a subset phone write still refuses here.
+const sortedChanged = [...changedPaths].sort();
+const isPhoneCoupledSet =
+  sortedChanged.length === phonePaths.length && sortedChanged.every((entry, index) => entry === phonePaths[index]);
+
+if (isPhoneCoupledSet) {
+  process.stdout.write(`Governed candidate boundary verified across ${changedPaths.length} coupled files (public_phone_patch).\n`);
+} else {
+  assert.ok(
+    textPatchFiles !== null,
+    "governed candidate changed-file set must equal the complete base-policy coupled set (the base policy declares no text-patch surface)",
+  );
+  const allowed = new Set(textPatchFiles);
+  const outside = sortedChanged.filter((entry) => !allowed.has(entry));
+  assert.deepEqual(
+    outside,
+    [],
+    "governed candidate must be either the complete phone coupled set or a nonempty subset of the textPatch file allowlist",
+  );
+  assert.ok(sortedChanged.length > 0, "a governed text candidate must change at least one allowlisted file");
+  process.stdout.write(`Governed candidate boundary verified across ${changedPaths.length} text-surface files (site_text_patch).\n`);
+}

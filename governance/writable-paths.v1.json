@@ -1,7 +1,11 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "contractId": "dave-tax-nz-site-content.v1",
   "changeLog": [
+    {
+      "version": 4,
+      "comment": "ADDS THE FIRST GENERAL CONTENT OPERATION: `site_text_patch` (the `textPatch` block below). It widens the write surface from the single phone fact to the site's single-line text surfaces — titles, headings, descriptions, list items and one-line bodies — while keeping `default: deny` and leaving the phone coupled set, article bodies, testimonial quotes, links, hrefs, structural enums and asset identity untouched. Design constraints carried from the phone/hours audit: (1) SEMANTIC BINDING — a caller addresses stable `surfaceId`s, never raw pointers; every enumerated surface carries a human `meaning`, and patterned surfaces derive their id from slug/section-index/role so the approver-facing review always shows file, pointer, before and after. This is the Milestone-3 'semantic binding of proposal field to pointer MEANING' requirement; the hours operation died because a name pointed at a CTA and every structural gate passed. (2) PHONE LITERAL PRESERVATION — a text patch may rewrite prose AROUND the governed phone literals but must leave each file's occurrence count of every closed-set literal unchanged; the atomic public_phone_patch remains the only path that may change the number itself. (3) SINGLE-LINE FLOW SCALARS ONLY — the publisher's pointer-splice writer refuses block scalars and control characters, so this operation's surfaces are exactly the scalars it can rewrite byte-surgically; multi-paragraph block bodies remain human-owned until a block-scalar renderer ships with its own review. (4) QUOTE SECTIONS EXCLUDED — on a `quote` section, heading and meta are attribution and body is the client's exact supplied wording; no text operation may touch any part of one."
+    },
     {
       "version": 2,
       "comment": "TWO CHANGES, BOTH GOVERNANCE-EVIDENCED (governance/evidence/2026-08-20-phone-and-hours-audit.v1.md). (1) `public_hours_patch` is now FULLY WITHDRAWN, not merely refused here: it is also removed from governance/approval-policy.v1.json's `operations[]` and from the `operation_kind` enum and `if`/`then` branch in governance/schemas/candidate-manifest.v1.schema.json, so the operation kind can no longer be built, approved, or even syntactically declared by any candidate — version 1 left those three files untouched, so an hours candidate could still be constructed and genuinely approved before dying at this file's write gate. (2) `public_phone` is redefined as a CLOSED, TWO-INPUT CONTRACT — exactly `display` and `e164`, nothing else — written over the COMPLETE coupled set of render-reachable phone occurrences rather than the three in `src/data/site.yaml` alone. The version 1 coupled set covered 3 of 13 render-reachable occurrences (audit finding 1); a fully-approved version 1 patch left 10 stale, including both meta-description surfaces. Version 2 declares all 13 as one atomic target set across four files, and adds a closed-set precondition that scans the base revision and refuses the candidate if any render-reachable phone occurrence exists outside the declared 13 — so an occurrence the policy does not know about blocks the write instead of silently surviving it."
@@ -382,5 +386,89 @@
     ],
     "totalTargets": 13,
     "comment": "THE ATOMICITY DECLARATION VERSION 2 ONLY IMPLIED. Every `writeMode: \"atomic\"` in `files[]` above is scoped to its own file entry; nothing in that structure said the four files move together, and a machine reading `files[]` alone would have seen four independently atomic writes. This block is the authoritative statement: a public_phone_patch writes ALL of `paths` and ALL `totalTargets` targets in one commit, or it writes nothing. There is no per-file, per-target or best-effort mode, and a partial application is a contract violation, not a degraded success. The candidate-manifest schema enforces the manifest half of this — `changed_paths` for a public_phone_patch must be exactly these paths, each with `change: \"modify\"` — so a subset candidate now fails structural validation before approval rather than at, or after, the write."
+  },
+  "textPatch": {
+    "operationKind": "site_text_patch",
+    "proposalField": "site_text",
+    "artifactClass": "site_text_patch",
+    "writeMode": "atomic",
+    "comment": "One governed candidate per request: every requested surface write lands in one commit across at most the two content-model files, or nothing lands. Unlike the phone coupled set, a candidate touches only the files its requested surfaces live in — the candidate-manifest branch pins changed_paths to a nonempty subset of `files`. The surface catalogue is the authority a caller addresses: `enumeratedSurfaces` for src/data/site.yaml (stable id + pointer + meaning), `patternedSurfaces` for src/data/pages.yaml (id scheme derived from slug/section-index/role, materialised against the base revision at candidate time with section-kind awareness). A surfaceId that does not resolve, resolves to a non-string, resolves to a block scalar, or resolves inside an excluded kind refuses the whole candidate.",
+    "constraints": {
+      "maxSurfacesPerCandidate": 12,
+      "maxValueBytes": 2048,
+      "maxTotalValueBytes": 16384,
+      "valueNewlines": "forbidden",
+      "scalarStyles": ["PLAIN", "QUOTE_SINGLE", "QUOTE_DOUBLE"],
+      "preserveLiteralOccurrences": [
+        {
+          "literal": "+64 21 021 68888",
+          "reason": "The public display phone. A text patch may rewrite the prose around it (four allowlisted surfaces legitimately contain it) but each touched file's occurrence count must be unchanged post-write; only the atomic public_phone_patch may change the number."
+        },
+        {
+          "literal": "tel:+64210216888",
+          "reason": "The dialable phone href literal. Same rule: occurrence counts per touched file are invariant under any text patch."
+        }
+      ]
+    },
+    "files": ["src/data/pages.yaml", "src/data/site.yaml"],
+    "enumeratedSurfaces": [
+      { "surfaceId": "site.meta.title", "file": "src/data/site.yaml", "jsonPointer": "/meta/title", "meaning": "Homepage browser-tab title and og:title" },
+      { "surfaceId": "site.meta.description", "file": "src/data/site.yaml", "jsonPointer": "/meta/description", "meaning": "Homepage meta description" },
+      { "surfaceId": "site.brand.tagline", "file": "src/data/site.yaml", "jsonPointer": "/brand/tagline", "meaning": "Brand tagline shown beside the site logo" },
+      { "surfaceId": "site.hero.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/hero/eyebrow", "meaning": "Hero eyebrow line above the headline" },
+      { "surfaceId": "site.hero.headline", "file": "src/data/site.yaml", "jsonPointer": "/hero/headline", "meaning": "Hero headline" },
+      { "surfaceId": "site.hero.lead", "file": "src/data/site.yaml", "jsonPointer": "/hero/lead", "meaning": "Hero lead paragraph" },
+      { "surfaceId": "site.hero.alert", "file": "src/data/site.yaml", "jsonPointer": "/hero/alert/text", "meaning": "Hero alert banner text" },
+      { "surfaceId": "site.hero.portrait-alt", "file": "src/data/site.yaml", "jsonPointer": "/hero/portrait/alt", "meaning": "Hero portrait image alt text" },
+      { "surfaceId": "site.hero.caption-role", "file": "src/data/site.yaml", "jsonPointer": "/hero/caption/role", "meaning": "Hero portrait caption: role line" },
+      { "surfaceId": "site.hero.caption-note", "file": "src/data/site.yaml", "jsonPointer": "/hero/caption/note", "meaning": "Hero portrait caption: note line" },
+      { "surfaceId": "site.proof.quote", "file": "src/data/site.yaml", "jsonPointer": "/proof/quote", "meaning": "Dave's own pull quote in the proof section (his words, not a client testimonial)" },
+      { "surfaceId": "site.proof.author-role", "file": "src/data/site.yaml", "jsonPointer": "/proof/author/role", "meaning": "Proof section author role line" },
+      { "surfaceId": "site.expertise.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/expertise/eyebrow", "meaning": "Expertise section eyebrow" },
+      { "surfaceId": "site.expertise.heading", "file": "src/data/site.yaml", "jsonPointer": "/expertise/heading", "meaning": "Expertise section heading" },
+      { "surfaceId": "site.expertise.intro", "file": "src/data/site.yaml", "jsonPointer": "/expertise/intro", "meaning": "Expertise section intro paragraph" },
+      { "surfaceId": "site.expertise.card1-title", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/0/title", "meaning": "Expertise card 01 title" },
+      { "surfaceId": "site.expertise.card1-text", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/0/text", "meaning": "Expertise card 01 body text" },
+      { "surfaceId": "site.expertise.card2-title", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/1/title", "meaning": "Expertise card 02 title" },
+      { "surfaceId": "site.expertise.card2-text", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/1/text", "meaning": "Expertise card 02 body text" },
+      { "surfaceId": "site.expertise.card3-title", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/2/title", "meaning": "Expertise card 03 title" },
+      { "surfaceId": "site.expertise.card3-text", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/2/text", "meaning": "Expertise card 03 body text" },
+      { "surfaceId": "site.story.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/story/eyebrow", "meaning": "Client-story section eyebrow" },
+      { "surfaceId": "site.story.body", "file": "src/data/site.yaml", "jsonPointer": "/story/body", "meaning": "Client-story section summary paragraph (the site's own copy; the quoted testimonial heading and credit are attribution and are NOT writable)" },
+      { "surfaceId": "site.insights.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/insights/eyebrow", "meaning": "Insights section eyebrow" },
+      { "surfaceId": "site.insights.heading", "file": "src/data/site.yaml", "jsonPointer": "/insights/heading", "meaning": "Insights section heading" },
+      { "surfaceId": "site.insights.intro", "file": "src/data/site.yaml", "jsonPointer": "/insights/intro", "meaning": "Insights section intro paragraph" },
+      { "surfaceId": "site.contact.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/contact/eyebrow", "meaning": "Contact section eyebrow" },
+      { "surfaceId": "site.contact.heading", "file": "src/data/site.yaml", "jsonPointer": "/contact/heading", "meaning": "Contact section heading" },
+      { "surfaceId": "site.contact.intro", "file": "src/data/site.yaml", "jsonPointer": "/contact/intro", "meaning": "Contact section intro paragraph" },
+      { "surfaceId": "site.contact.address", "file": "src/data/site.yaml", "jsonPointer": "/contact/rows/2/value", "meaning": "Office address line in the contact block" },
+      { "surfaceId": "site.footer.description", "file": "src/data/site.yaml", "jsonPointer": "/footer/description", "meaning": "Footer description paragraph" },
+      { "surfaceId": "site.footer.legal", "file": "src/data/site.yaml", "jsonPointer": "/footer/legal", "meaning": "Footer legal line" }
+    ],
+    "patternedSurfaces": {
+      "file": "src/data/pages.yaml",
+      "surfaceIdScheme": "page.<slug>.title | page.<slug>.description | page.<slug>.s<sectionIndex>.heading | page.<slug>.s<sectionIndex>.body | page.<slug>.s<sectionIndex>.item<itemIndex>",
+      "slugs": [
+        "about-dave",
+        "book-a-consultation",
+        "contact",
+        "ird-disputes-tax-penalties-negotiation",
+        "student-loan-negotiations",
+        "thanks-consult"
+      ],
+      "fields": ["title", "description", "sections/*/heading", "sections/*/body", "sections/*/items/*"],
+      "excludeSectionKinds": ["quote"],
+      "comment": "The id is derived, deterministic and self-describing: `page.contact.s3.body` names the body of section index 3 of the `contact` page. Materialisation happens against the base revision at candidate time: the platform resolves the id to its pointer, refuses ids on excluded slugs or excluded section kinds, refuses non-string or block-scalar targets, and the review projection carries file, pointer, before and after for every surface so the approver reads exactly what changes. `home` is excluded (unrouted WordPress provenance copy, preserved verbatim), `testimonials` is excluded (attribution-bearing quote archive), `articles-advice` is excluded (the client's own category filter list). `meta` never appears in `fields` — it exists only on quote sections and is attribution. `href` and `kind` are structural and are never writable by any text operation."
+    },
+    "neverWritableByTextPatch": [
+      { "jsonPointer": "src/data/site.yaml#/contact/action/title", "reason": "The free-consultation CTA heading — the exact pointer whose misuse motivated the public_hours_patch withdrawal. Test-pinned to its current value; any operation writing it needs its own reviewed contract." },
+      { "jsonPointer": "src/data/site.yaml#/contact/rows/0/value", "reason": "A render:raw phone coupled-set target; its value IS the display literal and belongs exclusively to public_phone_patch." },
+      { "jsonPointer": "src/data/site.yaml#/contact/rows/0/label, /hero/ctas/1/label, /hero/ctas/1/variant", "reason": "Phone-policy identity assertions — changing them refuses every future phone patch." },
+      { "jsonPointer": "src/data/site.yaml#/articlePages/*", "reason": "Article attribution chrome." },
+      { "jsonPointer": "src/data/site.yaml#/story/heading, /story/credit/*", "reason": "Quoted testimonial excerpt and its attribution." },
+      { "jsonPointer": "src/data/*.yaml#**/href, **/ctaHref, **/kind, **/variant, **/icon, **/external, **/number, **/src, **/width, **/height, /meta/lang, /meta/themeColor, **/label, **/linkLabel, **/ctaLabel, **/filters/*, **/filtersLabel, **/ariaLabel, **/skipLabel, **/menuOpenLabel, **/menuCloseLabel", "reason": "Links, structure, enums, asset identity, navigation chrome and control labels — not text surfaces. A text patch that can rewrite an href is a phishing primitive." },
+      { "jsonPointer": "src/data/articles.yaml#*", "reason": "The client's curated insights list and its order." },
+      { "jsonPointer": "src/content/articles/**", "reason": "Article bodies and frontmatter are human-owned; attribution is legally load-bearing; article_publish remains unauthorised." }
+    ]
   }
 }

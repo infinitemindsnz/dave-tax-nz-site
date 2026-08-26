@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "policyId": "dave-tax-nz-site-approval-v1",
-  "comment": "VERSION 2 — public_hours_patch removed. governance/writable-paths.v1.json documentedOperations.public_hours_patch withdrew this operation kind's write authority in version 1; it remained buildable and approvable here through version 1, which meant an approver could be asked to sign off a candidate that was already dead on arrival at the write gate. Removing the operations[] entry means a public_hours_patch candidate now fails structural approval-policy lookup, not only the final write. See governance/evidence/2026-08-20-phone-and-hours-audit.v1.md, finding 2.",
+  "comment": "VERSION 3 — adds site_text_patch (writable-paths v4 textPatch block): governed single-line text-surface replacement over the surface catalogue, one publication_approval stage, same authenticated decision surface as the phone patch. VERSION 2 — public_hours_patch removed. governance/writable-paths.v1.json documentedOperations.public_hours_patch withdrew this operation kind's write authority in version 1; it remained buildable and approvable here through version 1, which meant an approver could be asked to sign off a candidate that was already dead on arrival at the write gate. Removing the operations[] entry means a public_hours_patch candidate now fails structural approval-policy lookup, not only the final write. See governance/evidence/2026-08-20-phone-and-hours-audit.v1.md, finding 2.",
   "operations": [
     {
       "operationKind": "article_publish",
@@ -11,6 +11,11 @@
     {
       "operationKind": "public_phone_patch",
       "artifactClass": "site_block_patch",
+      "requiredApprovalStages": ["publication_approval"]
+    },
+    {
+      "operationKind": "site_text_patch",
+      "artifactClass": "site_text_patch",
       "requiredApprovalStages": ["publication_approval"]
     }
   ],
