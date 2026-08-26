@@ -199,16 +199,25 @@ about-dave:
     - kind: "prose"
       heading: "35+ Years in Tax Law, IRD Investigations & Commercial Advice"
       body: |-
-        Dave Ananth is a senior Auckland-based tax barrister, advising clients on IRD disputes, audits, investigations, penalties, GST matters, and student loan enforcement. With more than three decades of experience in legal practice across New Zealand and overseas, he brings deep practical insight into how tax, regulatory, and enforcement systems operate in reality.
+        Dave Ananth is a senior Auckland-based tax barrister whose areas of specialisation focus on overseas New Zealand student-loan debt, along with complex tax negotiations and Inland Revenue Department (IRD) disputes for both individuals and businesses. With more than three decades of experience in legal practice across New Zealand and overseas, he brings deep practical insight into how tax, regulatory, and enforcement systems operate in reality.
 
         Clients turn to Dave for calm, strategic, and technically rigorous advice, particularly in high-stakes matters involving IRD enforcement, negotiation, and dispute resolution.
+    # Client-approved areas of expertise (redesign, 21-25 August 2026). Replaces
+    # the WordPress-era list, which marketed audits, investigations and GST
+    # disputes/reassessments — outside the owner-approved practice positioning.
     - kind: "list"
       heading: "How Dave Can Help You"
       items:
-        - "Student loan arrears, penalties, overseas-based borrower issues, and IRD enforcement action"
-        - "IRD audits, tax disputes, and Inland Revenue negotiations"
-        - "Tax debt, penalties, late payment issues, and remission applications"
-        - "GST disputes, refunds, and reassessments"
+        - "Overseas-based student-loan borrowers and long-standing arrears"
+        - "Student-loan repayment, remission and hardship applications"
+        - "Student-loan border arrests and urgent pre-travel advice"
+        - "IRD tax-debt negotiations for individuals and businesses"
+        - "Income tax, GST and PAYE arrears, penalties and interest"
+        - "Negotiated tax debt repayment, settlement and financial-relief proposals"
+        - "Statutory demands, deduction notices, liquidation and bankruptcy risk"
+        - "New Zealand tax debt pursued against people living overseas"
+        - "Bright-line property tax advice, exclusions and IRD disputes"
+        - "Tax policy"
     - kind: "list"
       heading: "Why Clients Choose Dave"
       items:
@@ -228,6 +237,8 @@ about-dave:
         He has served as a judicial officer, litigation lawyer, and Inland Revenue prosecutor and adjudicator, developing deep expertise in evidence assessment, statutory interpretation, and dispute resolution. Since returning to New Zealand, his work has focused on tax audits, IRD investigations, penalties, GST matters, and student loan enforcement, particularly where matters are fact-heavy, high-risk, or enforcement-driven.
 
         This background allows Dave to advise clients strategically at an early stage, anticipate how Inland Revenue will approach a matter, and resolve disputes efficiently through negotiation where possible.
+
+        Beyond his core tax practice, Dave serves as the Honorary Consul of Timor-Leste in Auckland. In this diplomatic role, he facilitates cross-border labour mobility under New Zealand’s Recognised Seasonal Employer (RSE) framework, supports international trade and agricultural-sector collaboration, and advises stakeholders and investors on digital and commercial opportunities across borders.
     - kind: "prose"
       heading: "PROFESSIONAL MEMBERSHIPS / LEADERSHIP ROLES"
     - kind: "list"
@@ -287,6 +298,22 @@ testimonials:
   sections:
     - kind: "prose"
       heading: "TESTIMONIALS"
+    # The two August 2026 additions below were approved by the client on
+    # 25 August 2026 (redesign AGENTS.md client amendments). Supplied wording
+    # preserved exactly — do not rewrite or combine testimonials.
+    - kind: "quote"
+      heading: "Michael Bolton"
+      meta: "August 2026"
+      body: |-
+        Professional, honest, dependable, approachable, transparent, efficient and incredibly knowledgeable are just some of the words I would use to describe Dave and his team.
+
+        They handled our historical NZ student loan issue with professionalism and expertise, and from the outset they took away an enormous amount of stress and uncertainty. They also helped us avoid a significant financial cost, which we are incredibly grateful for.
+
+        We genuinely can’t thank Dave and his team enough. Their knowledge, communication and personal approach made what had been a very stressful situation feel completely manageable. I wouldn’t hesitate to recommend them to anyone needing expert advice and support.
+    - kind: "quote"
+      heading: "Stewart C"
+      meta: "August 2026"
+      body: "Following a sudden escalation in my matter, I contacted Dave via the firm’s website Book a Consultation page. A pointless series of ever more circular soul-crushing exchanges over three years with IRD unassisted became threats of dire action in days. I requested a consult unsure of what would happen and as a precis: Dave contacted me within hours and after our first conversation I felt immediate relief. Form completed and Dave appointed as my representative next morning. No further contact from IRD and two weeks later I am going with the only possible option certain it is so because a genuinely engaged expert has taken the time to review my personal situation and apply their extraordinary experience. As to cost. Dave explained up front a very, very reasonable fixed cost agreement. I would happily have paid many times the asking but in my situation the work was pro-bono. He was confident and calming and his experience and knowledge of the machinery were immediately obvious. He applied himself with empathy, patience and good humour and I felt advocated for by an expert. Dave is the student loan version of the doctor being winched down at a confused scene. I wish there were more like him."
     - kind: "quote"
       heading: "Chelsea Bernal"
       meta: "August 2026"
@@ -542,7 +569,7 @@ articles-advice:
 
 student-loan-negotiations:
   title: "Student Loan Negotiations"
-  description: "Student Loan Negotiations & IRD Help Student Loan Lawyer & IRD Negotiator If you’re living overseas, planning to return home, or feeling pressure from the IRD over unpaid student loans, you’re not alone — and you don’t need to face it alone. I’m Dave Ananth, a tax barrister, Partner at Meridian Partners, former IRD prosecutor, and […]"
+  description: "Practical information for overseas New Zealand student-loan borrowers considering engagement, repayment, remission and return-to-New-Zealand risks."
   sections:
     - kind: "prose"
       heading: "Student Loan Negotiations & IRD Help"
@@ -559,8 +586,8 @@ student-loan-negotiations:
         - "reduce penalties"
         - "negotiate affordable repayment arrangements,"
         - "resolve decades-old arrears,"
-        - "avoid enforcement action, and"
-        - "return home without fear of arrest at the airport."
+        - "address enforcement action, and"
+        - "assess border-arrest risk before travelling home. Final determinations, processing timeframes, and decisions are at the discretion of Inland Revenue."
     - kind: "prose"
       body: "My work is regularly featured on RNZ, The Post, NZ Herald, Otago Daily Times, and Newstalk ZB, reflecting the scale and complexity of the student loan matters I handle."
     - kind: "prose"
@@ -604,8 +631,8 @@ student-loan-negotiations:
       heading: "Safe Return to New Zealand"
       body: "Sorting arrears and enforcement before you travel, so you can fly without fear."
     - kind: "prose"
-      heading: "Preventing Airport Arrests"
-      body: "Managing your case so enforcement does not escalate to detention."
+      heading: "Addressing Airport-Arrest Risk"
+      body: "Managing your case with the aim of preventing escalation. Final determinations, processing timeframes, and decisions are at the discretion of Inland Revenue."
     - kind: "prose"
       heading: "Communicating with IRD For You"
       body: "I deal with IRD directly — you don’t have to."
@@ -662,7 +689,7 @@ student-loan-negotiations:
       heading: "Frequently Asked Questions"
     - kind: "prose"
       heading: "I’m overseas and afraid of being arrested. Can you help?"
-      body: "Yes. Arrests occur in limited circumstances. I can assess your risk immediately and negotiate protection before you enter New Zealand."
+      body: "Arrests occur in limited circumstances. Seek advice before booking or commencing travel — I can assess the available information and communicate with Inland Revenue on your behalf where formally engaged, but no border or enforcement outcome can be guaranteed."
     - kind: "prose"
       heading: "My balance has exploded due to penalties. Is there any hope?"
       body: "Absolutely. Penalties and charges can often be reduced, depending on circumstances."
@@ -702,7 +729,7 @@ student-loan-negotiations:
 
 ird-disputes-tax-penalties-negotiation:
   title: "IRD Disputes, Tax Penalties & Negotiation"
-  description: "Tax Debt, IRD Disputes & Negotiations Tax Lawyer & IRD Negotiator When the IRD starts asking questions or issuing penalties, most people quickly feel overwhelmed. One letter becomes three, penalties compound, cashflow tightens, and suddenly everything feels urgent. I’m Dave Ananth, a tax barrister, Partner at Meridian Partners, and former IRD prosecutor with over 35 […]"
+  description: "Practical information about selected Inland Revenue tax-debt, negotiation and enforcement matters for individuals and businesses."
   sections:
     - kind: "prose"
       heading: "Tax Debt, IRD Disputes & Negotiations"
