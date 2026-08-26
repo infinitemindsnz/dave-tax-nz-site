@@ -664,3 +664,116 @@ test("approval policy and candidate manifest carry the operation coherently", as
     assert.equal(changed.items.properties.change.const, "modify");
   });
 });
+
+// ── article_publish (writable-paths v5 articlePublish) ──────────────────────
+//
+// The create-only article operation implements the six preconditions the v2
+// contract wrote down. These tests hold the contract to the repository the
+// same way the phone and text suites do: the category vocabulary must equal
+// the client's live filter list, the frontmatter contract must mirror the
+// standalone JSON schema and the enforcing zod source, the markdown contract
+// must stay a strict subset of the markdown policy, and the three governance
+// files must agree about the operation.
+
+const articlePublish = writablePaths.articlePublish;
+const frontmatterSchema = readJson("schemas", "article-frontmatter.v1.schema.json");
+const markdownPolicy = readJson("markdown-policy.v1.json");
+const contentConfigSource = readFileSync(path.join(root, "src/content.config.ts"), "utf8");
+
+test("articlePublish declares the create-only authored contract", async (t) => {
+  await t.test("identity, write mode and directory", () => {
+    assert.equal(articlePublish.operationKind, "article_publish");
+    assert.equal(articlePublish.proposalField, "site_article");
+    assert.equal(articlePublish.artifactClass, "article");
+    assert.equal(articlePublish.writeMode, "create_only");
+    assert.equal(articlePublish.directory, "src/content/articles");
+  });
+  await t.test("bounds are sane and carrier dominates body", () => {
+    const c = articlePublish.constraints;
+    for (const bound of [c.maxSlugLength, c.maxTitleLength, c.maxExcerptLength, c.maxCategories, c.maxBodyBytes, c.maxCarrierBytes]) {
+      assert.ok(Number.isInteger(bound) && bound >= 1);
+    }
+    assert.ok(c.maxCarrierBytes > c.maxBodyBytes);
+  });
+  await t.test("the documented refused-operation entry is gone and hours stays withdrawn", () => {
+    const kinds = writablePaths.documentedOperations.map((entry) => entry.operationKind);
+    assert.ok(!kinds.includes("article_publish"), "the documented article entry must be replaced by the articlePublish block");
+    assert.ok(kinds.includes("public_hours_patch"));
+  });
+});
+
+test("the category vocabulary equals the client's live filter list", () => {
+  const filters = resolveJsonPointer(pagesYamlLive, "/articles-advice/sections/1/items");
+  assert.ok(Array.isArray(filters), "articles-advice filter list moved — update categoryVocabularySource");
+  const expected = filters.filter((entry) => entry !== "All" && entry !== "Uncategorized");
+  assert.deepEqual([...articlePublish.categoryVocabulary].sort(), [...expected].sort());
+  assert.ok(!articlePublish.categoryVocabulary.includes("All"));
+  assert.ok(!articlePublish.categoryVocabulary.includes("Uncategorized"));
+});
+
+test("the frontmatter contract mirrors the schema and the enforcing zod source", async (t) => {
+  await t.test("required keys equal the JSON schema's required set", () => {
+    assert.deepEqual([...articlePublish.frontmatterContract.requiredKeys].sort(), [...frontmatterSchema.required].sort());
+  });
+  await t.test("forbidden keys exist in the schema but are never required", () => {
+    for (const key of articlePublish.frontmatterContract.forbiddenKeys) {
+      assert.ok(Object.hasOwn(frontmatterSchema.properties, key), `${key} is not a schema property`);
+      assert.ok(!frontmatterSchema.required.includes(key), `${key} is required by the schema and cannot be forbidden`);
+    }
+  });
+  await t.test("the wall-clock pattern is the schema's own offset-free pattern", () => {
+    assert.equal(articlePublish.frontmatterContract.wallClockPattern, frontmatterSchema.$defs.wallClock.pattern);
+    assert.equal(articlePublish.frontmatterContract.timezone, "Pacific/Auckland");
+  });
+  await t.test("the enforcing zod source names every required key (drift tripwire)", () => {
+    for (const key of articlePublish.frontmatterContract.requiredKeys) {
+      assert.ok(contentConfigSource.includes(key), `src/content.config.ts no longer names frontmatter key ${key}`);
+    }
+  });
+});
+
+test("the markdown contract is a strict subset of the markdown policy", async (t) => {
+  const md = articlePublish.markdownContract;
+  await t.test("executing verifier class and fail-closed settings", () => {
+    assert.equal(md.verifierClass, "conservative-textual-v1");
+    assert.equal(md.forbidRawHtml, true);
+    assert.equal(md.forbidImages, true);
+    assert.equal(md.forbidReferenceLinks, true);
+    assert.equal(md.forbidAutolinkLiterals, true);
+    assert.equal(md.attributionLineRule, "refuse");
+    assert.deepEqual(md.linkProtocols, ["https://"]);
+  });
+  await t.test("nothing the contract permits is denied by the policy", () => {
+    assert.ok(markdownPolicy.allowedNodeTypes.includes("link"), "the policy no longer allows links at all");
+    assert.ok(markdownPolicy.allowedNodeTypes.includes("heading"));
+    // The policy's only autolink protocol is mailto:, which the contract's
+    // forbidAutolinkLiterals refuses entirely — stricter, never wider.
+    assert.ok(md.forbidAutolinkLiterals === true || markdownPolicy.autolinkLiteralProtocols.length === 0);
+  });
+  await t.test("heading depth stays within a document heading budget", () => {
+    assert.ok(md.maxHeadingDepth >= 1 && md.maxHeadingDepth <= 3);
+  });
+});
+
+test("approval policy and candidate manifest carry article_publish coherently", async (t) => {
+  await t.test("approval-policy keeps the two-stage entry", () => {
+    const entries = approvalPolicy.operations.filter((op) => op.operationKind === "article_publish");
+    assert.equal(entries.length, 1);
+    assert.equal(entries[0].artifactClass, "article");
+    assert.deepEqual(entries[0].requiredApprovalStages, ["legal_sign_off", "publication_approval"]);
+  });
+  await t.test("the article branch pins create-only changed paths", () => {
+    const branch = candidateManifestSchema.allOf.find(
+      (entry) => entry.if?.properties?.operation_kind?.const === "article_publish",
+    );
+    assert.ok(branch, "candidate manifest lacks an article_publish branch");
+    const changed = branch.then.properties.changed_paths;
+    assert.ok(changed, "article branch lacks a changed_paths constraint");
+    assert.equal(changed.minItems, 1);
+    assert.equal(changed.maxItems, 1);
+    assert.equal(changed.items.properties.change.const, "add");
+    assert.match("src/content/articles/a-new-article.md", new RegExp(changed.items.properties.path.pattern));
+    assert.doesNotMatch("src/content/articles/UPPER.md", new RegExp(changed.items.properties.path.pattern));
+    assert.doesNotMatch("src/data/site.yaml", new RegExp(changed.items.properties.path.pattern));
+  });
+});
