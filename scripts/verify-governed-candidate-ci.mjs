@@ -39,12 +39,14 @@ const statusLines = git("diff", "--name-status", "--no-renames", baseSha, headSh
   .split("\n")
   .filter(Boolean);
 
-const changedPaths = statusLines.map((line) => {
+const records = statusLines.map((line) => {
   const fields = line.split("\t");
   assert.equal(fields.length, 2, `candidate has an unsupported diff record: ${line}`);
-  assert.equal(fields[0], "M", `governed candidate may only modify existing files: ${line}`);
-  return fields[1];
+  assert.ok(fields[0] === "M" || fields[0] === "A", `governed candidate may only modify or add files: ${line}`);
+  return { status: fields[0], path: fields[1] };
 });
+const changedPaths = records.map((record) => record.path);
+const addedPaths = records.filter((record) => record.status === "A").map((record) => record.path);
 
 const changedGovernance = changedPaths.filter((entry) => entry === "governance" || entry.startsWith("governance/"));
 assert.deepEqual(changedGovernance, [], "a governed candidate may not modify its own authority policy");
@@ -57,11 +59,26 @@ assert.deepEqual(changedGovernance, [], "a governed candidate may not modify its
 // article files never are, so a subset phone write still refuses here.
 const sortedChanged = [...changedPaths].sort();
 const isPhoneCoupledSet =
+  addedPaths.length === 0 &&
   sortedChanged.length === phonePaths.length && sortedChanged.every((entry, index) => entry === phonePaths[index]);
 
-if (isPhoneCoupledSet) {
+// article_publish: exactly ONE record, an added file under the articlePublish
+// directory with the contract's slug grammar — and only when the base policy
+// declares that surface. Anything else with an "A" record refuses below.
+const articleBlock = policy?.articlePublish;
+const articlePattern = /^src\/content\/articles\/[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
+const isArticleCreate =
+  articleBlock !== undefined && articleBlock !== null &&
+  records.length === 1 && addedPaths.length === 1 && articlePattern.test(addedPaths[0]);
+
+if (isArticleCreate) {
+  assert.equal(articleBlock.operationKind, "article_publish", "base policy articlePublish has the wrong operation kind");
+  assert.equal(articleBlock.writeMode, "create_only", "base policy articlePublish is not create-only");
+  process.stdout.write(`Governed candidate boundary verified: one created article (${addedPaths[0]}).\n`);
+} else if (isPhoneCoupledSet) {
   process.stdout.write(`Governed candidate boundary verified across ${changedPaths.length} coupled files (public_phone_patch).\n`);
 } else {
+  assert.deepEqual(addedPaths, [], "only a single-article candidate may add a file");
   assert.ok(
     textPatchFiles !== null,
     "governed candidate changed-file set must equal the complete base-policy coupled set (the base policy declares no text-patch surface)",

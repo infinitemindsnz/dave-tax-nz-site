@@ -1,7 +1,11 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "contractId": "dave-tax-nz-site-content.v1",
   "changeLog": [
+    {
+      "version": 5,
+      "comment": "ENABLES article_publish under exactly the preconditions version 2 documented (the six \"preconditionsBeforeEnabling\"): the new `articlePublish` block below is create-only over src/content/articles/, authored-only (frontmatter `attribution` and `heroImage` are FORBIDDEN — reposts and new media remain out), category vocabulary locked to the client's own filter list (minus \"All\" and \"Uncategorized\"), publisher-stamped Pacific/Auckland wall-clock dates in the schema's offset-free format, and a `conservative-textual-v1` markdown contract the publisher EXECUTES at candidate time — anything the conservative grammar cannot prove safe refuses the whole candidate, making it a strict subset of governance/markdown-policy.v1.json (the governance suite asserts the subset relation). Slug/route identity is enforced at candidate time against the base snapshot: the target file must not exist and the slug must not collide with a curated davetaxnz.nz permalink in src/data/articles.yaml. Approval remains the two-stage legal_sign_off + publication_approval ceremony already declared in governance/approval-policy.v1.json, collected as two explicit confirmations on the authenticated review page. The documentedOperations entry for article_publish is REMOVED (it documented a refused operation; the operation is now specified by the block below), and the candidate-manifest schema's article_publish branch gains its changed_paths constraint: exactly one added file under src/content/articles/."
+    },
     {
       "version": 4,
       "comment": "ADDS THE FIRST GENERAL CONTENT OPERATION: `site_text_patch` (the `textPatch` block below). It widens the write surface from the single phone fact to the site's single-line text surfaces — titles, headings, descriptions, list items and one-line bodies — while keeping `default: deny` and leaving the phone coupled set, article bodies, testimonial quotes, links, hrefs, structural enums and asset identity untouched. Design constraints carried from the phone/hours audit: (1) SEMANTIC BINDING — a caller addresses stable `surfaceId`s, never raw pointers; every enumerated surface carries a human `meaning`, and patterned surfaces derive their id from slug/section-index/role so the approver-facing review always shows file, pointer, before and after. This is the Milestone-3 'semantic binding of proposal field to pointer MEANING' requirement; the hours operation died because a name pointed at a CTA and every structural gate passed. (2) PHONE LITERAL PRESERVATION — a text patch may rewrite prose AROUND the governed phone literals but must leave each file's occurrence count of every closed-set literal unchanged; the atomic public_phone_patch remains the only path that may change the number itself. (3) SINGLE-LINE FLOW SCALARS ONLY — the publisher's pointer-splice writer refuses block scalars and control characters, so this operation's surfaces are exactly the scalars it can rewrite byte-surgically; multi-paragraph block bodies remain human-owned until a block-scalar renderer ships with its own review. (4) QUOTE SECTIONS EXCLUDED — on a `quote` section, heading and meta are attribution and body is the client's exact supplied wording; no text operation may touch any part of one."
@@ -306,70 +310,6 @@
         "A version 3 of this contract, its own approval-policy operation entry, and its own candidate-manifest schema branch, with their own review. Version 2 must not be stretched to cover an operation whose only previous target was the wrong one, and whose enum member and if/then branch were deliberately removed rather than left dormant.",
         "A semantic check binding each proposalField to the MEANING of its pointers, not merely to their existence. This bug was reachable precisely because every structural gate passed: the pointer existed, the grammar validated, the approval was genuine, the bytes changed as approved. Nothing in the chain asserted that a field named for availability writes to a field that holds availability."
       ]
-    },
-    {
-      "operationKind": "article_publish",
-      "permitted": false,
-      "comment": "DOCUMENTED, NOT AUTHORIZED. `files` above is the exhaustive allowlist and this entry is deliberately not in it: version 2 permits the thirteen public_phone targets across src/data/site.yaml, src/data/pages.yaml and two article bodies, and nothing else. This block exists so that the shape of an operation this repository refuses is written down in public rather than left to a future implementer's inference — the same stance the reference contract takes toward `article_publish`. Migrating eighteen articles into src/content/articles did not widen this policy by a single path, and neither did widening the phone coupled set to include two of those articles' bodies: those two targets are scoped to a single pre-existing literal substring each, under `public_phone_patch`, not a grant to `article_publish` or to editing article bodies generally. Those files are human-owned: they were migrated by hand and are edited by hand. Widening the allowlist to cover new articles, or to cover edits to an existing article beyond the single phone literal above, is a separate, deliberate decision requiring the preconditions below, a version 3 of this contract, and its own review.",
-      "wouldTarget": {
-        "comment": "What the operation WOULD address if it were ever permitted. Enumerated so a reviewer can see the blast radius of enabling it, not so a publisher can act on it.",
-        "paths": [
-          {
-            "path": "src/content/articles/<slug>.md",
-            "mode": "create-only",
-            "comment": "One new Markdown file per article. Create-only: modifying or deleting an existing article is a different operation with a different risk profile — an edit can silently alter or remove an attribution on already-published reporting — and would need its own documented entry. `<slug>` must satisfy the frontmatter `slug` pattern and must equal the filename, which src/lib/articles.ts already enforces at build time."
-          }
-        ],
-        "constrainedBy": [
-          "governance/schemas/article-frontmatter.v1.schema.json",
-          "governance/markdown-policy.v1.json"
-        ],
-        "wouldNotTarget": [
-          {
-            "path": "src/data/articles.yaml",
-            "reason": "The curated homepage list is a separate content source with its own editorial judgement — the client chose those eight records and their order. Publishing an article does not entitle a writer to promote it onto the homepage. That is a distinct decision and would be a distinct operation."
-          },
-          {
-            "path": "src/data/pages.yaml",
-            "reason": "Includes the `articles-advice` category filter list, which is the client's own chosen set and order (\"Uncategorized\" included, because WordPress recorded it). An article introducing a new category must NOT silently append to that list; a filter the client did not choose is a content change, not a side effect. The eight public_phone_patch substring targets in this file are a narrow, separate, already-declared exception and do not widen this refusal."
-          },
-          {
-            "path": "src/data/site.yaml",
-            "reason": "Holds the four article-surface labels in `articlePages`, including the two that frame the source-credit block. Those are site chrome, not article content."
-          },
-          {
-            "path": "src/data/media-manifest.json",
-            "reason": "Adding a manifest entry means adding a binary under public/assets/wp/. Asset ingestion is a separate capability with its own supply-chain surface; the markdown policy's requirement that every image URL already resolve here is a gate, and letting the same operation write the gate would defeat it."
-          },
-          {
-            "path": "src/styles.css",
-            "reason": "Byte-frozen client stylesheet. Refused to every operation kind regardless of approval."
-          },
-          {
-            "path": "src/styles-article.css",
-            "reason": "Renderer-owned. Bound by renderer_sha256, not a content source."
-          },
-          {
-            "path": "dist/**",
-            "reason": "Build output. Derived, never written directly."
-          }
-        ]
-      },
-      "approvalPolicy": {
-        "comment": "governance/approval-policy.v1.json already binds this operation kind to artifact class `article` and the ordered stages below, and governance/schemas/candidate-manifest.v1.schema.json already refuses any other stage list for it. Both are structural descriptions. Neither is a grant: a fully-approved article_publish candidate is still refused here, because this file does not list a path it may write.",
-        "requiredApprovalStages": [
-          "legal_sign_off",
-          "publication_approval"
-        ]
-      },
-      "preconditionsBeforeEnabling": [
-        "A separate Article Engine contract defining canonical author and reviewer identity. The frontmatter has no author or reviewedBy field; on a repost the JSON-LD author is derived from `attribution.source`, which is a publisher name, not a bound identity.",
-        "Source expiry and re-review state. Tax law changes and this corpus makes dated statutory claims (Section CB 4 of the Income Tax Act 2007, the 10-day statutory demand window). Nothing here records when a claim was last verified.",
-        "An executing verifier for governance/markdown-policy.v1.json. The policy is written down and checked by nobody — no code in this repository parses an article body against it.",
-        "An attribution-integrity check that refuses any diff touching a body attribution line or a frontmatter `attribution` object without an explicit approved attribution change. Twelve of the eighteen posts carry another newsroom's credit; an operation that can write article bodies can silently rewrite an authorship claim.",
-        "A schema-drift check binding governance/schemas/article-frontmatter.v1.schema.json to src/content.config.ts, and governance/schemas/pages.v1.schema.json to src/data/schema.ts. The field-for-field requirement is currently stated and unenforced.",
-        "A slug-collision and route-identity check at candidate time rather than build time. src/lib/articles.ts fails the build on a duplicate or filename/frontmatter mismatch, which refuses the candidate late and only if the publisher runs a build."
-      ]
     }
   ],
   "default": "deny",
@@ -398,7 +338,11 @@
       "maxValueBytes": 2048,
       "maxTotalValueBytes": 16384,
       "valueNewlines": "forbidden",
-      "scalarStyles": ["PLAIN", "QUOTE_SINGLE", "QUOTE_DOUBLE"],
+      "scalarStyles": [
+        "PLAIN",
+        "QUOTE_SINGLE",
+        "QUOTE_DOUBLE"
+      ],
       "preserveLiteralOccurrences": [
         {
           "literal": "+64 21 021 68888",
@@ -410,40 +354,203 @@
         }
       ]
     },
-    "files": ["src/data/pages.yaml", "src/data/site.yaml"],
+    "files": [
+      "src/data/pages.yaml",
+      "src/data/site.yaml"
+    ],
     "enumeratedSurfaces": [
-      { "surfaceId": "site.meta.title", "file": "src/data/site.yaml", "jsonPointer": "/meta/title", "meaning": "Homepage browser-tab title and og:title" },
-      { "surfaceId": "site.meta.description", "file": "src/data/site.yaml", "jsonPointer": "/meta/description", "meaning": "Homepage meta description" },
-      { "surfaceId": "site.brand.tagline", "file": "src/data/site.yaml", "jsonPointer": "/brand/tagline", "meaning": "Brand tagline shown beside the site logo" },
-      { "surfaceId": "site.hero.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/hero/eyebrow", "meaning": "Hero eyebrow line above the headline" },
-      { "surfaceId": "site.hero.headline", "file": "src/data/site.yaml", "jsonPointer": "/hero/headline", "meaning": "Hero headline" },
-      { "surfaceId": "site.hero.lead", "file": "src/data/site.yaml", "jsonPointer": "/hero/lead", "meaning": "Hero lead paragraph" },
-      { "surfaceId": "site.hero.alert", "file": "src/data/site.yaml", "jsonPointer": "/hero/alert/text", "meaning": "Hero alert banner text" },
-      { "surfaceId": "site.hero.portrait-alt", "file": "src/data/site.yaml", "jsonPointer": "/hero/portrait/alt", "meaning": "Hero portrait image alt text" },
-      { "surfaceId": "site.hero.caption-role", "file": "src/data/site.yaml", "jsonPointer": "/hero/caption/role", "meaning": "Hero portrait caption: role line" },
-      { "surfaceId": "site.hero.caption-note", "file": "src/data/site.yaml", "jsonPointer": "/hero/caption/note", "meaning": "Hero portrait caption: note line" },
-      { "surfaceId": "site.proof.quote", "file": "src/data/site.yaml", "jsonPointer": "/proof/quote", "meaning": "Dave's own pull quote in the proof section (his words, not a client testimonial)" },
-      { "surfaceId": "site.proof.author-role", "file": "src/data/site.yaml", "jsonPointer": "/proof/author/role", "meaning": "Proof section author role line" },
-      { "surfaceId": "site.expertise.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/expertise/eyebrow", "meaning": "Expertise section eyebrow" },
-      { "surfaceId": "site.expertise.heading", "file": "src/data/site.yaml", "jsonPointer": "/expertise/heading", "meaning": "Expertise section heading" },
-      { "surfaceId": "site.expertise.intro", "file": "src/data/site.yaml", "jsonPointer": "/expertise/intro", "meaning": "Expertise section intro paragraph" },
-      { "surfaceId": "site.expertise.card1-title", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/0/title", "meaning": "Expertise card 01 title" },
-      { "surfaceId": "site.expertise.card1-text", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/0/text", "meaning": "Expertise card 01 body text" },
-      { "surfaceId": "site.expertise.card2-title", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/1/title", "meaning": "Expertise card 02 title" },
-      { "surfaceId": "site.expertise.card2-text", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/1/text", "meaning": "Expertise card 02 body text" },
-      { "surfaceId": "site.expertise.card3-title", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/2/title", "meaning": "Expertise card 03 title" },
-      { "surfaceId": "site.expertise.card3-text", "file": "src/data/site.yaml", "jsonPointer": "/expertise/items/2/text", "meaning": "Expertise card 03 body text" },
-      { "surfaceId": "site.story.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/story/eyebrow", "meaning": "Client-story section eyebrow" },
-      { "surfaceId": "site.story.body", "file": "src/data/site.yaml", "jsonPointer": "/story/body", "meaning": "Client-story section summary paragraph (the site's own copy; the quoted testimonial heading and credit are attribution and are NOT writable)" },
-      { "surfaceId": "site.insights.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/insights/eyebrow", "meaning": "Insights section eyebrow" },
-      { "surfaceId": "site.insights.heading", "file": "src/data/site.yaml", "jsonPointer": "/insights/heading", "meaning": "Insights section heading" },
-      { "surfaceId": "site.insights.intro", "file": "src/data/site.yaml", "jsonPointer": "/insights/intro", "meaning": "Insights section intro paragraph" },
-      { "surfaceId": "site.contact.eyebrow", "file": "src/data/site.yaml", "jsonPointer": "/contact/eyebrow", "meaning": "Contact section eyebrow" },
-      { "surfaceId": "site.contact.heading", "file": "src/data/site.yaml", "jsonPointer": "/contact/heading", "meaning": "Contact section heading" },
-      { "surfaceId": "site.contact.intro", "file": "src/data/site.yaml", "jsonPointer": "/contact/intro", "meaning": "Contact section intro paragraph" },
-      { "surfaceId": "site.contact.address", "file": "src/data/site.yaml", "jsonPointer": "/contact/rows/2/value", "meaning": "Office address line in the contact block" },
-      { "surfaceId": "site.footer.description", "file": "src/data/site.yaml", "jsonPointer": "/footer/description", "meaning": "Footer description paragraph" },
-      { "surfaceId": "site.footer.legal", "file": "src/data/site.yaml", "jsonPointer": "/footer/legal", "meaning": "Footer legal line" }
+      {
+        "surfaceId": "site.meta.title",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/meta/title",
+        "meaning": "Homepage browser-tab title and og:title"
+      },
+      {
+        "surfaceId": "site.meta.description",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/meta/description",
+        "meaning": "Homepage meta description"
+      },
+      {
+        "surfaceId": "site.brand.tagline",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/brand/tagline",
+        "meaning": "Brand tagline shown beside the site logo"
+      },
+      {
+        "surfaceId": "site.hero.eyebrow",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/hero/eyebrow",
+        "meaning": "Hero eyebrow line above the headline"
+      },
+      {
+        "surfaceId": "site.hero.headline",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/hero/headline",
+        "meaning": "Hero headline"
+      },
+      {
+        "surfaceId": "site.hero.lead",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/hero/lead",
+        "meaning": "Hero lead paragraph"
+      },
+      {
+        "surfaceId": "site.hero.alert",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/hero/alert/text",
+        "meaning": "Hero alert banner text"
+      },
+      {
+        "surfaceId": "site.hero.portrait-alt",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/hero/portrait/alt",
+        "meaning": "Hero portrait image alt text"
+      },
+      {
+        "surfaceId": "site.hero.caption-role",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/hero/caption/role",
+        "meaning": "Hero portrait caption: role line"
+      },
+      {
+        "surfaceId": "site.hero.caption-note",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/hero/caption/note",
+        "meaning": "Hero portrait caption: note line"
+      },
+      {
+        "surfaceId": "site.proof.quote",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/proof/quote",
+        "meaning": "Dave's own pull quote in the proof section (his words, not a client testimonial)"
+      },
+      {
+        "surfaceId": "site.proof.author-role",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/proof/author/role",
+        "meaning": "Proof section author role line"
+      },
+      {
+        "surfaceId": "site.expertise.eyebrow",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/eyebrow",
+        "meaning": "Expertise section eyebrow"
+      },
+      {
+        "surfaceId": "site.expertise.heading",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/heading",
+        "meaning": "Expertise section heading"
+      },
+      {
+        "surfaceId": "site.expertise.intro",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/intro",
+        "meaning": "Expertise section intro paragraph"
+      },
+      {
+        "surfaceId": "site.expertise.card1-title",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/items/0/title",
+        "meaning": "Expertise card 01 title"
+      },
+      {
+        "surfaceId": "site.expertise.card1-text",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/items/0/text",
+        "meaning": "Expertise card 01 body text"
+      },
+      {
+        "surfaceId": "site.expertise.card2-title",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/items/1/title",
+        "meaning": "Expertise card 02 title"
+      },
+      {
+        "surfaceId": "site.expertise.card2-text",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/items/1/text",
+        "meaning": "Expertise card 02 body text"
+      },
+      {
+        "surfaceId": "site.expertise.card3-title",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/items/2/title",
+        "meaning": "Expertise card 03 title"
+      },
+      {
+        "surfaceId": "site.expertise.card3-text",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/expertise/items/2/text",
+        "meaning": "Expertise card 03 body text"
+      },
+      {
+        "surfaceId": "site.story.eyebrow",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/story/eyebrow",
+        "meaning": "Client-story section eyebrow"
+      },
+      {
+        "surfaceId": "site.story.body",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/story/body",
+        "meaning": "Client-story section summary paragraph (the site's own copy; the quoted testimonial heading and credit are attribution and are NOT writable)"
+      },
+      {
+        "surfaceId": "site.insights.eyebrow",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/insights/eyebrow",
+        "meaning": "Insights section eyebrow"
+      },
+      {
+        "surfaceId": "site.insights.heading",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/insights/heading",
+        "meaning": "Insights section heading"
+      },
+      {
+        "surfaceId": "site.insights.intro",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/insights/intro",
+        "meaning": "Insights section intro paragraph"
+      },
+      {
+        "surfaceId": "site.contact.eyebrow",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/contact/eyebrow",
+        "meaning": "Contact section eyebrow"
+      },
+      {
+        "surfaceId": "site.contact.heading",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/contact/heading",
+        "meaning": "Contact section heading"
+      },
+      {
+        "surfaceId": "site.contact.intro",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/contact/intro",
+        "meaning": "Contact section intro paragraph"
+      },
+      {
+        "surfaceId": "site.contact.address",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/contact/rows/2/value",
+        "meaning": "Office address line in the contact block"
+      },
+      {
+        "surfaceId": "site.footer.description",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/footer/description",
+        "meaning": "Footer description paragraph"
+      },
+      {
+        "surfaceId": "site.footer.legal",
+        "file": "src/data/site.yaml",
+        "jsonPointer": "/footer/legal",
+        "meaning": "Footer legal line"
+      }
     ],
     "patternedSurfaces": {
       "file": "src/data/pages.yaml",
@@ -456,19 +563,110 @@
         "student-loan-negotiations",
         "thanks-consult"
       ],
-      "fields": ["title", "description", "sections/*/heading", "sections/*/body", "sections/*/items/*"],
-      "excludeSectionKinds": ["quote"],
+      "fields": [
+        "title",
+        "description",
+        "sections/*/heading",
+        "sections/*/body",
+        "sections/*/items/*"
+      ],
+      "excludeSectionKinds": [
+        "quote"
+      ],
       "comment": "The id is derived, deterministic and self-describing: `page.contact.s3.body` names the body of section index 3 of the `contact` page. Materialisation happens against the base revision at candidate time: the platform resolves the id to its pointer, refuses ids on excluded slugs or excluded section kinds, refuses non-string or block-scalar targets, and the review projection carries file, pointer, before and after for every surface so the approver reads exactly what changes. `home` is excluded (unrouted WordPress provenance copy, preserved verbatim), `testimonials` is excluded (attribution-bearing quote archive), `articles-advice` is excluded (the client's own category filter list). `meta` never appears in `fields` — it exists only on quote sections and is attribution. `href` and `kind` are structural and are never writable by any text operation."
     },
     "neverWritableByTextPatch": [
-      { "jsonPointer": "src/data/site.yaml#/contact/action/title", "reason": "The free-consultation CTA heading — the exact pointer whose misuse motivated the public_hours_patch withdrawal. Test-pinned to its current value; any operation writing it needs its own reviewed contract." },
-      { "jsonPointer": "src/data/site.yaml#/contact/rows/0/value", "reason": "A render:raw phone coupled-set target; its value IS the display literal and belongs exclusively to public_phone_patch." },
-      { "jsonPointer": "src/data/site.yaml#/contact/rows/0/label, /hero/ctas/1/label, /hero/ctas/1/variant", "reason": "Phone-policy identity assertions — changing them refuses every future phone patch." },
-      { "jsonPointer": "src/data/site.yaml#/articlePages/*", "reason": "Article attribution chrome." },
-      { "jsonPointer": "src/data/site.yaml#/story/heading, /story/credit/*", "reason": "Quoted testimonial excerpt and its attribution." },
-      { "jsonPointer": "src/data/*.yaml#**/href, **/ctaHref, **/kind, **/variant, **/icon, **/external, **/number, **/src, **/width, **/height, /meta/lang, /meta/themeColor, **/label, **/linkLabel, **/ctaLabel, **/filters/*, **/filtersLabel, **/ariaLabel, **/skipLabel, **/menuOpenLabel, **/menuCloseLabel", "reason": "Links, structure, enums, asset identity, navigation chrome and control labels — not text surfaces. A text patch that can rewrite an href is a phishing primitive." },
-      { "jsonPointer": "src/data/articles.yaml#*", "reason": "The client's curated insights list and its order." },
-      { "jsonPointer": "src/content/articles/**", "reason": "Article bodies and frontmatter are human-owned; attribution is legally load-bearing; article_publish remains unauthorised." }
+      {
+        "jsonPointer": "src/data/site.yaml#/contact/action/title",
+        "reason": "The free-consultation CTA heading — the exact pointer whose misuse motivated the public_hours_patch withdrawal. Test-pinned to its current value; any operation writing it needs its own reviewed contract."
+      },
+      {
+        "jsonPointer": "src/data/site.yaml#/contact/rows/0/value",
+        "reason": "A render:raw phone coupled-set target; its value IS the display literal and belongs exclusively to public_phone_patch."
+      },
+      {
+        "jsonPointer": "src/data/site.yaml#/contact/rows/0/label, /hero/ctas/1/label, /hero/ctas/1/variant",
+        "reason": "Phone-policy identity assertions — changing them refuses every future phone patch."
+      },
+      {
+        "jsonPointer": "src/data/site.yaml#/articlePages/*",
+        "reason": "Article attribution chrome."
+      },
+      {
+        "jsonPointer": "src/data/site.yaml#/story/heading, /story/credit/*",
+        "reason": "Quoted testimonial excerpt and its attribution."
+      },
+      {
+        "jsonPointer": "src/data/*.yaml#**/href, **/ctaHref, **/kind, **/variant, **/icon, **/external, **/number, **/src, **/width, **/height, /meta/lang, /meta/themeColor, **/label, **/linkLabel, **/ctaLabel, **/filters/*, **/filtersLabel, **/ariaLabel, **/skipLabel, **/menuOpenLabel, **/menuCloseLabel",
+        "reason": "Links, structure, enums, asset identity, navigation chrome and control labels — not text surfaces. A text patch that can rewrite an href is a phishing primitive."
+      },
+      {
+        "jsonPointer": "src/data/articles.yaml#*",
+        "reason": "The client's curated insights list and its order."
+      },
+      {
+        "jsonPointer": "src/content/articles/**",
+        "reason": "Article bodies and frontmatter are human-owned; attribution is legally load-bearing; article_publish remains unauthorised."
+      }
     ]
+  },
+  "articlePublish": {
+    "operationKind": "article_publish",
+    "proposalField": "site_article",
+    "artifactClass": "article",
+    "writeMode": "create_only",
+    "comment": "One governed candidate creates exactly ONE new authored article file at src/content/articles/<slug>.md and touches nothing else. Editing or deleting an existing article remains impossible under every operation; the two article-body phone targets above stay scoped to their single literal each. The publisher renders the file bytes deterministically (double-quoted scalars, keys in the frontmatter schema's required order, explicit `draft: false`, categories as a block list) and stamps publishedAt/updatedAt once at first candidate construction.",
+    "constraints": {
+      "maxSlugLength": 80,
+      "maxTitleLength": 200,
+      "maxExcerptLength": 500,
+      "maxCategories": 8,
+      "maxBodyBytes": 32768,
+      "maxCarrierBytes": 49152
+    },
+    "directory": "src/content/articles",
+    "categoryVocabulary": [
+      "Crypto",
+      "GST",
+      "IRD",
+      "Liquidation",
+      "PAYE",
+      "Student Loans",
+      "Tax"
+    ],
+    "categoryVocabularySource": "src/data/pages.yaml#/articles-advice/sections/1/items minus \"All\" (the show-everything filter) and \"Uncategorized\" (WordPress's default bucket, not a real category for new authored work). The governance suite asserts this list stays equal to the live filter list.",
+    "frontmatterContract": {
+      "requiredKeys": [
+        "title",
+        "slug",
+        "publishedAt",
+        "updatedAt",
+        "excerpt",
+        "categories",
+        "draft"
+      ],
+      "forbiddenKeys": [
+        "attribution",
+        "heroImage"
+      ],
+      "draft": false,
+      "wallClockPattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+      "timezone": "Pacific/Auckland",
+      "comment": "Authored-only v1: `attribution` absent (its presence flips renderer authorship claims — publishing reposts needs source verification and its own reviewed contract) and `heroImage` absent (every image must resolve in the media manifest; new media waits for the media pipeline). Dates use the schema's offset-free NZ wall-clock format, stamped by the publisher so a requester cannot backdate."
+    },
+    "markdownContract": {
+      "verifierClass": "conservative-textual-v1",
+      "comment": "The EXECUTING verifier precondition. The publisher enforces this contract's rules at candidate time; anything the conservative textual grammar cannot prove safe refuses the candidate. Deliberately a strict subset of governance/markdown-policy.v1.json: no raw HTML at all (the policy's deniedNodeTypes cover html nodes; this contract refuses any '<'), no images (the policy allows image nodes for migrated content; new authored work may not add media), https-only inline links, no bare-URL autolinks, heading depth capped at 3, no reference-style link definitions, and no attribution-style body lines (an authored article credits no other publication).",
+      "forbidRawHtml": true,
+      "forbidImages": true,
+      "linkProtocols": [
+        "https://"
+      ],
+      "maxHeadingDepth": 3,
+      "forbidReferenceLinks": true,
+      "forbidAutolinkLiterals": true,
+      "attributionLinePattern": "originally published|republished with permission|first appeared",
+      "attributionLineRule": "refuse"
+    }
   }
 }
