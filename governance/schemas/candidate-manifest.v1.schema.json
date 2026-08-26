@@ -54,12 +54,14 @@
     "artifact_class": {
       "enum": [
         "site_block_patch",
+        "site_text_patch",
         "article"
       ]
     },
     "operation_kind": {
       "enum": [
         "public_phone_patch",
+        "site_text_patch",
         "article_publish"
       ]
     },
@@ -143,7 +145,7 @@
     },
     "writable_policy_version": {
       "type": "integer",
-      "const": 3,
+      "const": 4,
       "$comment": "The `schemaVersion` of governance/writable-paths.v1.json this candidate was built against. `writable_policy_sha256` alone could not catch a stale publisher: it is a digest with nothing in the manifest to compare it to, so a publisher still holding version 1 of the writable policy — which declared 3 of the 13 coupled phone targets — produced a structurally valid candidate that would have left 10 occurrences stale. Pinning the version makes a stale publisher fail schema validation at candidate construction. tests/governance.test.mjs asserts this const equals the writable policy's actual schemaVersion, so the two cannot drift apart silently."
     },
     "content_schema_sha256": {
@@ -413,6 +415,62 @@
               }
             ],
             "$comment": "THE COUPLED SET, ENFORCED. governance/writable-paths.v1.json `coupledSet` declares that a public_phone_patch writes all four files and all thirteen targets atomically or writes nothing. Before version 3 that was prose: `changed_paths` inherited only the global `minItems: 1`, so a manifest declaring just src/data/site.yaml validated and would have written 3 of 13 occurrences, leaving both meta-description surfaces and two article bodies advertising the old number. The `contains` clauses require each of the four paths to be present, min/maxItems and the `path` enum forbid any fifth or foreign path (src/styles.css is byte-frozen, worker/index.js is not content), and `change: \"modify\"` forbids a phone patch from declaring an `add` or a `delete` — a phone-number change must never create or remove a file."
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "operation_kind": {
+            "const": "site_text_patch"
+          }
+        },
+        "required": [
+          "operation_kind"
+        ]
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "artifact_class": {
+            "const": "site_text_patch"
+          },
+          "required_approval_stages": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "const": "publication_approval"
+              }
+            ],
+            "items": false,
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "changed_paths": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "enum": [
+                    "src/data/pages.yaml",
+                    "src/data/site.yaml"
+                  ]
+                },
+                "change": {
+                  "const": "modify"
+                }
+              },
+              "required": [
+                "path"
+              ]
+            },
+            "$comment": "THE TEXT-PATCH SURFACE, ENFORCED. writable-paths v4's textPatch block allowlists exactly two content-model files; a site_text_patch candidate modifies a nonempty subset of them and nothing else. `change: \"modify\"` forbids creating or deleting files; the surface catalogue, per-surface byte caps, section-kind exclusions and phone-literal occurrence invariants are enforced by the publisher against the pinned base revision at candidate time."
           }
         }
       }

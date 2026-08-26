@@ -525,3 +525,142 @@ test("the candidate manifest pins the writable policy version it was built again
     );
   });
 });
+
+// ── site_text_patch (writable-paths v4 textPatch) ───────────────────────────
+//
+// The text-patch surface widens the write surface beyond the phone fact, so
+// its own contract-vs-repository invariants get the same treatment: every
+// enumerated surface must resolve in the live YAML to a writable single-line
+// string, no surface may alias a pointer the policy elsewhere forbids, and
+// the three governance files must agree about the operation.
+
+const textPatch = writablePaths.textPatch;
+const pagesYamlLive = JSON.parse(JSON.stringify(parseYaml(readFileSync(path.join(root, "src/data/pages.yaml"), "utf8"))));
+
+test("textPatch declares a coherent operation", async (t) => {
+  await t.test("has the expected identity and write mode", () => {
+    assert.equal(textPatch.operationKind, "site_text_patch");
+    assert.equal(textPatch.proposalField, "site_text");
+    assert.equal(textPatch.artifactClass, "site_text_patch");
+    assert.equal(textPatch.writeMode, "atomic");
+  });
+  await t.test("bounds every candidate", () => {
+    assert.ok(Number.isInteger(textPatch.constraints.maxSurfacesPerCandidate) && textPatch.constraints.maxSurfacesPerCandidate >= 1);
+    assert.ok(Number.isInteger(textPatch.constraints.maxValueBytes) && textPatch.constraints.maxValueBytes >= 1);
+    assert.ok(textPatch.constraints.maxTotalValueBytes >= textPatch.constraints.maxValueBytes);
+    assert.equal(textPatch.constraints.valueNewlines, "forbidden");
+  });
+  await t.test("file allowlist is the two content models, sorted and unique", () => {
+    assert.deepEqual([...textPatch.files].sort(), ["src/data/pages.yaml", "src/data/site.yaml"]);
+    assert.equal(new Set(textPatch.files).size, textPatch.files.length);
+  });
+  await t.test("preserved literals are exactly the closed-set scan's literals", () => {
+    assert.deepEqual(
+      textPatch.constraints.preserveLiteralOccurrences.map((entry) => entry.literal).sort(),
+      [...literals].sort(),
+    );
+  });
+});
+
+test("every enumerated text surface resolves to a writable single-line string", () => {
+  const seen = new Set();
+  for (const surface of textPatch.enumeratedSurfaces) {
+    assert.match(surface.surfaceId, /^[a-z0-9.-]+$/, `${surface.surfaceId} has a non-canonical id`);
+    assert.ok(!seen.has(surface.surfaceId), `${surface.surfaceId} is declared twice`);
+    seen.add(surface.surfaceId);
+    assert.ok(textPatch.files.includes(surface.file), `${surface.surfaceId} targets a file outside the allowlist`);
+    assert.equal(surface.file, "src/data/site.yaml", "enumerated surfaces are the site.yaml catalogue");
+    assert.ok(typeof surface.meaning === "string" && surface.meaning.length > 0, `${surface.surfaceId} lacks a meaning binding`);
+    const value = resolveJsonPointer(siteYaml, surface.jsonPointer);
+    assert.equal(typeof value, "string", `${surface.surfaceId} (${surface.jsonPointer}) does not resolve to a string`);
+    assert.ok(!value.includes("\n"), `${surface.surfaceId} resolves to a multi-line scalar the splice writer cannot rewrite`);
+  }
+});
+
+test("no text surface aliases a forbidden pointer", () => {
+  const forbiddenExact = new Set([
+    "/contact/action/title",
+    "/contact/action/ctaLabel",
+    "/contact/rows/0/value",
+    "/contact/rows/0/label",
+    "/hero/ctas/1/label",
+    "/hero/ctas/1/variant",
+    "/story/heading",
+    "/meta/lang",
+    "/meta/themeColor",
+  ]);
+  const forbiddenTails = [
+    "/href",
+    "/ctaHref",
+    "/kind",
+    "/variant",
+    "/icon",
+    "/external",
+    "/number",
+    "/src",
+    "/width",
+    "/height",
+    "/label",
+    "/linkLabel",
+    "/ctaLabel",
+    "/filtersLabel",
+    "/ariaLabel",
+    "/skipLabel",
+    "/menuOpenLabel",
+    "/menuCloseLabel",
+  ];
+  for (const surface of textPatch.enumeratedSurfaces) {
+    assert.ok(!forbiddenExact.has(surface.jsonPointer), `${surface.surfaceId} targets forbidden pointer ${surface.jsonPointer}`);
+    for (const tail of forbiddenTails) {
+      assert.ok(!surface.jsonPointer.endsWith(tail), `${surface.surfaceId} targets a ${tail} pointer`);
+    }
+    assert.ok(!surface.jsonPointer.startsWith("/articlePages"), `${surface.surfaceId} targets attribution chrome`);
+    assert.ok(!surface.jsonPointer.startsWith("/story/credit"), `${surface.surfaceId} targets testimonial attribution`);
+    assert.ok(!surface.jsonPointer.startsWith("/nav/"), `${surface.surfaceId} targets navigation`);
+    assert.ok(!surface.jsonPointer.startsWith("/filters"), `${surface.surfaceId} targets the filter list`);
+  }
+});
+
+test("patterned page surfaces exclude provenance, attribution and structure", async (t) => {
+  const patterned = textPatch.patternedSurfaces;
+  await t.test("slug allowlist excludes home, testimonials and articles-advice", () => {
+    assert.equal(patterned.file, "src/data/pages.yaml");
+    for (const slug of ["home", "testimonials", "articles-advice"]) {
+      assert.ok(!patterned.slugs.includes(slug), `${slug} must not be text-patchable`);
+    }
+    for (const slug of patterned.slugs) {
+      assert.ok(Object.hasOwn(pagesYamlLive, slug), `${slug} is not a page in pages.yaml`);
+    }
+  });
+  await t.test("quote sections are excluded and meta/href/kind are not fields", () => {
+    assert.ok(patterned.excludeSectionKinds.includes("quote"));
+    assert.deepEqual(patterned.fields, ["title", "description", "sections/*/heading", "sections/*/body", "sections/*/items/*"]);
+  });
+});
+
+test("approval policy and candidate manifest carry the operation coherently", async (t) => {
+  await t.test("approval-policy has exactly one site_text_patch entry with one stage", () => {
+    const entries = approvalPolicy.operations.filter((op) => op.operationKind === "site_text_patch");
+    assert.equal(entries.length, 1);
+    assert.equal(entries[0].artifactClass, "site_text_patch");
+    assert.deepEqual(entries[0].requiredApprovalStages, ["publication_approval"]);
+  });
+  await t.test("candidate-manifest enums include the operation and artifact class", () => {
+    assert.ok(candidateManifestSchema.properties.operation_kind.enum.includes("site_text_patch"));
+    assert.ok(candidateManifestSchema.properties.artifact_class.enum.includes("site_text_patch"));
+  });
+  await t.test("the site_text_patch branch pins class, stage and changed paths", () => {
+    const branch = candidateManifestSchema.allOf.find(
+      (entry) => entry.if?.properties?.operation_kind?.const === "site_text_patch",
+    );
+    assert.ok(branch, "candidate manifest lacks a site_text_patch branch");
+    assert.equal(branch.then.properties.artifact_class.const, "site_text_patch");
+    assert.equal(branch.then.properties.required_approval_stages.maxItems, 1);
+    assert.equal(branch.then.properties.required_approval_stages.prefixItems[0].const, "publication_approval");
+    const changed = branch.then.properties.changed_paths;
+    assert.equal(changed.minItems, 1);
+    assert.equal(changed.maxItems, textPatch.files.length);
+    assert.deepEqual([...changed.items.properties.path.enum].sort(), [...textPatch.files].sort());
+    assert.equal(changed.items.properties.change.const, "modify");
+  });
+});
