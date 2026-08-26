@@ -182,7 +182,7 @@ home:
 
 about-dave:
   title: "About Dave"
-  description: "About Dave Dave Ananth – Tax Barrister | Inland Revenue Disputes & Negotiations DAVE ANANTH Student loan lawyer, tax negotiator & former IRD prosecutor Honorary Consul of Timor-Leste (Auckland, NZ) Auckland Mobile: +64 21 021 68888 Email: dave@davetaxnz.nz 35+ Years in Tax Law, IRD Investigations & Commercial Advice Dave Ananth is a senior Auckland-based tax […]"
+  description: "About Dave Dave Ananth – Tax Barrister | Inland Revenue Disputes & Negotiations DAVE ANANTH Student loan lawyer, tax negotiator & former IRD prosecutor Honorary Consul of Timor-Leste (Auckland, NZ) Auckland Mobile: +64 (21) 021 68888 Email: dave@davetaxnz.nz 35+ Years in Tax Law, IRD Investigations & Commercial Advice Dave Ananth is a senior Auckland-based tax […]"
   sections:
     - kind: "prose"
       heading: "Dave Ananth – Tax Barrister | Inland Revenue Disputes & Negotiations"
@@ -194,7 +194,7 @@ about-dave:
         Honorary Consul of Timor-Leste (Auckland, NZ)
     - kind: "list"
       items:
-        - "Auckland Mobile: +64 21 021 68888"
+        - "Auckland Mobile: +64 (21) 021 68888"
         - "Email: dave@davetaxnz.nz"
     - kind: "prose"
       heading: "35+ Years in Tax Law, IRD Investigations & Commercial Advice"
@@ -252,7 +252,7 @@ about-dave:
 
 contact:
   title: "Contact"
-  description: "Contact Dave DAVE ANANTH Tax Barrister Mobile Cell: +64 21 021 68888 Email: dave@davetaxnz.nz Address: 97 Great South Road, Epsom, Auckland 1051 Follow on LinkedIn"
+  description: "Contact Dave DAVE ANANTH Tax Barrister Mobile Cell: +64 (21) 021 68888 Email: dave@davetaxnz.nz Address: 97 Great South Road, Epsom, Auckland 1051 Follow on LinkedIn"
   sections:
     - kind: "prose"
       heading: "Contact Dave"
@@ -262,7 +262,7 @@ contact:
       heading: "Tax Barrister"
     - kind: "prose"
       heading: "Mobile Cell:"
-      body: "+64 21 021 68888"
+      body: "+64 (21) 021 68888"
     - kind: "prose"
       heading: "Email:"
       body: "dave@davetaxnz.nz"
@@ -568,7 +568,7 @@ student-loan-negotiations:
       body: "Student Loan Lawyer And IRD Negotiation Specialist"
     - kind: "list"
       items:
-        - "Auckland Mobile: +64 21 021 68888"
+        - "Auckland Mobile: +64 (21) 021 68888"
         - "Email: dave@davetaxnz.nz"
     - kind: "prose"
       heading: "The Problem Overseas Student Loan Holders Face"
@@ -693,7 +693,7 @@ student-loan-negotiations:
     - kind: "list"
       heading: "Contact Dave"
       items:
-        - "Auckland Mobile: +64 21 021 68888"
+        - "Auckland Mobile: +64 (21) 021 68888"
         - "Email: dave@davetaxnz.nz"
         - "WhatsApp available"
     - kind: "cta"
@@ -722,7 +722,7 @@ ird-disputes-tax-penalties-negotiation:
       body: "Tax Lawyer & IRD Negotiation Specialist"
     - kind: "list"
       items:
-        - "Auckland Mobile: +64 21 021 68888"
+        - "Auckland Mobile: +64 (21) 021 68888"
         - "Email: dave@davetaxnz.nz"
     - kind: "prose"
       heading: "When IRD Gets Involved"
@@ -857,7 +857,7 @@ ird-disputes-tax-penalties-negotiation:
     - kind: "list"
       heading: "Contact Dave"
       items:
-        - "Auckland Mobile: +64 21 021 68888"
+        - "Auckland Mobile: +64 (21) 021 68888"
         - "Email: dave@davetaxnz.nz"
         - "WhatsApp available"
     - kind: "cta"
