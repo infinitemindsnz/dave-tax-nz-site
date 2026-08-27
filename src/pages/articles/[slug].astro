@@ -34,6 +34,8 @@ import SiteFooter from "../../components/SiteFooter.astro";
 import { site } from "../../lib/content";
 import {
   articlesIndexPath,
+  categoryPath,
+  categorySlug,
   displayDate,
   machineDate,
   publishedArticles,
@@ -101,7 +103,20 @@ const jsonLd = buildArticleStructuredData(Astro.site, entry.data);
   <main id="main" class="article-page section-shell section-pad">
     <article>
       <header class="article-head">
-        <p class="eyebrow eyebrow--red">{categories[0]}</p>
+        <p class="eyebrow eyebrow--red">
+          {
+            /* Every category the frontmatter carries, each linked to its
+               crawlable hub (/articles/category/<slug>/). The hub exists by
+               construction: this article carries the label, so the label is in
+               the published-categories set. */
+            categories.map((category, index) => (
+              <>
+                {index > 0 && <span aria-hidden="true"> · </span>}
+                <a href={categoryPath(categorySlug(category))}>{category}</a>
+              </>
+            ))
+          }
+        </p>
         <h1>{title}</h1>
         <p class="article-byline">
           {

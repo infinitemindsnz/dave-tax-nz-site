@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from "astro:content";
+import { pages } from "./content";
 import { sitePath } from "./urls";
 
 /**
@@ -151,6 +152,111 @@ export async function publishedArticles(): Promise<ArticleEntry[]> {
   return revived.sort(
     (left, right) => right.data.publishedAt.getTime() - left.data.publishedAt.getTime(),
   );
+}
+
+/* --------------------------------------------------------------------------
+ * Category hubs — /articles/category/<slug>/
+ *
+ * One crawlable page per category that at least one published article carries.
+ * The JS filter strip on /articles/ detaches and re-attaches cards, which a
+ * crawler never executes; these routes are the link-followable form of the
+ * same facets. Category LABELS are governed values (the "articles-advice"
+ * list section of src/data/pages.yaml, the same list the filter strip renders
+ * and the article-publish vocabulary is pinned to); nothing here invents,
+ * renames or reorders one — this module only derives routes from them.
+ * ------------------------------------------------------------------------ */
+
+export interface ArticleCategory {
+  /** The governed label, verbatim ("Student Loans"). */
+  label: string;
+  /** The label's URL form ("student-loans"). */
+  slug: string;
+  /** Published articles carrying the label, newest first. */
+  entries: ArticleEntry[];
+}
+
+/**
+ * "Student Loans" → "student-loans". Deterministic and total: a label that
+ * collapses to nothing (or collides with another label's slug — checked in
+ * `publishedCategories`) is a build failure, not a silently absent page.
+ */
+export function categorySlug(label: string): string {
+  const slug = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (slug === "") {
+    throw new Error(`article category ${JSON.stringify(label)} produces an empty URL slug`);
+  }
+  return slug;
+}
+
+/** Route of one category hub, base applied — what an `href` needs. */
+export function categoryPath(slug: string): string {
+  return sitePath(`articles/category/${slug}/`);
+}
+
+/**
+ * The categories the build publishes hubs for: every governed filter-list
+ * entry (minus the "show everything" first entry) that at least one published
+ * article carries, in the client's own list order.
+ *
+ * Fail-closed guards, mirroring the reachability guard on /articles/:
+ *  - an article category missing from the governed list is a build failure
+ *    here too, because its hub route could never be derived consistently;
+ *  - two labels collapsing to one slug would publish one hub over the other;
+ *  - an article slugged "category" would sit inside the hub namespace at
+ *    /articles/category/, shadowing it.
+ */
+export async function publishedCategories(): Promise<ArticleCategory[]> {
+  const entries = await publishedArticles();
+
+  const record = pages["articles-advice"];
+  const filterSection = record.sections.find((section) => section.kind === "list");
+  if (!filterSection?.items) {
+    throw new Error(
+      'src/data/pages.yaml: the "articles-advice" record must contain a list section — ' +
+        "it is the governed category vocabulary the hub routes derive from",
+    );
+  }
+  const [, ...governedOrder] = filterSection.items;
+
+  const used = new Map<string, ArticleEntry[]>();
+  for (const entry of entries) {
+    if (entry.data.slug === "category") {
+      throw new Error(
+        `src/content/articles/${entry.id}: the slug "category" is reserved — ` +
+          "it would shadow the /articles/category/ hub namespace",
+      );
+    }
+    for (const label of entry.data.categories) {
+      const list = used.get(label);
+      if (list) list.push(entry);
+      else used.set(label, [entry]);
+    }
+  }
+
+  const governed = new Set(governedOrder);
+  for (const label of used.keys()) {
+    if (!governed.has(label)) {
+      throw new Error(
+        `article category ${JSON.stringify(label)} is not in the "articles-advice" ` +
+          "list section of src/data/pages.yaml, so no hub route can be derived for it",
+      );
+    }
+  }
+
+  const seenSlugs = new Set<string>();
+  return governedOrder
+    .filter((label) => used.has(label))
+    .map((label) => {
+      const slug = categorySlug(label);
+      if (seenSlugs.has(slug)) {
+        throw new Error(`article categories collide on the URL slug "${slug}"`);
+      }
+      seenSlugs.add(slug);
+      return { label, slug, entries: used.get(label) ?? [] };
+    });
 }
 
 /**
