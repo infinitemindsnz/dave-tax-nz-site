@@ -1,0 +1,106 @@
+---
+/**
+ * /articles/category/<slug>/ — one crawlable hub per article category.
+ *
+ * The filter strip on /articles/ is a JS behaviour (cards are detached and
+ * re-attached in place), so a crawler following links can never see a filtered
+ * view. These pages are the same facets as addressable URLs: every published
+ * article that carries the category, newest first, in exactly the index page's
+ * card markup. The article pages link here from their category eyebrow and the
+ * index cards link here from their category label, which closes the internal
+ * link mesh: article → hub → article.
+ *
+ * Copy rule, inherited: no user-visible prose is written here. The heading is
+ * the governed category label itself; the eyebrow, intro, card link label and
+ * back-link label are the same governed strings the index page renders. The
+ * page title and meta description are compositions of those governed values
+ * ("<label> — <insights.heading>"), never new sentences.
+ */
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import Contact from "../../../components/Contact.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import { site } from "../../../lib/content";
+import {
+  articlePath,
+  articlesIndexPath,
+  articleTypeLabel,
+  displayDate,
+  machineDate,
+  publishedCategories,
+  type ArticleCategory,
+} from "../../../lib/articles";
+import { sitePath } from "../../../lib/urls";
+import "../../../styles-article.css";
+
+export async function getStaticPaths() {
+  const categories = await publishedCategories();
+  return categories.map((category) => ({
+    params: { category: category.slug },
+    props: { category },
+  }));
+}
+
+interface Props {
+  category: ArticleCategory;
+}
+
+const { category } = Astro.props;
+const { insights, articlePages } = site;
+
+const cards = category.entries.map((entry) => ({
+  href: articlePath(entry.data.slug),
+  category: entry.data.categories[0],
+  displayDate: displayDate(entry.data.publishedAt),
+  machineDate: machineDate(entry.data.publishedAt),
+  title: entry.data.title,
+  excerpt: entry.data.excerpt,
+  type: articleTypeLabel(entry, articlePages.authoredLabel),
+}));
+---
+
+<BaseLayout
+  title={`${category.label} — ${insights.heading}`}
+  description={`${category.label} — ${insights.intro}`}
+>
+  <div id="top" class="dark-shell"><SiteHeader hrefBase={sitePath()} /></div>
+  <main id="main" class="insights section-shell section-pad">
+    <div class="insights__intro">
+      <p class="eyebrow eyebrow--red">{insights.eyebrow}</p>
+      <h1 class="article-index__title">{category.label}</h1>
+      <p>{insights.intro}</p>
+      <p>
+        <a class="text-link" href={articlesIndexPath()}>{articlePages.indexLinkLabel}</a>
+      </p>
+    </div>
+    <div class="article-grid">
+      {
+        cards.map((card) => (
+          <article class="article-card">
+            <div class="article-meta">
+              <span>{card.category}</span>
+              <time datetime={card.machineDate}>{card.displayDate}</time>
+            </div>
+            <h3>{card.title}</h3>
+            <p>{card.excerpt}</p>
+            <span class="article-type">{card.type}</span>
+            <a class="text-link" href={card.href}>
+              {insights.articleLinkLabel}{" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                fill="currentColor"
+                viewBox="0 0 256 256"
+              >
+                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
+              </svg>
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </main>
+  <Contact />
+  <SiteFooter />
+</BaseLayout>

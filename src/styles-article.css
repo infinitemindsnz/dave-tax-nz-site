@@ -369,3 +369,15 @@
     font-size: 1.12rem;
   }
 }
+
+/* ---- Category hub links ------------------------------------------------ */
+
+/* The category eyebrow on an article page and the category label on an index
+   card are links to /articles/category/<slug>/. The frozen sheet's `a` reset
+   (color:inherit, no underline) already renders them exactly as the plain
+   text they replaced; the frozen a:focus-visible rule covers focus. All that
+   is added here is the hover affordance that marks them as followable. */
+.article-head .eyebrow a:hover,
+.article-meta a:hover {
+  text-decoration: underline;
+}

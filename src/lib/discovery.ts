@@ -1,4 +1,4 @@
-import { articlePath, publishedArticles } from "./articles";
+import { articlePath, categoryPath, publishedArticles, publishedCategories } from "./articles";
 import { pageRoutes } from "./pages";
 import { sitePath } from "./urls";
 
@@ -44,6 +44,12 @@ export interface SiteRoute {
 export function articleRoute(slug: string): string {
   const base = sitePath();
   return articlePath(slug).slice(base.length);
+}
+
+/** The base-less form of a category hub's route, same rationale as above. */
+export function categoryRoute(slug: string): string {
+  const base = sitePath();
+  return categoryPath(slug).slice(base.length);
 }
 
 /**
@@ -154,11 +160,20 @@ export function resolveInternalRoute(href: string, source: string): string {
   return sitePath(route);
 }
 
-/** Every published route: static pages first, then articles newest first. */
+/**
+ * Every published route: static pages first, then category hubs in the
+ * governed filter-list order, then articles newest first.
+ *
+ * Hubs carry no `lastmod` for the same reason the yaml-assembled pages do
+ * not: a hub is derived from whichever articles carry the category, and the
+ * build cannot vouch for a single modification time of the derived set.
+ */
 export async function collectRoutes(): Promise<SiteRoute[]> {
   const entries = await publishedArticles();
+  const categories = await publishedCategories();
   return [
     ...staticPageRoutes().map((path) => ({ path })),
+    ...categories.map((category) => ({ path: categoryRoute(category.slug) })),
     ...entries.map((entry) => ({
       path: articleRoute(entry.data.slug),
       lastmod: machineDateTime(entry.data.updatedAt).slice(0, 10),

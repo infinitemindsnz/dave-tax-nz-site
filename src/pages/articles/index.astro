@@ -30,6 +30,8 @@ import { pages, site } from "../../lib/content";
 import {
   articlePath,
   articleTypeLabel,
+  categoryPath,
+  categorySlug,
   displayDate,
   machineDate,
   publishedArticles,
@@ -124,7 +126,9 @@ const cards = entries.map((entry) => ({
         cards.map((card) => (
           <article class="article-card">
             <div class="article-meta">
-              <span>{card.category}</span>
+              {/* The card's category, linked to its crawlable hub — the filter
+                  strip above is JS-only and invisible to a crawler. */}
+              <a href={categoryPath(categorySlug(card.category))}>{card.category}</a>
               <time datetime={card.machineDate}>{card.displayDate}</time>
             </div>
             <h3>{card.title}</h3>
