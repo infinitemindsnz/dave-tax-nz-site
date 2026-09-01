@@ -1,5 +1,6 @@
 import { articlePath, categoryPath, publishedArticles, publishedCategories } from "./articles";
-import { pageRoutes } from "./pages";
+import { pageRoutes, typedPageRoutes } from "./pages";
+import { typedPages } from "./content";
 import { sitePath } from "./urls";
 
 /**
@@ -114,6 +115,7 @@ export function staticPageRoutes(): string[] {
     if (route !== undefined) routes.add(route);
   }
   for (const route of pageRoutes()) routes.add(route);
+  for (const route of typedPageRoutes(typedPages)) routes.add(route);
   return [...routes].sort(byRoute);
 }
 

@@ -31,6 +31,51 @@ export const ICON_NAMES = [
 const iconName = z.enum(ICON_NAMES);
 
 const nonEmpty = z.string().min(1);
+const semanticId = z.string().regex(/^[a-z][a-z0-9.-]*$/);
+const contentControl = /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u;
+
+const openingHours = z
+  .strictObject({
+    timezone: z.literal("Pacific/Auckland"),
+    weekly: z
+      .array(
+        z.strictObject({
+          day: z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]),
+          intervals: z
+            .array(
+              z.strictObject({
+                opens: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
+                closes: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
+              }),
+            )
+            .min(1)
+            .max(3),
+        }),
+      )
+      .min(1)
+      .max(7),
+    display: z.string().min(1)
+      .refine((value) => [...value].length <= 300, "opening-hours display exceeds 300 Unicode characters")
+      .refine((value) => !contentControl.test(value), "opening-hours display contains a forbidden control character"),
+  })
+  .superRefine((hours, ctx) => {
+    const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+    let priorDay = -1;
+    for (const [dayIndex, day] of hours.weekly.entries()) {
+      const currentDay = days.indexOf(day.day);
+      if (currentDay <= priorDay) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["weekly", dayIndex, "day"], message: "days must be unique and ordered Monday–Sunday" });
+      }
+      priorDay = currentDay;
+      let priorClose = "";
+      for (const [intervalIndex, interval] of day.intervals.entries()) {
+        if (interval.opens >= interval.closes || interval.opens < priorClose) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["weekly", dayIndex, "intervals", intervalIndex], message: "intervals must be ordered, non-overlapping and have opens < closes" });
+        }
+        priorClose = interval.closes;
+      }
+    }
+  });
 
 /** Path relative to the site root, e.g. "assets/dave-ananth-logo.webp". */
 const assetPath = z
@@ -101,10 +146,42 @@ const image = z.strictObject({
 });
 
 const link = z.strictObject({
+  id: semanticId,
+  binding: semanticId,
   label: nonEmpty,
   href,
   external: z.boolean(),
 });
+
+const navItem = z.strictObject({
+  id: semanticId,
+  binding: semanticId,
+  label: nonEmpty,
+  href: navHref,
+});
+
+const navigation = z
+  .strictObject({
+    ariaLabel: nonEmpty,
+    skipLabel: nonEmpty,
+    menuOpenLabel: nonEmpty,
+    menuCloseLabel: nonEmpty,
+    items: z.record(semanticId, navItem),
+    order: z.array(semanticId).min(1),
+    cta: link,
+  })
+  .superRefine((nav, ctx) => {
+    const keys = Object.keys(nav.items);
+    if (new Set(nav.order).size !== nav.order.length || [...nav.order].sort().join("\0") !== [...keys].sort().join("\0")) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["order"], message: "navigation order must be an exact permutation of item keys" });
+    }
+    for (const [key, item] of Object.entries(nav.items)) {
+      const expected = `header.${key}`;
+      if (item.id !== expected || item.binding !== expected) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["items", key], message: `navigation item identity must equal ${expected}` });
+      }
+    }
+  });
 
 export const siteSchema = z.strictObject({
   meta: z.strictObject({
@@ -122,21 +199,7 @@ export const siteSchema = z.strictObject({
     logo: image,
   }),
 
-  nav: z.strictObject({
-    ariaLabel: nonEmpty,
-    skipLabel: nonEmpty,
-    menuOpenLabel: nonEmpty,
-    menuCloseLabel: nonEmpty,
-    items: z
-      .array(
-        z.strictObject({
-          label: nonEmpty,
-          href: navHref,
-        }),
-      )
-      .min(1),
-    cta: link,
-  }),
+  nav: navigation,
 
   hero: z.strictObject({
     eyebrow: nonEmpty,
@@ -149,6 +212,8 @@ export const siteSchema = z.strictObject({
     ctas: z
       .array(
         z.strictObject({
+          id: semanticId,
+          binding: semanticId,
           label: nonEmpty,
           href,
           variant: z.enum(["primary", "secondary"]),
@@ -182,6 +247,8 @@ export const siteSchema = z.strictObject({
     items: z
       .array(
         z.strictObject({
+          id: semanticId,
+          binding: semanticId,
           number: z.string().regex(/^\d{2}$/),
           icon: iconName,
           title: nonEmpty,
@@ -202,6 +269,8 @@ export const siteSchema = z.strictObject({
       meta: nonEmpty,
     }),
     link: z.strictObject({
+      id: semanticId,
+      binding: semanticId,
       label: nonEmpty,
       href: externalHref,
     }),
@@ -267,11 +336,16 @@ export const siteSchema = z.strictObject({
       )
       .min(1),
     action: z.strictObject({
+      id: semanticId,
+      binding: semanticId,
       title: nonEmpty,
       ctaLabel: nonEmpty,
       ctaHref: externalHref,
     }),
   }),
+
+  /** Null until the client supplies the complete public fact in an approved proposal. */
+  openingHours: openingHours.nullable(),
 
   footer: z.strictObject({
     logo: image,
@@ -390,6 +464,38 @@ export const pageSchema = z.strictObject({
   sections: z.array(pageSectionSchema).min(1),
 });
 
+const governedText = (max: number) =>
+  z
+    .string()
+    .min(1)
+    .refine((value) => [...value].length <= max, `typed page text exceeds ${max} Unicode characters`)
+    .refine((value) => !/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069<>]/u.test(value), "typed page text contains forbidden control, bidi, or markup characters");
+
+export const typedPageSectionSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("prose"),
+    heading: governedText(160),
+    body: governedText(4000),
+  }),
+  z.strictObject({
+    kind: z.literal("list"),
+    heading: governedText(160),
+    items: z.array(governedText(500)).min(1).max(20),
+  }),
+]);
+
+export const typedPageSchema = z.strictObject({
+  pageType: z.literal("service_detail"),
+  slug: z.string().min(1).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  title: governedText(120),
+  description: governedText(300),
+  sections: z.array(typedPageSectionSchema).max(12),
+});
+
+export const typedPagesSchema = z.strictObject({
+  pages: z.array(typedPageSchema).max(64),
+});
+
 /**
  * Every slug is required and no others are allowed: a page that silently stops
  * being migrated is a content regression, not a smaller file.
@@ -408,3 +514,5 @@ export type Page = z.infer<typeof pageSchema>;
 export type Pages = z.infer<typeof pagesSchema>;
 export type PageSlug = (typeof PAGE_SLUGS)[number];
 export type SectionKind = (typeof SECTION_KINDS)[number];
+export type TypedPage = z.infer<typeof typedPageSchema>;
+export type TypedPages = z.infer<typeof typedPagesSchema>;

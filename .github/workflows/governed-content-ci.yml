@@ -56,7 +56,6 @@ jobs:
           ln -s "$GITHUB_WORKSPACE/node_modules" "$base_dir/node_modules"
           npm --prefix "$base_dir" run test:governance
       - name: Test governance on the checked-out tree
-        if: ${{ github.event_name != 'pull_request' || !startsWith(github.head_ref, 'governed/') }}
         run: npm run test:governance
       - run: npm run build
       - run: npm run test:sites

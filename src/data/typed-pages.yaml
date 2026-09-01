@@ -1,0 +1,6 @@
+# Governed create-only typed pages.
+#
+# This list is intentionally empty until an authenticated typed_page_create
+# proposal supplies a complete page. The renderer has no example/default page
+# and the materialiser may only append one strict service_detail record.
+pages: []

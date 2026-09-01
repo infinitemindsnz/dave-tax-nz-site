@@ -15,6 +15,7 @@
     "insights",
     "articlePages",
     "contact",
+    "openingHours",
     "footer"
   ],
   "properties": {
@@ -81,6 +82,7 @@
         "menuOpenLabel",
         "menuCloseLabel",
         "items",
+        "order",
         "cta"
       ],
       "properties": {
@@ -97,24 +99,17 @@
           "$ref": "#/$defs/nonEmpty"
         },
         "items": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/$defs/semanticId" },
+          "additionalProperties": { "$ref": "#/$defs/navItem" }
+        },
+        "order": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "label",
-              "href"
-            ],
-            "properties": {
-              "label": {
-                "$ref": "#/$defs/nonEmpty"
-              },
-              "href": {
-                "$ref": "#/$defs/anchorHref"
-              }
-            }
-          }
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/semanticId" },
+          "$comment": "src/data/schema.ts additionally requires an exact permutation of items keys and binds each key to header.<key>."
         },
         "cta": {
           "$ref": "#/$defs/link"
@@ -166,6 +161,8 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
+              "id",
+              "binding",
               "label",
               "href",
               "variant",
@@ -173,11 +170,13 @@
               "icon"
             ],
             "properties": {
+              "id": { "$ref": "#/$defs/semanticId" },
+              "binding": { "$ref": "#/$defs/semanticId" },
               "label": {
                 "$ref": "#/$defs/nonEmpty"
               },
               "href": {
-                "$ref": "#/$defs/href"
+                "$ref": "#/$defs/cardHref"
               },
               "variant": {
                 "enum": [
@@ -289,6 +288,8 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
+              "id",
+              "binding",
               "number",
               "icon",
               "title",
@@ -297,6 +298,8 @@
               "linkLabel"
             ],
             "properties": {
+              "id": { "$ref": "#/$defs/semanticId" },
+              "binding": { "$ref": "#/$defs/semanticId" },
               "number": {
                 "type": "string",
                 "pattern": "^\\d{2}$"
@@ -361,10 +364,14 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "id",
+            "binding",
             "label",
             "href"
           ],
           "properties": {
+            "id": { "$ref": "#/$defs/semanticId" },
+            "binding": { "$ref": "#/$defs/semanticId" },
             "label": {
               "$ref": "#/$defs/nonEmpty"
             },
@@ -484,11 +491,15 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
+            "id",
+            "binding",
             "title",
             "ctaLabel",
             "ctaHref"
           ],
           "properties": {
+            "id": { "$ref": "#/$defs/semanticId" },
+            "binding": { "$ref": "#/$defs/semanticId" },
             "title": {
               "$ref": "#/$defs/nonEmpty"
             },
@@ -501,6 +512,48 @@
           }
         }
       }
+    },
+    "openingHours": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["timezone", "weekly", "display"],
+          "properties": {
+            "timezone": { "const": "Pacific/Auckland" },
+            "weekly": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 7,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["day", "intervals"],
+                "properties": {
+                  "day": { "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+                  "intervals": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["opens", "closes"],
+                      "properties": {
+                        "opens": { "type": "string", "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$" },
+                        "closes": { "type": "string", "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$" }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "display": { "type": "string", "minLength": 1, "maxLength": 300, "pattern": "^[^\\u0000-\\u001F\\u007F-\\u009F\\u202A-\\u202E\\u2066-\\u2069]*$" }
+          },
+          "$comment": "Ordering, uniqueness, opens < closes and non-overlap are cross-field rules enforced by src/data/schema.ts and the typed materialiser. Null is the explicit audited absence of a client-supplied fact, never a default schedule."
+        }
+      ]
     },
     "footer": {
       "type": "object",
@@ -536,6 +589,10 @@
       "type": "string",
       "minLength": 1
     },
+    "semanticId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]*$"
+    },
     "assetPath": {
       "type": "string",
       "minLength": 1,
@@ -549,6 +606,14 @@
     "anchorHref": {
       "type": "string",
       "pattern": "^#[A-Za-z][\\w-]*$"
+    },
+    "navHref": {
+      "type": "string",
+      "pattern": "^(#[A-Za-z][\\w-]*|/([a-z0-9]+(-[a-z0-9]+)*/)*?)$"
+    },
+    "cardHref": {
+      "type": "string",
+      "pattern": "^(#[A-Za-z][\\w-]*|/([a-z0-9]+(-[a-z0-9]+)*/)*?|https?://\\S+|mailto:\\S+|tel:\\+?[0-9]+)$"
     },
     "externalHref": {
       "type": "string",
@@ -600,11 +665,15 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "id",
+        "binding",
         "label",
         "href",
         "external"
       ],
       "properties": {
+        "id": { "$ref": "#/$defs/semanticId" },
+        "binding": { "$ref": "#/$defs/semanticId" },
         "label": {
           "$ref": "#/$defs/nonEmpty"
         },
@@ -614,6 +683,17 @@
         "external": {
           "type": "boolean"
         }
+      }
+    },
+    "navItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "binding", "label", "href"],
+      "properties": {
+        "id": { "$ref": "#/$defs/semanticId" },
+        "binding": { "$ref": "#/$defs/semanticId" },
+        "label": { "$ref": "#/$defs/nonEmpty" },
+        "href": { "$ref": "#/$defs/navHref" }
       }
     }
   }

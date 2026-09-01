@@ -35,22 +35,25 @@ import SiteHeader from "../components/SiteHeader.astro";
 import Contact from "../components/Contact.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import PageSections from "../components/sections/PageSections.astro";
-import { pages } from "../lib/content";
+import { pages, typedPages } from "../lib/content";
 import { ROUTED_PAGE_SLUGS, planPage, toParagraphs } from "../lib/pages";
 import { sitePath } from "../lib/urls";
-import type { PageSlug } from "../data/schema";
+import type { PageSlug, TypedPage } from "../data/schema";
 import "../styles-article.css";
 
 export function getStaticPaths() {
-  return ROUTED_PAGE_SLUGS.map((slug) => ({ params: { slug }, props: { slug } }));
+  return [
+    ...ROUTED_PAGE_SLUGS.map((slug) => ({ params: { slug }, props: { slug, typed: false as const } })),
+    ...typedPages.map((page) => ({ params: { slug: page.slug }, props: { slug: page.slug, typed: true as const } })),
+  ];
 }
 
-interface Props {
-  slug: PageSlug;
-}
+type Props = { slug: PageSlug; typed: false } | { slug: string; typed: true };
 
-const { slug } = Astro.props;
-const page = pages[slug];
+const { slug, typed } = Astro.props as Props;
+const page = typed
+  ? typedPages.find((entry) => entry.slug === slug) as TypedPage
+  : pages[slug as PageSlug];
 const { masthead, body } = planPage(page);
 
 /**

@@ -75,7 +75,7 @@ export const ARTICLE_STRUCTURED_DATA_TYPES = ["Organization", "Person", "Article
  * same Person, at the same @id, instead of two near-copies that drift.
  */
 function buildEntities(site: URL | undefined) {
-  const { meta, brand, hero, proof, expertise, contact, footer } = content;
+  const { meta, brand, hero, proof, expertise, contact, openingHours, footer } = content;
 
   const home = absoluteUrl(site);
   const organizationId = `${home}#organization`;
@@ -120,6 +120,14 @@ function buildEntities(site: URL | undefined) {
   };
 
   const practiceAreas = expertise.items.map((item) => item.title);
+  const openingHoursSpecification = openingHours?.weekly.flatMap((day) =>
+    day.intervals.map((interval) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: day.day[0].toUpperCase() + day.day.slice(1),
+      opens: interval.opens,
+      closes: interval.closes,
+    })),
+  );
 
   const organization = defined({
     "@type": "Organization",
@@ -133,6 +141,7 @@ function buildEntities(site: URL | undefined) {
     email,
     address,
     sameAs,
+    openingHoursSpecification,
   });
 
   const legalService = defined({
@@ -170,6 +179,7 @@ function buildEntities(site: URL | undefined) {
         }),
       ),
     },
+    openingHoursSpecification,
     potentialAction: {
       "@type": "ReserveAction",
       name: contact.action.ctaLabel,

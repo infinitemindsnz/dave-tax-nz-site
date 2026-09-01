@@ -2,13 +2,16 @@ import { parse } from "yaml";
 import siteYaml from "../data/site.yaml?raw";
 import articlesYaml from "../data/articles.yaml?raw";
 import pagesYaml from "../data/pages.yaml?raw";
+import typedPagesYaml from "../data/typed-pages.yaml?raw";
 import {
   articlesSchema,
   pagesSchema,
   siteSchema,
+  typedPagesSchema,
   type Article,
   type Pages,
   type Site,
+  type TypedPage,
 } from "../data/schema";
 
 /**
@@ -85,6 +88,24 @@ function loadPageContent(): Pages {
   return result.data;
 }
 
+function loadTypedPageContent(): TypedPage[] {
+  let raw: unknown;
+  try {
+    raw = parse(typedPagesYaml);
+  } catch (error) {
+    fail("typed-pages.yaml", error);
+  }
+  const result = typedPagesSchema.safeParse(raw);
+  if (!result.success) fail("typed-pages.yaml", result.error);
+  const seen = new Set<string>();
+  for (const page of result.data.pages) {
+    if (seen.has(page.slug)) throw new Error(`Invalid content in src/data/typed-pages.yaml: duplicate slug ${page.slug}`);
+    seen.add(page.slug);
+  }
+  return result.data.pages;
+}
+
 export const site: Site = loadSiteContent();
 export const articles: Article[] = loadArticleList();
 export const pages: Pages = loadPageContent();
+export const typedPages: TypedPage[] = loadTypedPageContent();

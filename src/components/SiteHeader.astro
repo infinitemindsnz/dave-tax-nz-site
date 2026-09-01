@@ -43,6 +43,7 @@ const { hrefBase = "" } = Astro.props;
 const { brand, nav } = site;
 const { logo } = brand;
 const { cta } = nav;
+const orderedItems = nav.order.map((key) => nav.items[key]);
 
 /**
  * Three kinds of governed target, in the order the content model allows them:
@@ -91,7 +92,7 @@ const resolve = (href: string, source: string) => {
     ></button
   >
   <nav id="site-nav" class="nav" aria-label={nav.ariaLabel}
-    >{nav.items.map((item) => <a href={resolve(item.href, `src/data/site.yaml: nav item "${item.label}"`)}>{item.label}</a>)}</nav
+    >{orderedItems.map((item) => <a href={resolve(item.href, `src/data/site.yaml: nav item "${item.label}"`)}>{item.label}</a>)}</nav
   >
   <a
     class="button"

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "dave-tax-nz-site.governed-expansion.v1",
+  "success": [
+    {
+      "operationKind": "site_link_patch",
+      "proposal": {
+        "schemaVersion": 1,
+        "links": [
+          {
+            "surfaceId": "site.header.contact",
+            "label": "Contact Dave",
+            "destination": { "kind": "internal_route", "value": "/contact/" }
+          }
+        ],
+        "navigationOrders": []
+      },
+      "artifactClass": "site_link_patch",
+      "requiredApprovalStages": ["publication_approval"],
+      "changedPaths": ["src/data/site.yaml"]
+    },
+    {
+      "operationKind": "typed_page_create",
+      "proposal": {
+        "schemaVersion": 1,
+        "page": {
+          "pageType": "service_detail",
+          "slug": "example-service",
+          "title": "Example service",
+          "description": "A bounded public summary.",
+          "sections": []
+        },
+        "navigationPlacement": null
+      },
+      "artifactClass": "typed_page",
+      "requiredApprovalStages": ["legal_sign_off", "publication_approval"],
+      "changedPaths": ["src/data/typed-pages.yaml"]
+    },
+    {
+      "operationKind": "public_email_patch",
+      "proposal": {
+        "schemaVersion": 1,
+        "display": "office@example.invalid",
+        "mailto": "inbox@example.invalid"
+      },
+      "artifactClass": "public_email_fact",
+      "requiredApprovalStages": ["publication_approval"],
+      "changedPaths": [
+        "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+        "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md",
+        "src/data/pages.yaml",
+        "src/data/site.yaml"
+      ]
+    },
+    {
+      "operationKind": "public_opening_hours_replace",
+      "proposal": {
+        "schemaVersion": 1,
+        "timezone": "Pacific/Auckland",
+        "weekly": [
+          { "day": "monday", "intervals": [{ "opens": "09:00", "closes": "17:00" }] }
+        ],
+        "display": "Monday 9:00am–5:00pm"
+      },
+      "artifactClass": "public_opening_hours",
+      "requiredApprovalStages": ["publication_approval"],
+      "changedPaths": ["src/data/site.yaml"]
+    }
+  ],
+  "refusals": [
+    {
+      "name": "unsafe javascript destination",
+      "operationKind": "site_link_patch",
+      "proposal": {
+        "schemaVersion": 1,
+        "links": [
+          {
+            "surfaceId": "site.header.primary-booking",
+            "label": "Book",
+            "destination": { "kind": "external_https", "value": "javascript:alert(1)" }
+          }
+        ],
+        "navigationOrders": []
+      },
+      "expectedCode": "unsafe_url"
+    },
+    {
+      "name": "typed page media",
+      "operationKind": "typed_page_create",
+      "proposal": {
+        "schemaVersion": 1,
+        "page": {
+          "pageType": "service_detail",
+          "slug": "unsafe-media",
+          "title": "Unsafe media",
+          "description": "Must refuse media.",
+          "sections": [{ "kind": "prose", "heading": "Image", "body": "![x](data:image/png;base64,AAAA)" }]
+        },
+        "navigationPlacement": null
+      },
+      "expectedCode": "unsafe_content"
+    },
+    {
+      "name": "withdrawn hours ceremony",
+      "operationKind": "public_hours_patch",
+      "proposal": {},
+      "expectedCode": "unknown_operation"
+    }
+  ]
+}

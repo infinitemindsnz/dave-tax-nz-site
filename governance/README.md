@@ -1,20 +1,20 @@
 # Governed publication contract
 
-This directory defines the file-backed target that a future Assistant Platform
+This directory defines the file-backed target that an Assistant Platform
 publisher may address. It grants no authority by itself.
 
-Nothing in this repository reads these files today. There is no publisher, no
-candidate builder, no approval client, and no CI check bound to them. Adding
-the contract does not make the site writable by anything; it only describes,
-in advance and in public, the exact and very small surface that a writer would
-be permitted to touch if one were ever built. Until that publisher exists,
-`src/data/site.yaml`, `src/data/articles.yaml`, `src/data/pages.yaml` and the
-eighteen posts under `src/content/articles/` remain human-owned files edited by
-hand.
+`scripts/governed-materialisers.mjs` now reads the versioned writable and
+approval policies and implements pure, in-memory projection for the selected
+semantic operations. It cannot write files, invoke Git or shell commands, use
+the network, or perform an approval/publication effect. Candidate bytes remain
+inactive until an external publisher binds them to the exact base, manifest,
+authenticated ceremony and protected publication path.
 
-The content migration widened what this directory **describes**. It widened
-what it **permits** for `article_publish` by nothing at all — that remains
-`permitted: false` with no writable path. Separately, a 2026-08-20 audit found
+The historical content migration first widened only what this directory
+described. Writable-policy version 5 later enabled a narrow, authored-only,
+create-only `article_publish` path after its recorded prerequisites landed;
+existing article edit/delete and attributed repost creation remain denied.
+Separately, a 2026-08-20 audit found
 that the original phone coupled set covered only 3 of 13 render-reachable
 phone occurrences; version 2 of `writable-paths.v1.json` closed that gap by
 declaring all thirteen, still under the single `public_phone_patch` operation
@@ -23,7 +23,8 @@ kind and still nothing an approver did not explicitly approve.
 ## Canonical inputs
 
 - `content-contract.v1.json` names every governed source and schema:
-  `src/data/site.yaml`, `src/data/articles.yaml`, `src/data/pages.yaml` and the
+  `src/data/site.yaml`, `src/data/articles.yaml`, `src/data/pages.yaml`,
+  `src/data/typed-pages.yaml` and the
   `src/content/articles/**/*.md` collection, their JSON Schemas, the two
   build-time validators, and the frozen theme.
 - `schemas/site.v1.schema.json` strictly validates the one governed site
@@ -33,12 +34,17 @@ kind and still nothing an approver did not explicitly approve.
 - `schemas/pages.v1.schema.json` strictly validates the nine migrated
   WordPress page records. Every slug is required, no others are allowed, and
   the seven cross-field section rules are restated as `if`/`then`.
+- `schemas/typed-pages.v1.schema.json` permits only create-only
+  `service_detail` records with prose/list sections and bounded text.
 - `schemas/article-frontmatter.v1.schema.json` strictly validates one article's
   typed frontmatter, including the attribution object.
 - `markdown-policy.v1.json` limits article bodies to a twelve-node Markdown
   AST. Raw HTML, MDX, code, tables, footnotes, reference definitions,
   strikethrough, depth-1 headings and non-HTTPS links all fail closed.
-- `writable-paths.v1.json` is an exhaustive allowlist. Version 2 permits only
+- `writable-paths.v1.json` is an exhaustive allowlist. Its historical phone,
+  text and article contracts remain closed; version 6 adds semantic links,
+  typed pages, the complete email coupled set and the new opening-hours fact.
+  Version 2 permits
   a closed, two-input `public_phone` patch (`display` plus `e164`) written
   atomically across thirteen targets in four files — three pointers in
   `src/data/site.yaml`, eight substring targets in `src/data/pages.yaml`, and
@@ -46,9 +52,8 @@ kind and still nothing an approver did not explicitly approve.
   every file, is denied, and a closed-set precondition scans the base
   revision and refuses the candidate if any render-reachable phone occurrence
   exists outside those thirteen. Its `documentedOperations` block describes
-  `article_publish` with `permitted: false`, and records `public_hours_patch`
-  as fully withdrawn — the operation kind no longer exists anywhere else in
-  this directory (see "What version 3 may write" below).
+  `public_hours_patch` as fully withdrawn. The selected hours operation is the
+  distinct `public_opening_hours_replace`; the old name remains invalid.
 - `schemas/candidate-manifest.v1.schema.json` describes the artifact an
   approval decision binds.
 - `renderer-manifest.v1.json` pins the static renderer, Node version, build
@@ -61,8 +66,8 @@ kind and still nothing an approver did not explicitly approve.
 ## Two validators, one stance
 
 `src/data/schema.ts` is the enforcing validator for the YAML sources.
-`src/lib/content.ts` parses all three files — `site.yaml`, `articles.yaml`,
-`pages.yaml` — through it, so an unknown key, a missing string, or a malformed
+`src/lib/content.ts` parses all four files — `site.yaml`, `articles.yaml`,
+`pages.yaml`, `typed-pages.yaml` — through it, so an unknown key, a missing string, or a malformed
 href fails `astro build` rather than shipping a degraded page.
 `npm run content:validate` runs the same schemas without a full build.
 
@@ -206,10 +211,10 @@ identity preconditions that the publisher must assert against the base
 revision before applying anything, and must refuse on any mismatch. Those
 assertions are read-only; they are not fields the policy may write.
 
-## What version 3 describes but does not permit
+## Withdrawn and separately bounded operations
 
-`writable-paths.v1.json` carries a `documentedOperations` block for two
-operation kinds, and grants no paths for either.
+`writable-paths.v1.json` carries one `documentedOperations` entry for the
+withdrawn hours name and a separate executable `articlePublish` block.
 
 `public_hours_patch` is documented as **fully withdrawn**: no longer in
 `approval-policy.v1.json`'s `operations[]`, no longer in the `operation_kind`
@@ -219,12 +224,11 @@ the four preconditions (a real hours field, a materialiser, a version 3
 contract, a semantic pointer-meaning check) that would have to be met before
 re-introducing it as a new operation kind — not before restoring this one.
 
-`article_publish` remains documented with `permitted: false`: what it would
-target (`src/content/articles/<slug>.md`, **create-only** — editing or deleting
-an existing article can silently alter an attribution on already-published
-reporting and would need its own entry), what it would be constrained by (the
-frontmatter schema and the Markdown policy), and, at more length, what it would
-**not** target. That negative list is the useful half. Publishing an article
+`article_publish` is authorised only through the version-5 `articlePublish`
+block for one new `src/content/articles/<slug>.md` file. It is authored-only
+and **create-only**: editing or deleting an existing article can silently alter
+an attribution on already-published reporting and would need its own operation.
+The frontmatter schema and executable Markdown policy apply together. Publishing an article
 must not append to the curated homepage list in `src/data/articles.yaml`, must
 not append a category to the client's own filter strip in `src/data/pages.yaml`,
 must not touch the article-surface labels in `src/data/site.yaml`, must not
@@ -232,13 +236,8 @@ write `src/data/media-manifest.json` (the Markdown policy uses that manifest as
 a gate, and letting the same operation write the gate would defeat it), and must
 not touch either stylesheet.
 
-It exists so that the shape of an operation this repository refuses is written
-down in public rather than left to a future implementer's inference — the same
-stance the reference contract takes. `files` remains the exhaustive allowlist,
-`default` remains `deny`, and a fully-approved `article_publish` candidate is
-still refused, because this policy lists no path it may write. Six
-preconditions are recorded that would have to be met before the question of
-enabling it is even in order; they are reproduced under "Future work" below.
+The default remains deny. Article attribution, media, existing files, unrelated
+YAML and styles remain outside this grant regardless of approval.
 
 ## Candidate identity
 
@@ -253,19 +252,17 @@ objects for exact preview identity, but no remote branch or commit is pushed
 before authenticated approval. The publisher must re-verify every approved
 digest before opening or merging a pull request.
 
-Every candidate declares exactly one closed operation family. Version 2
-recognizes `public_phone_patch` and the structurally described but locally
-unauthorized `article_publish`; `public_hours_patch` is no longer a
-recognized value at all — declaring it fails schema validation — and a broad
-site-record operation is deliberately invalid. `article_publish` is now structurally
-*coherent* here in a way it was not before — there is a Markdown content
-source, a frontmatter schema and a Markdown policy for it to bind. Coherent is
-not permitted. The only file that can permit anything is
-`writable-paths.v1.json`, and it does not.
+Every candidate declares exactly one closed operation family. The manifest
+recognizes the historical phone/text/article operations and the four selected
+version-6 operations. `public_hours_patch` is not a recognized value at all —
+declaring it fails schema validation — and a broad site-record operation is
+deliberately invalid. The only file that grants write authority is
+`writable-paths.v1.json`; the carrier and Markdown schemas constrain that
+authority but never broaden it.
 
-`content_schema_sha256` binds `schemas/site.v1.schema.json`,
-`schemas/articles.v1.schema.json`, `schemas/pages.v1.schema.json` and
-`schemas/article-frontmatter.v1.schema.json`. `src/data/schema.ts` and
+`content_schema_sha256` binds the strict site, article-list, migrated-page,
+typed-page and article-frontmatter schemas. Operation carriers are bound by
+their own authority digest. `src/data/schema.ts` and
 `src/content.config.ts` are bound separately through the renderer source globs
 and `renderer_sha256`, because each is simultaneously a validator and a build
 input.

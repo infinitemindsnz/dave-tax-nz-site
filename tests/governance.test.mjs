@@ -17,11 +17,17 @@
 // `excerpt`) reached seven places in rendered output, including the homepage
 // and rss.xml. Do not narrow that walk back to a file list.
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
+import {
+  GovernedMaterialiserRefusal,
+  GOVERNED_AUTHORITY_DIGESTS,
+  materialiseGovernedOperation,
+} from "../scripts/governed-materialisers.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const governancePath = (...segments) => path.join(root, "governance", ...segments);
@@ -30,6 +36,7 @@ const readJson = (...segments) => JSON.parse(readFileSync(governancePath(...segm
 const writablePaths = readJson("writable-paths.v1.json");
 const approvalPolicy = readJson("approval-policy.v1.json");
 const candidateManifestSchema = readJson("schemas", "candidate-manifest.v1.schema.json");
+const expansionFixtures = readJson("fixtures", "governed-site-expansion.v1.json");
 
 /**
  * Every file under `dir`, recursively, as paths relative to `base` (the
@@ -201,9 +208,11 @@ test("public_hours_patch is fully withdrawn", async (t) => {
     assert.equal(declaredKinds.includes("public_hours_patch"), false);
   });
 
-  await t.test("the schema.ts content model still defines no hours field to write to", () => {
+  await t.test("the replacement operation uses a new real field, never the withdrawn name", () => {
     const schemaSource = readFileSync(path.join(root, "src", "data", "schema.ts"), "utf8");
-    assert.equal(/\bhours\b/i.test(schemaSource), false);
+    assert.ok(schemaSource.includes("openingHours"));
+    assert.equal(candidateManifestSchema.properties.operation_kind.enum.includes("public_opening_hours_replace"), true);
+    assert.equal(candidateManifestSchema.properties.operation_kind.enum.includes("public_hours_patch"), false);
   });
 });
 
@@ -776,4 +785,459 @@ test("approval policy and candidate manifest carry article_publish coherently", 
     assert.doesNotMatch("src/content/articles/UPPER.md", new RegExp(changed.items.properties.path.pattern));
     assert.doesNotMatch("src/data/site.yaml", new RegExp(changed.items.properties.path.pattern));
   });
+});
+
+// ── governed-site expansion tranche (writable-paths v6) ────────────────────
+
+const materialiserFiles = [
+  "src/data/site.yaml",
+  "src/data/pages.yaml",
+  "src/data/typed-pages.yaml",
+  "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+  "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md",
+];
+
+function materialiserBase(overrides = {}) {
+  const files = Object.fromEntries(materialiserFiles.map((file) => [file, readFileSync(path.join(root, file), "utf8")]));
+  const modes = Object.fromEntries(materialiserFiles.map((file) => [file, "100644"]));
+  const fileSha256 = Object.fromEntries(materialiserFiles.map((file) => [file, `sha256:${createHash("sha256").update(files[file]).digest("hex")}`]));
+  return {
+    revision: "a".repeat(40),
+    expectedRevision: "a".repeat(40),
+    writablePolicyVersion: writablePaths.schemaVersion,
+    approvalPolicyVersion: approvalPolicy.schemaVersion,
+    authorityDigests: { ...GOVERNED_AUTHORITY_DIGESTS },
+    inventoryComplete: true,
+    files,
+    fileSha256,
+    modes,
+    publishedRoutes: ["/", "/about-dave/", "/articles/", "/contact/", "/ird-disputes-tax-penalties-negotiation/", "/student-loan-negotiations/", "/testimonials/"],
+    ...overrides,
+  };
+}
+
+const sourceDigest = (text) => `sha256:${createHash("sha256").update(text).digest("hex")}`;
+
+function materialise(operationKind, proposal, base = materialiserBase()) {
+  return materialiseGovernedOperation({ operationKind, proposal, base });
+}
+
+function assertRefusal(code, callback) {
+  assert.throws(callback, (error) => error instanceof GovernedMaterialiserRefusal && error.code === code);
+}
+
+test("selected operations have exact policy, artifact and ceremony bindings", () => {
+  const expected = {
+    site_link_patch: ["site_link_patch", ["publication_approval"]],
+    typed_page_create: ["typed_page", ["legal_sign_off", "publication_approval"]],
+    public_email_patch: ["public_email_fact", ["publication_approval"]],
+    public_opening_hours_replace: ["public_opening_hours", ["publication_approval"]],
+  };
+  for (const [operationKind, [artifactClass, stages]] of Object.entries(expected)) {
+    const policy = approvalPolicy.operations.filter((entry) => entry.operationKind === operationKind);
+    assert.equal(policy.length, 1, `${operationKind} must have one approval entry`);
+    assert.equal(policy[0].artifactClass, artifactClass);
+    assert.deepEqual(policy[0].requiredApprovalStages, stages);
+    assert.ok(candidateManifestSchema.properties.operation_kind.enum.includes(operationKind));
+    assert.ok(candidateManifestSchema.properties.artifact_class.enum.includes(artifactClass));
+    const branch = candidateManifestSchema.allOf.find((entry) => entry.if?.properties?.operation_kind?.const === operationKind);
+    assert.ok(branch, `${operationKind} candidate branch is missing`);
+    assert.equal(branch.then.properties.artifact_class.const, artifactClass);
+    assert.deepEqual(branch.then.properties.required_approval_stages.prefixItems.map((entry) => entry.const), stages);
+  }
+  assert.equal(candidateManifestSchema.properties.writable_policy_version.const, writablePaths.schemaVersion);
+  assert.equal(candidateManifestSchema.properties.approval_policy_version.const, approvalPolicy.schemaVersion);
+});
+
+test("link catalogue semantic IDs are stable, role-bound, unique and resolve exactly once", () => {
+  const found = new Map();
+  const walk = (value) => {
+    if (!value || typeof value !== "object") return;
+    if (!Array.isArray(value) && typeof value.id === "string" && value.binding === value.id) found.set(value.id, (found.get(value.id) ?? 0) + 1);
+    for (const child of Object.values(value)) walk(child);
+  };
+  walk(siteYaml);
+  const surfaceIds = writablePaths.linkPatch.surfaces.map((surface) => surface.surfaceId);
+  assert.deepEqual(surfaceIds, [...surfaceIds].sort(), "link surface IDs must be lexical");
+  assert.equal(new Set(surfaceIds).size, surfaceIds.length);
+  for (const surface of writablePaths.linkPatch.surfaces) {
+    assert.equal(found.get(surface.semanticId), 1, `${surface.surfaceId} must resolve one stable semantic object`);
+    assert.deepEqual(surface.requiredTogether, ["label", "destination"]);
+    assert.ok(surface.destinationKinds.every((kind) => kind === "internal_route" || kind === "external_https"));
+    if (surface.destinationKinds.includes("external_https")) {
+      const base = new URL(surface.baseIdentity.href);
+      assert.deepEqual(surface.allowedExternalPaths, [base.pathname], `${surface.surfaceId} must pin its reviewed external path`);
+      assert.deepEqual(surface.allowedExternalHosts, [base.hostname], `${surface.surfaceId} must pin its reviewed external host`);
+    }
+  }
+});
+
+test("strict schema mirrors include stable IDs, typed pages and nullable opening hours", () => {
+  const siteSchemaMirror = readJson("schemas", "site.v1.schema.json");
+  const typedSchemaMirror = readJson("schemas", "typed-pages.v1.schema.json");
+  const carrierSchemaMirror = readJson("schemas", "operation-carriers.v1.schema.json");
+  assert.ok(siteSchemaMirror.required.includes("openingHours"));
+  assert.ok(siteSchemaMirror.properties.openingHours.oneOf.some((entry) => entry.type === "null"));
+  assert.ok(siteSchemaMirror.$defs.navItem.required.includes("id"));
+  assert.ok(siteSchemaMirror.$defs.navItem.required.includes("binding"));
+  assert.ok(siteSchemaMirror.$defs.link.required.includes("id"));
+  assert.ok(siteSchemaMirror.$defs.link.required.includes("binding"));
+  assert.equal(typedSchemaMirror.additionalProperties, false);
+  assert.equal(typedSchemaMirror.$defs.serviceDetail.additionalProperties, false);
+  assert.deepEqual(typedSchemaMirror.$defs.serviceDetail.properties.pageType, { const: "service_detail" });
+  assert.equal(typedSchemaMirror.$defs.serviceDetail.properties.sections.maxItems, 12);
+  assert.equal(carrierSchemaMirror.oneOf.length, 4);
+  for (const name of ["siteLinkPatch", "typedPageCreate", "publicEmailPatch", "publicOpeningHoursReplace"]) {
+    assert.equal(carrierSchemaMirror.$defs[name].additionalProperties, false);
+  }
+});
+
+test("committed expansion fixtures are secret-free executable golden vectors", async (t) => {
+  assert.equal(expansionFixtures.schemaVersion, 1);
+  assert.equal(expansionFixtures.success.length, 4);
+  const encoded = JSON.stringify(expansionFixtures);
+  assert.equal(/(?:api[_-]?key|password|secret|bearer\s)/iu.test(encoded), false);
+  for (const fixture of expansionFixtures.success) {
+    await t.test(`${fixture.operationKind} success`, () => {
+      const result = materialise(fixture.operationKind, fixture.proposal);
+      assert.equal(result.artifactClass, fixture.artifactClass);
+      assert.deepEqual(result.requiredApprovalStages, fixture.requiredApprovalStages);
+      assert.deepEqual(result.changes.map((entry) => entry.path), fixture.changedPaths);
+    });
+  }
+  for (const fixture of expansionFixtures.refusals) {
+    await t.test(fixture.name, () => assertRefusal(fixture.expectedCode, () => materialise(fixture.operationKind, fixture.proposal)));
+  }
+});
+
+test("site_link_patch materialises only its coupled semantic label and destination", () => {
+  const result = materialise("site_link_patch", {
+    schemaVersion: 1,
+    links: [{ surfaceId: "site.header.contact", label: "Contact Dave", destination: { kind: "internal_route", value: "/contact/" } }],
+    navigationOrders: [],
+  });
+  assert.equal(result.artifactClass, "site_link_patch");
+  assert.deepEqual(result.requiredApprovalStages, ["publication_approval"]);
+  assert.deepEqual(result.changes.map((entry) => entry.path), ["src/data/site.yaml"]);
+  const after = parseYaml(result.changes[0].after);
+  assert.equal(after.nav.items.contact.label, "Contact Dave");
+  assert.equal(after.nav.items.contact.href, "/contact/");
+  const before = parseYaml(result.changes[0].before);
+  after.nav.items.contact = before.nav.items.contact;
+  assert.deepEqual(after, before, "link materialiser changed unrelated site semantics");
+});
+
+test("every link catalogue entry materialises through its declared label/href pointers", async (t) => {
+  for (const surface of writablePaths.linkPatch.surfaces) {
+    await t.test(surface.surfaceId, () => {
+      const currentLabel = resolveJsonPointer(siteYaml, surface.labelPointer);
+      const currentHref = resolveJsonPointer(siteYaml, surface.hrefPointer);
+      const result = materialise("site_link_patch", {
+        schemaVersion: 1,
+        links: [{
+          surfaceId: surface.surfaceId,
+          label: `${currentLabel} updated`,
+          destination: { kind: surface.destinationKinds[0], value: currentHref },
+        }],
+        navigationOrders: [],
+      });
+      const after = parseYaml(result.changes[0].after);
+      assert.equal(resolveJsonPointer(after, surface.labelPointer), `${currentLabel} updated`);
+      assert.equal(resolveJsonPointer(after, surface.hrefPointer), currentHref);
+    });
+  }
+});
+
+test("site_link_patch enforces exact navigation permutations", () => {
+  const result = materialise("site_link_patch", {
+    schemaVersion: 1,
+    links: [{ surfaceId: "site.header.contact", label: "Contact", destination: { kind: "internal_route", value: "/contact/" } }],
+    navigationOrders: [{ groupId: "site.header.primary", itemIds: ["contact", "about", "expertise", "stories", "articles"] }],
+  });
+  const after = parseYaml(result.changes[0].after);
+  assert.deepEqual(after.nav.order.map((key) => after.nav.items[key].label), ["Contact", "About Dave", "Expertise", "Client stories", "Articles & media"]);
+  assertRefusal("invalid_order", () => materialise("site_link_patch", {
+    schemaVersion: 1,
+    links: [{ surfaceId: "site.header.contact", label: "Contact", destination: { kind: "internal_route", value: "/contact/" } }],
+    navigationOrders: [{ groupId: "site.header.primary", itemIds: ["contact"] }],
+  }));
+});
+
+test("keyed navigation preserves semantic link authority after a prior reorder", () => {
+  const firstBase = materialiserBase();
+  const reordered = materialise("site_link_patch", {
+    schemaVersion: 1,
+    links: [{ surfaceId: "site.header.contact", label: "Contact", destination: { kind: "internal_route", value: "/contact/" } }],
+    navigationOrders: [{ groupId: "site.header.primary", itemIds: ["contact", "about", "expertise", "stories", "articles"] }],
+  }, firstBase);
+  firstBase.files["src/data/site.yaml"] = reordered.changes[0].after;
+  firstBase.fileSha256["src/data/site.yaml"] = sourceDigest(reordered.changes[0].after);
+  const next = materialise("site_link_patch", {
+    schemaVersion: 1,
+    links: [{ surfaceId: "site.header.contact", label: "Contact Dave", destination: { kind: "internal_route", value: "/contact/" } }],
+    navigationOrders: [],
+  }, firstBase);
+  const after = parseYaml(next.changes[0].after);
+  assert.equal(after.nav.items.contact.label, "Contact Dave");
+  assert.deepEqual(after.nav.order, ["contact", "about", "expertise", "stories", "articles"]);
+});
+
+test("sequential typed page navigation remains creatable and exactly reorderable", () => {
+  const base = materialiserBase();
+  const create = (slug, position) => materialise("typed_page_create", {
+    schemaVersion: 1,
+    page: { pageType: "service_detail", slug, title: `${slug} service`, description: `${slug} service description`, sections: [] },
+    navigationPlacement: { groupId: "site.header.primary", label: `${slug} service`, position },
+  }, base);
+  for (const [slug, position] of [["first-service", 5], ["second-service", 6]]) {
+    const result = create(slug, position);
+    for (const change of result.changes) {
+      base.files[change.path] = change.after;
+      base.fileSha256[change.path] = sourceDigest(change.after);
+    }
+  }
+  const liveOrder = parseYaml(base.files["src/data/site.yaml"]).nav.order;
+  assert.equal(liveOrder.length, 7);
+  const reordered = materialise("site_link_patch", {
+    schemaVersion: 1,
+    links: [{ surfaceId: "site.header.contact", label: "Contact Dave", destination: { kind: "internal_route", value: "/contact/" } }],
+    navigationOrders: [{ groupId: "site.header.primary", itemIds: [...liveOrder].reverse() }],
+  }, base);
+  const after = parseYaml(reordered.changes[0].after);
+  assert.deepEqual(after.nav.order, [...liveOrder].reverse());
+  assert.equal(after.nav.items.contact.label, "Contact Dave");
+});
+
+test("typed_page_create appends one strict rendered record and optional navigation atomically", () => {
+  const proposal = {
+    schemaVersion: 1,
+    page: {
+      pageType: "service_detail",
+      slug: "tax-audit-support",
+      title: "Tax audit support",
+      description: "Advice and representation during an Inland Revenue audit.",
+      sections: [
+        { kind: "prose", heading: "Clear representation", body: "Understand the issues, evidence and next steps." },
+        { kind: "list", heading: "Support includes", items: ["Reviewing correspondence", "Preparing a response"] },
+      ],
+    },
+    navigationPlacement: { groupId: "site.header.primary", label: "Tax audit support", position: 4 },
+  };
+  const result = materialise("typed_page_create", proposal);
+  assert.deepEqual(result.changes.map((entry) => entry.path), ["src/data/site.yaml", "src/data/typed-pages.yaml"]);
+  assert.deepEqual(parseYaml(result.changes[1].after).pages, [proposal.page]);
+  const siteAfter = parseYaml(result.changes[0].after);
+  assert.deepEqual(siteAfter.nav.items["page.tax-audit-support"], { id: "header.page.tax-audit-support", binding: "header.page.tax-audit-support", label: "Tax audit support", href: "/tax-audit-support/" });
+  assert.equal(siteAfter.nav.order[4], "page.tax-audit-support");
+  assert.deepEqual(result.requiredApprovalStages, ["legal_sign_off", "publication_approval"]);
+});
+
+test("public_email_patch updates the complete coupled set and no other semantics", () => {
+  const result = materialise("public_email_patch", { schemaVersion: 1, display: "office@example.invalid", mailto: "inbox@example.invalid" });
+  assert.deepEqual(result.changes.map((entry) => entry.path), [
+    "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+    "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md",
+    "src/data/pages.yaml",
+    "src/data/site.yaml",
+  ]);
+  const siteAfter = parseYaml(result.changes.find((entry) => entry.path === "src/data/site.yaml").after);
+  assert.equal(siteAfter.contact.rows[1].value, "office@example.invalid");
+  assert.equal(siteAfter.contact.rows[1].href, "mailto:inbox@example.invalid");
+  assert.equal(siteAfter.expertise.items[2].href, "mailto:inbox@example.invalid?subject=Business%20tax%20matter");
+  assert.equal(siteAfter.footer.links[2].href, "mailto:inbox@example.invalid");
+  for (const change of result.changes) assert.equal(change.after.includes("dave@davetaxnz.nz"), false, change.path);
+});
+
+test("public email targets exhaust every non-excluded repository occurrence", () => {
+  const contract = writablePaths.publicEmailPatch;
+  const display = siteYaml.contact.rows[1].value;
+  const mailto = siteYaml.contact.rows[1].href.slice("mailto:".length).split("?")[0];
+  const needles = [...new Set([display, mailto])];
+  const excludedRoots = new Set(contract.scanExclusions.map((entry) => entry.path));
+  const declaredPaths = new Set(contract.targets.map((target) => target.path));
+  const matches = scanRootFiles.filter((file) => !excludedRoots.has(file.split("/")[0])).flatMap((file) => {
+    const text = readFileSync(path.join(root, file), "utf8");
+    const count = needles.reduce((total, needle) => total + countLiteralInString(text, needle), 0);
+    return count > 0 ? [{ file, count }] : [];
+  });
+  assert.deepEqual(matches.map(({ file }) => file).sort(), [...declaredPaths].sort(), "public email exists outside its coupled set");
+  for (const { file, count } of matches) {
+    const target = contract.targets.find((entry) => entry.path === file);
+    const expected = target.pointers?.length ?? target.expectedOccurrences;
+    assert.equal(count, expected, `${file} has an undeclared public-email occurrence`);
+  }
+});
+
+test("public_opening_hours_replace binds structured and display facts without a default", () => {
+  assert.equal(siteYaml.openingHours, null);
+  const result = materialise("public_opening_hours_replace", {
+    schemaVersion: 1,
+    timezone: "Pacific/Auckland",
+    weekly: [
+      { day: "monday", intervals: [{ opens: "09:00", closes: "12:00" }, { opens: "13:00", closes: "17:00" }] },
+      { day: "friday", intervals: [{ opens: "09:00", closes: "15:00" }] },
+    ],
+    display: "Monday 9:00am–5:00pm; Friday 9:00am–3:00pm",
+  });
+  assert.deepEqual(result.changes.map((entry) => entry.path), ["src/data/site.yaml"]);
+  const hours = parseYaml(result.changes[0].after).openingHours;
+  assert.equal(hours.timezone, "Pacific/Auckland");
+  assert.equal(hours.weekly.length, 2);
+  assert.equal(hours.display, "Monday 9:00am–5:00pm; Friday 9:00am–3:00pm");
+});
+
+test("adversarial carriers refuse atomically before any projection", async (t) => {
+  const validLink = {
+    schemaVersion: 1,
+    links: [{ surfaceId: "site.header.contact", label: "Contact", destination: { kind: "internal_route", value: "/contact/" } }],
+    navigationOrders: [],
+  };
+  const scenarios = [
+    ["stale base", "stale_base", () => materialise("site_link_patch", validLink, materialiserBase({ expectedRevision: "b".repeat(40) }))],
+    ["stale policy", "stale_contract", () => materialise("site_link_patch", validLink, materialiserBase({ writablePolicyVersion: writablePaths.schemaVersion - 1 }))],
+    ["wrong authority digest", "stale_contract", () => { const base = materialiserBase(); base.authorityDigests["schemas/operation-carriers.v1.schema.json"] = `sha256:${"0".repeat(64)}`; return materialise("site_link_patch", validLink, base); }],
+    ["stale source blob", "stale_source", () => { const base = materialiserBase(); base.files["src/data/site.yaml"] += "\n"; return materialise("site_link_patch", validLink, base); }],
+    ["symlink target", "unsafe_mode", () => { const base = materialiserBase(); base.modes["src/data/site.yaml"] = "120000"; return materialise("site_link_patch", validLink, base); }],
+    ["caller path", "unknown_field", () => materialise("site_link_patch", { ...validLink, path: "../../worker/index.js" })],
+    ["caller command", "unknown_field", () => materialise("site_link_patch", { ...validLink, command: "git push" })],
+    ["javascript URL", "unsafe_url", () => materialise("site_link_patch", { ...validLink, links: [{ ...validLink.links[0], destination: { kind: "external_https", value: "javascript:alert(1)" } }] })],
+    ["encoded traversal", "unsafe_url", () => materialise("site_link_patch", { ...validLink, links: [{ ...validLink.links[0], destination: { kind: "internal_route", value: "/%2e%2e/" } }] })],
+    ["missing internal route", "missing_route", () => materialise("site_link_patch", { ...validLink, links: [{ ...validLink.links[0], destination: { kind: "internal_route", value: "/not-built/" } }] })],
+    ["source record without a published route", "missing_route", () => materialise("site_link_patch", { ...validLink, links: [{ ...validLink.links[0], destination: { kind: "internal_route", value: "/home/" } }] })],
+    ["credentialed external URL", "unsafe_url", () => materialise("site_link_patch", { ...validLink, links: [{ surfaceId: "site.header.primary-booking", label: "Book", destination: { kind: "external_https", value: "https://user@davetaxnz.nz/book-a-consultation/" } }] })],
+    ["non-allowlisted external host", "unsafe_url", () => materialise("site_link_patch", { ...validLink, links: [{ surfaceId: "site.header.primary-booking", label: "Book", destination: { kind: "external_https", value: "https://example.com/" } }] })],
+    ["unapproved path on an allowlisted external host", "unsafe_url", () => materialise("site_link_patch", { ...validLink, links: [{ surfaceId: "site.header.primary-booking", label: "Book", destination: { kind: "external_https", value: "https://davetaxnz.nz/redirect-elsewhere/" } }] })],
+    ["stale semantic base identity", "stale_semantic_binding", () => { const base = materialiserBase(); base.files["src/data/site.yaml"] = base.files["src/data/site.yaml"].replace('      label: "Contact"\n      href: "/contact/"', '      label: "Unrelated drift"\n      href: "/contact/"'); base.fileSha256["src/data/site.yaml"] = sourceDigest(base.files["src/data/site.yaml"]); return materialise("site_link_patch", validLink, base); }],
+    ["semantic ID moved to the wrong role", "stale_semantic_binding", () => { const base = materialiserBase(); base.files["src/data/site.yaml"] = base.files["src/data/site.yaml"].replace('id: "header.about"', 'id: "header.__swap__"').replace('id: "header.contact"', 'id: "header.about"').replace('id: "header.__swap__"', 'id: "header.contact"'); base.fileSha256["src/data/site.yaml"] = sourceDigest(base.files["src/data/site.yaml"]); return materialise("site_link_patch", validLink, base); }],
+    ["semantic ID and binding tuple moved to the wrong role", "stale_semantic_binding", () => { const base = materialiserBase(); base.files["src/data/site.yaml"] = base.files["src/data/site.yaml"].replaceAll('"header.about"', '"header.__swap__"').replaceAll('"header.contact"', '"header.about"').replaceAll('"header.__swap__"', '"header.contact"'); base.fileSha256["src/data/site.yaml"] = sourceDigest(base.files["src/data/site.yaml"]); return materialise("site_link_patch", validLink, base); }],
+    ["media-bearing typed page", "unsafe_content", () => materialise("typed_page_create", { schemaVersion: 1, page: { pageType: "service_detail", slug: "unsafe", title: "Unsafe", description: "Unsafe page", sections: [{ kind: "prose", heading: "Image", body: "![portrait](data:image/png;base64,AAAA)" }] }, navigationPlacement: null })],
+    ["attribution-shaped quote", "unsafe_content", () => materialise("typed_page_create", { schemaVersion: 1, page: { pageType: "service_detail", slug: "unsafe", title: "Unsafe", description: "Unsafe page", sections: [{ kind: "quote", heading: "Client", body: "Quoted words" }] }, navigationPlacement: null })],
+    ["typed page bidi override", "invalid_text", () => materialise("typed_page_create", { schemaVersion: 1, page: { pageType: "service_detail", slug: "unsafe", title: "Unsafe", description: "Unsafe page", sections: [{ kind: "prose", heading: "Visual\u202Espoof", body: "Plain body" }] }, navigationPlacement: null })],
+    ["existing route collision", "route_collision", () => materialise("typed_page_create", { schemaVersion: 1, page: { pageType: "service_detail", slug: "contact", title: "Contact", description: "Collision", sections: [] }, navigationPlacement: null })],
+    ["email CRLF", "invalid_text", () => materialise("public_email_patch", { schemaVersion: 1, display: "office@example.invalid\r\nBcc:x@example.invalid", mailto: "office@example.invalid" })],
+    ["undeclared email occurrence", "undeclared_occurrence", () => { const base = materialiserBase(); base.files["src/unrelated.ts"] = 'export const address = "dave@davetaxnz.nz";'; base.modes["src/unrelated.ts"] = "100644"; base.fileSha256["src/unrelated.ts"] = sourceDigest(base.files["src/unrelated.ts"]); return materialise("public_email_patch", { schemaVersion: 1, display: "office@example.invalid", mailto: "office@example.invalid" }, base); }],
+    ["undeclared email occurrence in public output source", "undeclared_occurrence", () => { const base = materialiserBase(); base.files["public/stale-email.txt"] = "dave@davetaxnz.nz"; base.modes["public/stale-email.txt"] = "100644"; base.fileSha256["public/stale-email.txt"] = sourceDigest(base.files["public/stale-email.txt"]); return materialise("public_email_patch", { schemaVersion: 1, display: "office@example.invalid", mailto: "office@example.invalid" }, base); }],
+    ["undeclared email occurrence inside a target file", "undeclared_occurrence", () => { const base = materialiserBase(); base.files["src/data/site.yaml"] = base.files["src/data/site.yaml"].replace('description: "Dave Ananth is a New Zealand', 'description: "dave@davetaxnz.nz — Dave Ananth is a New Zealand'); base.fileSha256["src/data/site.yaml"] = sourceDigest(base.files["src/data/site.yaml"]); return materialise("public_email_patch", { schemaVersion: 1, display: "office@example.invalid", mailto: "office@example.invalid" }, base); }],
+    ["extra email recipient hidden in an allowed mailto pointer", "undeclared_occurrence", () => { const base = materialiserBase(); base.files["src/data/site.yaml"] = base.files["src/data/site.yaml"].replace("?subject=Business%20tax%20matter", "?subject=Business%20tax%20matter&cc=dave@davetaxnz.nz"); base.fileSha256["src/data/site.yaml"] = sourceDigest(base.files["src/data/site.yaml"]); return materialise("public_email_patch", { schemaVersion: 1, display: "office@example.invalid", mailto: "office@example.invalid" }, base); }],
+    ["email moved into attribution frontmatter", "attribution_guard", () => { const base = materialiserBase(); const article = materialiserFiles[3]; base.files[article] = base.files[article].replace("- Email: dave@davetaxnz.nz", "attributionEmail: dave@davetaxnz.nz"); base.fileSha256[article] = sourceDigest(base.files[article]); return materialise("public_email_patch", { schemaVersion: 1, display: "office@example.invalid", mailto: "office@example.invalid" }, base); }],
+    ["empty hours", "invalid_hours", () => materialise("public_opening_hours_replace", { schemaVersion: 1, timezone: "Pacific/Auckland", weekly: [], display: "Always" })],
+    ["overlapping hours", "invalid_hours", () => materialise("public_opening_hours_replace", { schemaVersion: 1, timezone: "Pacific/Auckland", weekly: [{ day: "monday", intervals: [{ opens: "09:00", closes: "12:00" }, { opens: "11:00", closes: "13:00" }] }], display: "Monday" })],
+    ["withdrawn operation", "unknown_operation", () => materialise("public_hours_patch", {})],
+  ];
+  for (const [name, code, callback] of scenarios) await t.test(name, () => assertRefusal(code, callback));
+});
+
+async function withMaterialiserMutant(replacements, callback) {
+  const temporaryRoot = mkdtempSync(path.join(root, ".governance-mutation-"));
+  try {
+    mkdirSync(path.join(temporaryRoot, "scripts"));
+    cpSync(path.join(root, "governance"), path.join(temporaryRoot, "governance"), { recursive: true });
+    let sourceText = readFileSync(path.join(root, "scripts", "governed-materialisers.mjs"), "utf8");
+    for (const [before, after] of replacements) {
+      assert.ok(sourceText.includes(before), `mutation anchor is missing: ${before.slice(0, 80)}`);
+      sourceText = sourceText.replace(before, after);
+    }
+    const mutantPath = path.join(temporaryRoot, "scripts", "governed-materialisers.mjs");
+    writeFileSync(mutantPath, sourceText);
+    const mutant = await import(`${pathToFileURL(mutantPath).href}?case=${Date.now()}-${Math.random()}`);
+    return await callback(mutant);
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true });
+  }
+}
+
+function assertNamedRefusalTestFails(mutant, code, callback) {
+  assert.throws(
+    () => assert.throws(callback, (error) => error instanceof mutant.GovernedMaterialiserRefusal && error.code === code),
+    { name: "AssertionError" },
+    `the ${code} regression must fail while its production guard is weakened`,
+  );
+}
+
+test("representative guards are load-bearing mutation fixtures", async (t) => {
+  const productionMaterialiserBefore = readFileSync(path.join(root, "scripts", "governed-materialisers.mjs"), "utf8");
+  await t.test("URL scheme refusal test fails against a URL-guard mutant", async () => {
+    await withMaterialiserMutant([
+      [
+        "function canonicalExternalUrl(value, allowedHosts, allowedPaths) {\n",
+        "function canonicalExternalUrl(value, allowedHosts, allowedPaths) {\n  if (value === \"javascript:alert(1)\") return value; // mutation fixture\n",
+      ],
+    ], (mutant) => assertNamedRefusalTestFails(mutant, "unsafe_url", () => mutant.materialiseGovernedOperation({
+      operationKind: "site_link_patch",
+      proposal: {
+        schemaVersion: 1,
+        links: [{ surfaceId: "site.header.primary-booking", label: "Book", destination: { kind: "external_https", value: "javascript:alert(1)" } }],
+        navigationOrders: [],
+      },
+      base: materialiserBase(),
+    })));
+  });
+
+  await t.test("stale-base refusal test fails against a revision-guard mutant", async () => {
+    await withMaterialiserMutant([
+      [
+        "if (!/^[0-9a-f]{40,64}$/u.test(base.revision) || base.revision !== base.expectedRevision) {",
+        "if (!/^[0-9a-f]{40,64}$/u.test(base.revision) || false) { // mutation fixture",
+      ],
+    ], (mutant) => assertNamedRefusalTestFails(mutant, "stale_base", () => mutant.materialiseGovernedOperation({
+      operationKind: "site_link_patch",
+      proposal: {
+        schemaVersion: 1,
+        links: [{ surfaceId: "site.header.contact", label: "Contact Dave", destination: { kind: "internal_route", value: "/contact/" } }],
+        navigationOrders: [],
+      },
+      base: materialiserBase({ expectedRevision: "b".repeat(40) }),
+    })));
+  });
+
+  await t.test("semantic-only test fails against a path-allowlist mutant", async () => {
+    await withMaterialiserMutant([
+      [
+        "if (!allowedPrefixes.some((prefix) => pointer === prefix || pointer.startsWith(`${prefix}/`))) {",
+        "if (false && !allowedPrefixes.some((prefix) => pointer === prefix || pointer.startsWith(`${prefix}/`))) { // mutation fixture",
+      ],
+      [
+        "doc.setIn([\"openingHours\"], { timezone: proposal.timezone, weekly, display });",
+        "doc.setIn([\"openingHours\"], { timezone: proposal.timezone, weekly, display });\n  doc.setIn([\"meta\", \"title\"], \"unrelated mutant write\");",
+      ],
+    ], (mutant) => {
+      assert.throws(() => {
+        const result = mutant.materialiseGovernedOperation({
+          operationKind: "public_opening_hours_replace",
+          proposal: { schemaVersion: 1, timezone: "Pacific/Auckland", weekly: [{ day: "monday", intervals: [{ opens: "09:00", closes: "17:00" }] }], display: "Monday 9:00am–5:00pm" },
+          base: materialiserBase(),
+        });
+        const before = parseYaml(result.changes[0].before);
+        const after = parseYaml(result.changes[0].after);
+        after.openingHours = before.openingHours;
+        assert.deepEqual(after, before, "hours materialiser changed unrelated site semantics");
+      }, { name: "AssertionError" }, "the semantic-only regression must fail while the allowlist is weakened");
+    });
+  });
+
+  await t.test("attribution refusal test fails against an attribution-guard mutant", async () => {
+    await withMaterialiserMutant([
+      [
+        "if (lineCount !== target.expectedOccurrences) refuse(\"attribution_guard\", `${target.path} governed contact line drifted or moved into attribution/frontmatter`);",
+        "if (false && lineCount !== target.expectedOccurrences) refuse(\"attribution_guard\", `${target.path} governed contact line drifted or moved into attribution/frontmatter`); // mutation fixture",
+      ],
+    ], (mutant) => {
+      const base = materialiserBase();
+      const article = materialiserFiles[3];
+      base.files[article] = base.files[article].replace("- Email: dave@davetaxnz.nz", "attributionEmail: dave@davetaxnz.nz");
+      base.fileSha256[article] = sourceDigest(base.files[article]);
+      assertNamedRefusalTestFails(mutant, "attribution_guard", () => mutant.materialiseGovernedOperation({
+        operationKind: "public_email_patch",
+        proposal: { schemaVersion: 1, display: "office@example.invalid", mailto: "office@example.invalid" },
+        base,
+      }));
+    });
+  });
+
+  assert.equal(readdirSync(root).some((entry) => entry.startsWith(".governance-mutation-")), false, "mutation files must be restored exactly");
+  assert.equal(
+    readFileSync(path.join(root, "scripts", "governed-materialisers.mjs"), "utf8"),
+    productionMaterialiserBefore,
+    "production materialiser bytes must remain exact after every temporary guard mutation",
+  );
 });

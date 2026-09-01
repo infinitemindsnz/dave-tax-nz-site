@@ -51,16 +51,32 @@ nav:
   # exist and are still linked from within the page; nav is now wayfinding to
   # pages rather than scroll control.
   items:
-    - label: "About Dave"
+    about:
+      id: "header.about"
+      binding: "header.about"
+      label: "About Dave"
       href: "/about-dave/"
-    - label: "Expertise"
+    expertise:
+      id: "header.expertise"
+      binding: "header.expertise"
+      label: "Expertise"
       href: "#expertise"
-    - label: "Client stories"
+    stories:
+      id: "header.stories"
+      binding: "header.stories"
+      label: "Client stories"
       href: "/testimonials/"
-    - label: "Articles & media"
+    articles:
+      id: "header.articles"
+      binding: "header.articles"
+      label: "Articles & media"
       href: "/articles/"
-    - label: "Contact"
+    contact:
+      id: "header.contact"
+      binding: "header.contact"
+      label: "Contact"
       href: "/contact/"
+  order: [about, expertise, stories, articles, contact]
   # DELIBERATELY STILL EXTERNAL. `book-a-consultation` is migrated, but the
   # extractor could only carry its copy: the WordPress booking form survives in
   # pages.yaml as a `list` of field labels ("Name:", "Email:", …) and a `cta`
@@ -68,6 +84,8 @@ nav:
   # form cannot submit would break the client's booking funnel. This stays on
   # the live WordPress form until a real form exists here.
   cta:
+    id: "header.primary-booking"
+    binding: "header.primary-booking"
     label: "Book a free consultation"
     href: "https://davetaxnz.nz/book-a-consultation/"
     external: true
@@ -80,14 +98,18 @@ hero:
     text: "Received an IRD letter or worried about returning to New Zealand?"
     href: "#expertise"
   ctas:
-    - label: "Book a free consultation"
+    - id: "hero.primary-booking"
+      binding: "hero.primary-booking"
+      label: "Book a free consultation"
       href: "https://davetaxnz.nz/book-a-consultation/"
       variant: "primary"
       external: true
       icon: null
     # The rendered label is preceded by a Phone icon and a literal space:
     # `<svg …/> Call Dave` — preserve that space when porting.
-    - label: "Call Dave"
+    - id: "hero.phone"
+      binding: "hero.phone"
+      label: "Call Dave"
       href: "tel:+64210216888"
       variant: "secondary"
       external: false
@@ -134,19 +156,25 @@ expertise:
   # placeholder, and there is no migrated "business tax matters" page to point
   # it at.
   items:
-    - number: "01"
+    - id: "expertise.student-loans"
+      binding: "expertise.student-loans"
+      number: "01"
       icon: "Student"
       title: "Student loan negotiations"
       text: "Support for overseas borrowers facing compounding interest, penalties, enforcement or concerns about returning to New Zealand."
       href: "/student-loan-negotiations/"
       linkLabel: "Learn more"
-    - number: "02"
+    - id: "expertise.ird"
+      binding: "expertise.ird"
+      number: "02"
       icon: "FileText"
       title: "IRD disputes & tax debt"
       text: "Strategic advice on tax arrears, investigations, statutory demands, payment arrangements, remission and enforcement action."
       href: "/ird-disputes-tax-penalties-negotiation/"
       linkLabel: "Learn more"
-    - number: "03"
+    - id: "expertise.business-tax"
+      binding: "expertise.business-tax"
+      number: "03"
       icon: "Briefcase"
       title: "Business tax matters"
       text: "Practical, commercially aware advice for GST, PAYE, income tax, unfiled returns and business rehabilitation."
@@ -161,6 +189,8 @@ story:
     name: "Jana R"
     meta: "Student loan client · June 2025"
   link:
+    id: "story.testimonials"
+    binding: "story.testimonials"
     label: "Read client experiences"
     href: "https://davetaxnz.nz/testimonials/"
 
@@ -222,9 +252,17 @@ contact:
       value: "97 Great South Road, Epsom"
       href: "https://www.google.com/maps/search/?api=1&query=97+Great+South+Road+Epsom+Auckland+1051"
   action:
+    id: "contact.booking"
+    binding: "contact.booking"
     title: "Free 15-minute initial consultation"
     ctaLabel: "Book a consultation"
     ctaHref: "https://davetaxnz.nz/book-a-consultation/"
+
+# No public opening-hours fact was present in the audited source. `null` is an
+# explicit absence, not a default schedule. The governed
+# public_opening_hours_replace materialiser replaces this whole value only
+# after the client supplies structured hours and independent display copy.
+openingHours: null
 
 footer:
   logo:
@@ -241,13 +279,19 @@ footer:
   # adding page links the client never had would be inventing footer navigation
   # rather than fixing it. Left exactly as the client wrote it.
   links:
-    - label: "Meridian Partners"
+    - id: "footer.meridian-profile"
+      binding: "footer.meridian-profile"
+      label: "Meridian Partners"
       href: "https://mplaw.nz/about-meridian-partners/dave-ananth/"
       external: true
-    - label: "LinkedIn"
+    - id: "footer.linkedin"
+      binding: "footer.linkedin"
+      label: "LinkedIn"
       href: "https://www.linkedin.com/in/dave-ananth-6310b023/"
       external: true
-    - label: "Email"
+    - id: "footer.email"
+      binding: "footer.email"
+      label: "Email"
       href: "mailto:dave@davetaxnz.nz"
       external: false
   legal: "© 2026 Dave Ananth Tax Services. Information on this site is general and is not legal advice."

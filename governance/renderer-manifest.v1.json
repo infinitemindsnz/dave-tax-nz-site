@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "contractId": "dave-tax-nz-site-renderer.v1",
   "renderer": "astro-static",
   "rendererVersion": "5.18.2",
@@ -26,6 +26,7 @@
     "package.json",
     "public/**",
     "scripts/prepare-sites-build.mjs",
+    "scripts/governed-materialisers.mjs",
     "scripts/validate-content.mjs",
     "src/components/**/*.astro",
     "src/content.config.ts",
@@ -41,6 +42,10 @@
     "worker/index.js"
   ],
   "sourceGlobNotes": [
+    {
+      "path": "scripts/governed-materialisers.mjs",
+      "reason": "Website-owned pure candidate projection for the selected semantic operations. It emits bounded in-memory path/byte changes only and accepts no caller repository, path, command, provider, domain or approval data."
+    },
     {
       "path": "src/content.config.ts",
       "reason": "Defines the `articles` collection: its glob loader and its zod strictObject frontmatter schema. Like src/data/schema.ts it is simultaneously a validator and a build input, so it is bound through renderer_sha256 rather than content_schema_sha256. governance/schemas/article-frontmatter.v1.schema.json is its platform-facing mirror."
@@ -59,11 +64,13 @@
     }
   ],
   "publishedRoutes": {
-    "comment": "The exhaustive set of files the governed build emits into dist/client — 20 pages plus the generated stylesheet and copied assets. All of them are renderer-owned: every byte is derived from src/data/site.yaml, src/data/articles.yaml, src/data/pages.yaml, src/content/articles/*.md, src/styles.css, src/styles-article.css and public/assets. There is no separate marketing record and no hand-authored file in the output. This list is a factual record of the current output, NOT a verified output policy — see governance/README.md, 'Future work'.",
+    "comment": "The exhaustive route shapes the governed build emits into dist/client — currently 35 HTML pages, four discovery/control endpoints, generated stylesheets and copied assets. Typed page records add one /<slug>/index.html route each. All bytes are renderer-owned and derived from the declared data/content/renderer inputs; there is no separate marketing record or hand-authored output file.",
     "routes": [
       "index.html",
+      "<slug>/index.html",
       "articles/index.html",
       "articles/<slug>/index.html",
+      "articles/category/<category>/index.html",
       "llms.txt",
       "robots.txt",
       "rss.xml",
@@ -73,8 +80,12 @@
       "assets/wp/*"
     ],
     "routeNotes": [
-      {
-        "route": "articles/<slug>/index.html",
+    {
+      "route": "<slug>/index.html",
+      "reason": "Seven migrated page records are emitted at present; each governed typed_page_create record adds exactly one collision-checked route with the same shape."
+    },
+    {
+      "route": "articles/<slug>/index.html",
         "reason": "One page per published entry in the `articles` content collection — 18 at present. `build.format` is \"directory\", hence the trailing-slash route. `<slug>` is the frontmatter `slug`, which src/lib/articles.ts requires to equal the filename."
       },
       {
@@ -85,8 +96,12 @@
   },
   "excludedFromRendererSources": [
     {
-      "paths": ["src/data/site.yaml", "src/data/articles.yaml", "src/data/pages.yaml"],
+      "paths": ["src/data/site.yaml", "src/data/articles.yaml", "src/data/pages.yaml", "src/data/typed-pages.yaml"],
       "reason": "Governed content, not renderer source. Bound separately through the candidate manifest's changed_paths, diff_sha256 and content_schema_sha256."
+    },
+    {
+      "route": "articles/category/<category>/index.html",
+      "reason": "One route per category in the client's enforced article category vocabulary."
     },
     {
       "paths": ["src/content/articles/**/*.md"],
