@@ -1,17 +1,28 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "contractId": "dave-tax-nz-site-content.v1",
   "site": {
     "path": "src/data/site.yaml",
     "format": "yaml",
     "schema": "governance/schemas/site.v1.schema.json",
-    "comment": "The homepage content model, and (as of version 2) one of four files a `public_phone_patch` may write — governance/writable-paths.v1.json permits exactly three of the thirteen coupled `public_phone` targets here (the other ten live in src/data/pages.yaml and two article bodies) and nothing else in this file. THIS SITE HAS NO OPENING-HOURS RECORD. src/data/schema.ts is a zod strictObject and defines no hours field anywhere in the model, and `/contact/action/title` (\"Free 15-minute initial consultation\") is the booking call-to-action heading, NOT an availability statement. A `consultation_availability` / `public_hours_patch` rule pointed at that CTA was removed from the writable policy for exactly this reason: it would have overwritten the client's free-consultation CTA with an hours string and passed verification, because the publisher's gates prove that approved bytes reached an approved pointer and cannot prove the pointer means what the proposal field is named. Hours requests are now refused as out-of-contract, and as of version 2 the operation kind itself no longer exists in governance/approval-policy.v1.json or governance/schemas/candidate-manifest.v1.schema.json — it cannot be built or approved, not merely written. Full rationale and the preconditions for ever re-enabling the operation are recorded under `documentedOperations` in the writable policy."
+    "comment": "The strict homepage content model. It remains one of the four-file public_phone_patch and public_email_patch coupled sets and now carries stable semantic IDs for governed link resolution. `/openingHours` is a real nullable field: null is the audited absence of a client-supplied fact and renders nothing; public_opening_hours_replace may replace only that whole field with explicit structured hours and independent display copy. The withdrawn public_hours_patch remains invalid and `/contact/action/title` remains booking copy, never an hours target."
   },
   "pages": {
     "path": "src/data/pages.yaml",
     "format": "yaml",
     "schema": "governance/schemas/pages.v1.schema.json",
-    "comment": "The nine WordPress pages migrated from davetaxnz.nz, keyed by WordPress slug: home, about-dave, contact, testimonials, articles-advice, student-loan-negotiations, ird-disputes-tax-penalties-negotiation, book-a-consultation, thanks-consult. Every slug is required and no others are allowed — a page that silently stops being migrated is a content regression, not a smaller file. The copy is verbatim client copy including WordPress's truncation artefacts; testimonial names and dates in `quote` sections are attribution and are load-bearing. This file is a build input, not merely a validated artifact: /articles/ takes its page title, meta description and category filter strip from the `articles-advice` record, so a schema violation fails `astro build`. AS OF VERSION 2, this file has one narrow write surface: governance/writable-paths.v1.json permits a `public_phone_patch` to replace the public phone number substring at eight exact pointers (the `about-dave` and `contact` meta descriptions and six list/prose fragments), as part of the same atomic 13-target patch that also covers src/data/site.yaml and two article bodies. No other field, and no other operation kind, may write here."
+    "comment": "The nine WordPress pages migrated from davetaxnz.nz, keyed by WordPress slug. Every slug is required and no others are allowed. Testimonial names/dates and quote sections are attribution-bearing and remain excluded. This file participates only in the exact public_phone_patch and public_email_patch substring coupled sets; neither operation may rewrite a whole field or touch any attribution-bearing section."
+  },
+  "typedPages": {
+    "path": "src/data/typed-pages.yaml",
+    "format": "yaml",
+    "schema": "governance/schemas/typed-pages.v1.schema.json",
+    "comment": "Create-only governed service_detail records. The initial list is empty; there is no example or guessed page. typed_page_create may append exactly one strict record and may optionally place its same candidate route in the declared header navigation group."
+  },
+  "operationCarriers": {
+    "schema": "governance/schemas/operation-carriers.v1.schema.json",
+    "materialiser": "scripts/governed-materialisers.mjs",
+    "comment": "Strict schemaVersion-1 caller shapes for the four selected semantic operations. Cross-field and base-dependent rules fail closed in the pure website-owned materialiser."
   },
   "articles": {
     "path": "src/data/articles.yaml",
@@ -44,7 +55,7 @@
     ],
     "kind": "zod-strict-object",
     "command": "npm run content:validate",
-    "comment": "TWO enforcing validators, one stance. src/data/schema.ts validates the YAML sources: src/lib/content.ts parses site.yaml, articles.yaml and pages.yaml through it, so an unknown key or a missing string fails `astro build` rather than shipping a degraded page. src/content.config.ts validates article frontmatter through Astro's content layer, with the same strictObject stance. `npm run content:validate` covers the three YAML files without a full build; article frontmatter is checked by `npm run build`. The JSON Schema files named above are the platform-facing mirror of both validators and MUST stay field-for-field identical to them, with one DECLARED exception documented in governance/schemas/article-frontmatter.v1.schema.json (the offset-free wall-clock date pattern is a strict subset of z.coerce.date()). Any other drift is a contract violation, not a discrepancy to reconcile silently."
+    "comment": "TWO enforcing validators, one stance. src/data/schema.ts validates the YAML sources: src/lib/content.ts parses site.yaml, articles.yaml, pages.yaml and typed-pages.yaml through it, so an unknown key or a missing string fails `astro build` rather than shipping a degraded page. src/content.config.ts validates article frontmatter through Astro's content layer, with the same strictObject stance. `npm run content:validate` covers all four YAML files without a full build; article frontmatter is checked by `npm run build`. The JSON Schema files named above are the platform-facing mirror of both validators and MUST stay field-for-field identical to them, with one DECLARED exception documented in governance/schemas/article-frontmatter.v1.schema.json (the offset-free wall-clock date pattern is a strict subset of z.coerce.date()). Any other drift is a contract violation, not a discrepancy to reconcile silently."
   },
   "theme": {
     "path": "src/styles.css",

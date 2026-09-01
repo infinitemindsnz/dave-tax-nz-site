@@ -113,11 +113,12 @@
   },
   "autolinkLiteralProtocols": ["mailto:"],
   "autolinkLiteralConstraints": {
-    "comment": "NARROW, DECLARED EXCEPTION to https-only. Two bodies list the client's own published contact address as a bare `dave@davetaxnz.nz` inside a contact list, and GFM's autolink-literal extension turns each into a link with url `mailto:dave@davetaxnz.nz`. This is verbatim client contact copy: deleting the address to satisfy an https-only rule would be an edit, and no operation in this contract may edit client copy. The exception is therefore written down and bounded rather than absorbed into `linkProtocols`, where it would also authorise hand-authored mailto anchors pointing anywhere.",
+    "comment": "NARROW, DECLARED EXCEPTION to https-only. Two existing bodies carry the governed public email as a bare address and GFM turns each into a self-describing mailto autolink. writable-paths v6 permits public_email_patch to replace only those two exact address substrings as part of the complete coupled set. The rule therefore validates shape and visible-text equality rather than hardcoding the current address; it still never authorises a hand-authored mailto anchor or an unrelated article edit.",
     "rule": "self-describing",
     "ruleDetail": "A mailto: link passes ONLY when it is a literal autolink — the node has exactly one text child and `node.url` equals \"mailto:\" + that child's value. A hand-authored anchor whose visible text differs from its destination (e.g. [contact us](mailto:someone-else@example.com)) is refused, because the reader cannot see where it goes.",
     "occurrences": 2,
-    "addresses": ["dave@davetaxnz.nz"],
+    "addressSource": "governance/writable-paths.v1.json#/publicEmailPatch/currentValuePointer",
+    "addressRule": "canonical_bare_email",
     "appliesTo": ["link"]
   },
   "imageConstraints": {
@@ -154,7 +155,7 @@
     "linksPerFile": 60,
     "imagesPerFile": 10,
     "headingsPerFile": 60,
-    "comment": "Sized from the corpus with roughly 5x headroom, not copied from the reference contract's larger numbers. Observed maxima across the eighteen files: 12,398 bytes, 222 nodes, AST depth 7, 11 links, 3 images, 12 headings. These are denial-of-service and blast-radius bounds on a future publisher, not editorial limits — nothing here caps what the client may write, because nothing here is authorised to write anything at all (see governance/writable-paths.v1.json)."
+    "comment": "Sized from the corpus with roughly 5x headroom, not copied from the reference contract's larger numbers. Observed maxima across the eighteen files: 12,398 bytes, 222 nodes, AST depth 7, 11 links, 3 images, 12 headings. These are denial-of-service and blast-radius bounds on the create-only article publisher, not general editorial limits. Write authority comes only from governance/writable-paths.v1.json."
   },
   "failureSemantics": {
     "comment": "Fail closed, refuse whole. A single node of a denied type, a heading at depth 1, a non-https authored link, a mailto anchor whose text does not equal its destination, an image URL absent from the media manifest, an exceeded limit, a symlinked file, a path escaping `root`, or a frontmatter schema failure refuses the entire candidate. Nothing is stripped, downgraded, sanitised or auto-corrected: a policy that repairs its input has decided what the client meant, which is not a decision a publisher gets to make.",
@@ -163,7 +164,7 @@
     "sanitize": false
   },
   "authority": {
-    "comment": "THIS FILE GRANTS NOTHING. It describes the shape a governed article body would have to have IF an `article_publish` operation were ever authorised. It is not authorised: governance/writable-paths.v1.json documents that operation under `documentedOperations` with `permitted: false`, and its `files` allowlist contains only the hours and phone pointers in src/data/site.yaml. The eighteen files under src/content/articles are human-owned, migrated by hand, and edited by hand. Nothing in this repository reads this policy today.",
+    "comment": "THIS FILE GRANTS NOTHING BY ITSELF. Writable-policy version 5 authorises one authored, create-only article_publish record and requires this Markdown policy to execute at candidate time. Existing article edits/deletes, attributed repost creation and media remain denied. The authorising policy below is the sole source of write authority.",
     "grantsWriteAuthority": false,
     "authorizingPolicy": "governance/writable-paths.v1.json"
   }

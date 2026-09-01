@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "policyId": "dave-tax-nz-site-approval-v1",
-  "comment": "VERSION 3 — adds site_text_patch (writable-paths v4 textPatch block): governed single-line text-surface replacement over the surface catalogue, one publication_approval stage, same authenticated decision surface as the phone patch. VERSION 2 — public_hours_patch removed. governance/writable-paths.v1.json documentedOperations.public_hours_patch withdrew this operation kind's write authority in version 1; it remained buildable and approvable here through version 1, which meant an approver could be asked to sign off a candidate that was already dead on arrival at the write gate. Removing the operations[] entry means a public_hours_patch candidate now fails structural approval-policy lookup, not only the final write. See governance/evidence/2026-08-20-phone-and-hours-audit.v1.md, finding 2.",
+  "comment": "VERSION 4 — adds exact operation/artifact/stage bindings for site_link_patch, typed_page_create, public_email_patch and public_opening_hours_replace. typed_page_create alone requires two ordered, distinct confirmations: legal_sign_off then publication_approval. VERSION 3 — adds site_text_patch (writable-paths v4 textPatch block): governed single-line text-surface replacement over the surface catalogue, one publication_approval stage, same authenticated decision surface as the phone patch. VERSION 2 — public_hours_patch removed. governance/writable-paths.v1.json documentedOperations.public_hours_patch withdrew this operation kind's write authority in version 1; it remained buildable and approvable here through version 1, which meant an approver could be asked to sign off a candidate that was already dead on arrival at the write gate. Removing the operations[] entry means a public_hours_patch candidate now fails structural approval-policy lookup, not only the final write. See governance/evidence/2026-08-20-phone-and-hours-audit.v1.md, finding 2.",
   "operations": [
     {
       "operationKind": "article_publish",
@@ -16,6 +16,27 @@
     {
       "operationKind": "site_text_patch",
       "artifactClass": "site_text_patch",
+      "requiredApprovalStages": ["publication_approval"]
+    },
+    {
+      "operationKind": "site_link_patch",
+      "artifactClass": "site_link_patch",
+      "requiredApprovalStages": ["publication_approval"]
+    },
+    {
+      "operationKind": "typed_page_create",
+      "artifactClass": "typed_page",
+      "requiredApprovalStages": ["legal_sign_off", "publication_approval"],
+      "distinctConfirmations": true
+    },
+    {
+      "operationKind": "public_email_patch",
+      "artifactClass": "public_email_fact",
+      "requiredApprovalStages": ["publication_approval"]
+    },
+    {
+      "operationKind": "public_opening_hours_replace",
+      "artifactClass": "public_opening_hours",
       "requiredApprovalStages": ["publication_approval"]
     }
   ],

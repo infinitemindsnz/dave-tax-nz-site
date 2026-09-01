@@ -108,7 +108,7 @@ export function renderLlmsDocument({ site, articles, posts, absolute }: LlmsDocu
 
     `## ${literal(nav.ariaLabel)}`,
     "",
-    ...nav.items.map((item) => `- ${link(item.label, absolute(item.href))}`),
+    ...nav.order.map((key) => nav.items[key]).map((item) => `- ${link(item.label, absolute(item.href))}`),
     `- ${link(nav.cta.label, nav.cta.href)}`,
     "",
 

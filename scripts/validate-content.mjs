@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import { articlesSchema, pagesSchema, siteSchema } from "../src/data/schema.ts";
+import { articlesSchema, pagesSchema, siteSchema, typedPagesSchema } from "../src/data/schema.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -14,6 +14,7 @@ const targets = [
   ["site.yaml", siteSchema],
   ["articles.yaml", articlesSchema],
   ["pages.yaml", pagesSchema],
+  ["typed-pages.yaml", typedPagesSchema],
 ];
 
 let failed = false;

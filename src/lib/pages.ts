@@ -1,4 +1,4 @@
-import { PAGE_SLUGS, type Page, type PageSection, type PageSlug } from "../data/schema";
+import { PAGE_SLUGS, type Page, type PageSection, type PageSlug, type TypedPage } from "../data/schema";
 import { sitePath } from "./urls";
 
 /**
@@ -42,6 +42,10 @@ export function pagePath(slug: PageSlug): string {
  */
 export function pageRoutes(): string[] {
   return ROUTED_PAGE_SLUGS.map((slug) => `${slug}/`);
+}
+
+export function typedPageRoutes(pages: TypedPage[]): string[] {
+  return pages.map((page) => `${page.slug}/`);
 }
 
 /* --------------------------------------------------------------------------
@@ -126,6 +130,9 @@ export interface PagePlan {
  */
 export function planPage(page: Page): PagePlan {
   const [first, ...rest] = page.sections;
+  if (first === undefined) {
+    return { masthead: { heading: page.title }, body: [] };
+  }
   const opensWithHeading = first.kind === "prose" && first.heading !== undefined;
 
   const heading = opensWithHeading ? (first.heading as string) : page.title;

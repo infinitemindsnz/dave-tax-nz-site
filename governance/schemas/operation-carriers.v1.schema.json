@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dave-tax-nz-site.vercel.app/schemas/operation-carriers.v1.schema.json",
+  "title": "Dave Tax governed website operation carriers v1",
+  "oneOf": [
+    { "$ref": "#/$defs/siteLinkPatch" },
+    { "$ref": "#/$defs/typedPageCreate" },
+    { "$ref": "#/$defs/publicEmailPatch" },
+    { "$ref": "#/$defs/publicOpeningHoursReplace" }
+  ],
+  "$defs": {
+    "safeText": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^\\u0000-\\u001F\\u007F-\\u009F\\u202A-\\u202E\\u2066-\\u2069]*$"
+    },
+    "destination": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "internal_route" },
+            "value": { "type": "string", "maxLength": 256, "pattern": "^/(?:[a-z0-9]+(?:-[a-z0-9]+)*/)*$" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "value"],
+          "properties": {
+            "kind": { "const": "external_https" },
+            "value": { "type": "string", "maxLength": 2048, "pattern": "^https://" }
+          }
+        }
+      ]
+    },
+    "siteLinkPatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "links", "navigationOrders"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "links": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["surfaceId", "label", "destination"],
+            "properties": {
+              "surfaceId": {
+                "enum": [
+                  "site.contact.booking",
+                  "site.expertise.ird",
+                  "site.expertise.student-loans",
+                  "site.footer.linkedin",
+                  "site.footer.meridian-profile",
+                  "site.header.about",
+                  "site.header.articles",
+                  "site.header.contact",
+                  "site.header.primary-booking",
+                  "site.header.stories",
+                  "site.hero.primary-booking",
+                  "site.story.testimonials"
+                ]
+              },
+              "label": { "allOf": [{ "$ref": "#/$defs/safeText" }, { "maxLength": 160 }] },
+              "destination": { "$ref": "#/$defs/destination" }
+            }
+          }
+        },
+        "navigationOrders": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["groupId", "itemIds"],
+            "properties": {
+              "groupId": { "const": "site.header.primary" },
+              "itemIds": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 69,
+                "uniqueItems": true,
+                "items": { "type": "string", "pattern": "^[a-z][a-z0-9.-]*$" },
+                "$comment": "The materialiser requires an exact permutation of live keyed navigation identities; the schema cannot enumerate page identities created after this schema version."
+              }
+            }
+          }
+        }
+      }
+    },
+    "typedPageCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "page", "navigationPlacement"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "page": { "$ref": "typed-pages.v1.schema.json#/$defs/serviceDetail" },
+        "navigationPlacement": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["groupId", "label", "position"],
+              "properties": {
+                "groupId": { "const": "site.header.primary" },
+                "label": { "allOf": [{ "$ref": "#/$defs/safeText" }, { "maxLength": 80 }] },
+                "position": { "type": "integer", "minimum": 0, "maximum": 69 }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "publicEmailPatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "display", "mailto"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "display": { "$ref": "#/$defs/email" },
+        "mailto": { "$ref": "#/$defs/email" }
+      }
+    },
+    "email": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 254,
+      "pattern": "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$"
+    },
+    "publicOpeningHoursReplace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "timezone", "weekly", "display"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "timezone": { "const": "Pacific/Auckland" },
+        "weekly": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 7,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["day", "intervals"],
+            "properties": {
+              "day": { "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+              "intervals": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["opens", "closes"],
+                  "properties": {
+                    "opens": { "$ref": "#/$defs/wallClock" },
+                    "closes": { "$ref": "#/$defs/wallClock" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "display": { "allOf": [{ "$ref": "#/$defs/safeText" }, { "maxLength": 300 }] }
+      }
+    },
+    "wallClock": {
+      "type": "string",
+      "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$"
+    }
+  },
+  "$comment": "Cross-field rules that JSON Schema cannot express compactly—lexical link order, exact navigation permutations, ordered unique days, non-overlapping intervals, host/route admission and semantic identity—are enforced by scripts/governed-materialisers.mjs."
+}
