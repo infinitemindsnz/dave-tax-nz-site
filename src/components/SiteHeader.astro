@@ -4,7 +4,7 @@
  *
  * Element order, class names and attributes are copied from the React source:
  *   header.site-header
- *     a.brand > img
+ *     a.brand > img + span.brand__tagline
  *     button.menu-button > span.sr-only + <List size={28} />
  *     nav#site-nav.nav > a × 5
  *     a.button (ActionLink, external)
@@ -63,7 +63,10 @@ const resolve = (href: string, source: string) => {
 
 <header class="site-header">
   <a class="brand" href={resolve(brand.href, "src/data/site.yaml: brand.href")} aria-label={brand.ariaLabel}
-    ><img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} /></a
+    ><img src={logo.src} alt={logo.alt} width={logo.width} height={logo.height} /><span
+      class="brand__tagline"
+      data-governed-surface="site.brand.tagline">{brand.tagline}</span
+    ></a
   >
   <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav"
     ><span class="sr-only">{nav.menuOpenLabel}</span><svg

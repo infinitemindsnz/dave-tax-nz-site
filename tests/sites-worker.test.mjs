@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
+import { parse as parseYaml } from "yaml";
 import worker from "../worker/index.js";
+
+function escapeTextNode(value) {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
 
 test("serves existing static assets without a fallback", async () => {
   const calls = [];
@@ -65,4 +70,20 @@ test("emits the files required by Sites packaging", async () => {
   await access(new URL("../dist/client/index.html", import.meta.url));
   await access(new URL("../dist/server/index.js", import.meta.url));
   await access(new URL("../dist/.openai/hosting.json", import.meta.url));
+});
+
+test("renders the governed brand tagline in the homepage header", async () => {
+  const [html, source] = await Promise.all([
+    readFile(new URL("../dist/client/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/data/site.yaml", import.meta.url), "utf8"),
+  ]);
+  const tagline = parseYaml(source).brand.tagline;
+
+  assert.equal(typeof tagline, "string");
+  assert.ok(
+    html.includes(
+      `class="brand__tagline" data-governed-surface="site.brand.tagline">${escapeTextNode(tagline)}</span>`,
+    ),
+    "the homepage must visibly render the current governed brand tagline",
+  );
 });
