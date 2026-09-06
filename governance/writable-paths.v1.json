@@ -3,6 +3,10 @@
   "contractId": "dave-tax-nz-site-content.v1",
   "changeLog": [
     {
+      "version": 8,
+      "comment": "MEDIA CARD SURFACES. `site_text_patch` gains `media.<index>.title|summary` over the curated list in src/data/articles.yaml (title and summary only; url/category/type/date stay structural). No new operation or ceremony."
+    },
+    {
       "version": 7,
       "comment": "ARTICLE SURFACES. `site_text_patch` gains `article.<slug>.title|excerpt|body` over src/content/articles: frontmatter scalars written in place, the body under the article markdown contract. maxTotalValueBytes 16 KiB → 32 KiB so a body rewrite fits beside its title. No new operation, artifact class or ceremony; article_publish remains the only way to create an article."
     },
@@ -636,7 +640,27 @@
       "body": {
         "maxValueBytes": 16384
       }
-    }
+    },
+    "listSurfaces": [
+      {
+        "comment": "MEDIA CARDS (2026-09-06). The curated Insights list in src/data/articles.yaml: each card's `title` and `summary` are addressable as `media.<index>.title|summary`, written in place. `url`, `category`, `type` and `date` are structural and never writable; an index beyond the list refuses at candidate time. The publisher names each card by its current title in the owner's catalogue, so the owner asks for the card by what it says, never by its index.",
+        "file": "src/data/articles.yaml",
+        "listPointer": "/articles",
+        "idPrefix": "media",
+        "label": "media card",
+        "maxEntries": 64,
+        "fields": [
+          {
+            "name": "title",
+            "maxValueBytes": 200
+          },
+          {
+            "name": "summary",
+            "maxValueBytes": 500
+          }
+        ]
+      }
+    ]
   },
   "linkPatch": {
     "operationKind": "site_link_patch",
