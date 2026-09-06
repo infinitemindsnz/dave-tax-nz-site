@@ -3,6 +3,10 @@
   "contractId": "dave-tax-nz-site-content.v1",
   "changeLog": [
     {
+      "version": 7,
+      "comment": "ARTICLE SURFACES. `site_text_patch` gains `article.<slug>.title|excerpt|body` over src/content/articles: frontmatter scalars written in place, the body under the article markdown contract. maxTotalValueBytes 16 KiB → 32 KiB so a body rewrite fits beside its title. No new operation, artifact class or ceremony; article_publish remains the only way to create an article."
+    },
+    {
       "version": 6,
       "comment": "Adds the selected governed-site expansion tranche as four closed operations: site_link_patch, typed_page_create, public_email_patch and public_opening_hours_replace. Link edits resolve stable semantic surface IDs and whole navigation permutations; typed pages append one strict service_detail record; email owns its complete visible/mailto coupled set; and opening hours replaces the new explicit nullable field as one structured/display fact. The old public_hours_patch stays fully withdrawn and structurally invalid. All four use scripts/governed-materialisers.mjs, a pure path-bounded projection that performs no write, shell, Git, network or provider action."
     },
@@ -336,11 +340,11 @@
     "proposalField": "site_text",
     "artifactClass": "site_text_patch",
     "writeMode": "atomic",
-    "comment": "One governed candidate per request: every requested surface write lands in one commit across at most the two content-model files, or nothing lands. Unlike the phone coupled set, a candidate touches only the files its requested surfaces live in — the candidate-manifest branch pins changed_paths to a nonempty subset of `files`. The surface catalogue is the authority a caller addresses: `enumeratedSurfaces` for src/data/site.yaml (stable id + pointer + meaning), `patternedSurfaces` for src/data/pages.yaml (id scheme derived from slug/section-index/role, materialised against the base revision at candidate time with section-kind awareness). A surfaceId that does not resolve, resolves to a non-string, resolves to a block scalar, or resolves inside an excluded kind refuses the whole candidate.",
+    "comment": "One governed candidate per request: every requested surface write lands in one commit across at most the two content-model files, or nothing lands. Unlike the phone coupled set, a candidate touches only the files its requested surfaces live in — the candidate-manifest branch pins changed_paths to a nonempty subset of `files`. The surface catalogue is the authority a caller addresses: `enumeratedSurfaces` for src/data/site.yaml (stable id + pointer + meaning), `patternedSurfaces` for src/data/pages.yaml (id scheme derived from slug/section-index/role, materialised against the base revision at candidate time with section-kind awareness). A surfaceId that does not resolve, resolves to a non-string, resolves to a block scalar, or resolves inside an excluded kind refuses the whole candidate. Article titles, excerpts and bodies are addressable too — see articleSurfaces.",
     "constraints": {
       "maxSurfacesPerCandidate": 12,
       "maxValueBytes": 2048,
-      "maxTotalValueBytes": 16384,
+      "maxTotalValueBytes": 32768,
       "valueNewlines": "forbidden",
       "scalarStyles": [
         "PLAIN",
@@ -612,7 +616,27 @@
         "jsonPointer": "src/content/articles/**",
         "reason": "Article bodies and frontmatter are human-owned; attribution is legally load-bearing; article_publish remains unauthorised."
       }
-    ]
+    ],
+    "articleSurfaces": {
+      "comment": "ARTICLE SURFACES (2026-09-06). Every published article under src/content/articles is addressable by its slug through the same site_text_patch operation: `article.<slug>.title` and `article.<slug>.excerpt` are single-line frontmatter scalars (written in place, every other frontmatter key and the body bytes preserved), and `article.<slug>.body` replaces the markdown below the frontmatter and is verified by this contract's articlePublish.markdownContract (conservative-textual-v1: headings to depth 3 and https links allowed, no raw HTML, no images, no bare URLs). The slug is derived, never listed: an id whose file does not exist refuses at candidate time. Creation stays with article_publish.",
+      "directory": "src/content/articles",
+      "surfaceIdScheme": "article.<slug>.title | article.<slug>.excerpt | article.<slug>.body",
+      "fields": [
+        {
+          "name": "title",
+          "jsonPointer": "/title",
+          "maxValueBytes": 200
+        },
+        {
+          "name": "excerpt",
+          "jsonPointer": "/excerpt",
+          "maxValueBytes": 500
+        }
+      ],
+      "body": {
+        "maxValueBytes": 16384
+      }
+    }
   },
   "linkPatch": {
     "operationKind": "site_link_patch",
@@ -620,7 +644,9 @@
     "artifactClass": "site_link_patch",
     "writeMode": "atomic",
     "carrierSchema": "governance/schemas/operation-carriers.v1.schema.json#/$defs/siteLinkPatch",
-    "files": ["src/data/site.yaml"],
+    "files": [
+      "src/data/site.yaml"
+    ],
     "constraints": {
       "schemaVersion": 1,
       "minLinks": 1,
@@ -639,11 +665,23 @@
         "meaning": "Booking action in the contact conversion panel",
         "labelPointer": "/contact/action/ctaLabel",
         "hrefPointer": "/contact/action/ctaHref",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["external_https"],
-        "allowedExternalHosts": ["davetaxnz.nz"],
-        "allowedExternalPaths": ["/book-a-consultation/"],
-        "baseIdentity": { "label": "Book a consultation", "href": "https://davetaxnz.nz/book-a-consultation/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "external_https"
+        ],
+        "allowedExternalHosts": [
+          "davetaxnz.nz"
+        ],
+        "allowedExternalPaths": [
+          "/book-a-consultation/"
+        ],
+        "baseIdentity": {
+          "label": "Book a consultation",
+          "href": "https://davetaxnz.nz/book-a-consultation/"
+        }
       },
       {
         "surfaceId": "site.expertise.ird",
@@ -651,9 +689,17 @@
         "meaning": "Expertise card for IRD disputes and tax debt",
         "labelPointer": "/expertise/items/1/linkLabel",
         "hrefPointer": "/expertise/items/1/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["internal_route"],
-        "baseIdentity": { "label": "Learn more", "href": "/ird-disputes-tax-penalties-negotiation/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "internal_route"
+        ],
+        "baseIdentity": {
+          "label": "Learn more",
+          "href": "/ird-disputes-tax-penalties-negotiation/"
+        }
       },
       {
         "surfaceId": "site.expertise.student-loans",
@@ -661,9 +707,17 @@
         "meaning": "Expertise card for student-loan negotiations",
         "labelPointer": "/expertise/items/0/linkLabel",
         "hrefPointer": "/expertise/items/0/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["internal_route"],
-        "baseIdentity": { "label": "Learn more", "href": "/student-loan-negotiations/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "internal_route"
+        ],
+        "baseIdentity": {
+          "label": "Learn more",
+          "href": "/student-loan-negotiations/"
+        }
       },
       {
         "surfaceId": "site.footer.linkedin",
@@ -671,11 +725,23 @@
         "meaning": "Dave Ananth professional LinkedIn profile",
         "labelPointer": "/footer/links/1/label",
         "hrefPointer": "/footer/links/1/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["external_https"],
-        "allowedExternalHosts": ["www.linkedin.com"],
-        "allowedExternalPaths": ["/in/dave-ananth-6310b023/"],
-        "baseIdentity": { "label": "LinkedIn", "href": "https://www.linkedin.com/in/dave-ananth-6310b023/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "external_https"
+        ],
+        "allowedExternalHosts": [
+          "www.linkedin.com"
+        ],
+        "allowedExternalPaths": [
+          "/in/dave-ananth-6310b023/"
+        ],
+        "baseIdentity": {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/in/dave-ananth-6310b023/"
+        }
       },
       {
         "surfaceId": "site.footer.meridian-profile",
@@ -683,11 +749,23 @@
         "meaning": "Dave Ananth profile at Meridian Partners",
         "labelPointer": "/footer/links/0/label",
         "hrefPointer": "/footer/links/0/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["external_https"],
-        "allowedExternalHosts": ["mplaw.nz"],
-        "allowedExternalPaths": ["/about-meridian-partners/dave-ananth/"],
-        "baseIdentity": { "label": "Meridian Partners", "href": "https://mplaw.nz/about-meridian-partners/dave-ananth/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "external_https"
+        ],
+        "allowedExternalHosts": [
+          "mplaw.nz"
+        ],
+        "allowedExternalPaths": [
+          "/about-meridian-partners/dave-ananth/"
+        ],
+        "baseIdentity": {
+          "label": "Meridian Partners",
+          "href": "https://mplaw.nz/about-meridian-partners/dave-ananth/"
+        }
       },
       {
         "surfaceId": "site.header.about",
@@ -695,9 +773,17 @@
         "meaning": "Primary navigation link to Dave's profile page",
         "labelPointer": "/nav/items/about/label",
         "hrefPointer": "/nav/items/about/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["internal_route"],
-        "baseIdentity": { "label": "About Dave", "href": "/about-dave/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "internal_route"
+        ],
+        "baseIdentity": {
+          "label": "About Dave",
+          "href": "/about-dave/"
+        }
       },
       {
         "surfaceId": "site.header.articles",
@@ -705,9 +791,17 @@
         "meaning": "Primary navigation link to articles and media",
         "labelPointer": "/nav/items/articles/label",
         "hrefPointer": "/nav/items/articles/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["internal_route"],
-        "baseIdentity": { "label": "Articles & media", "href": "/articles/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "internal_route"
+        ],
+        "baseIdentity": {
+          "label": "Articles & media",
+          "href": "/articles/"
+        }
       },
       {
         "surfaceId": "site.header.contact",
@@ -715,9 +809,17 @@
         "meaning": "Primary navigation link to public contact details",
         "labelPointer": "/nav/items/contact/label",
         "hrefPointer": "/nav/items/contact/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["internal_route"],
-        "baseIdentity": { "label": "Contact", "href": "/contact/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "internal_route"
+        ],
+        "baseIdentity": {
+          "label": "Contact",
+          "href": "/contact/"
+        }
       },
       {
         "surfaceId": "site.header.primary-booking",
@@ -725,11 +827,23 @@
         "meaning": "Primary header booking conversion action",
         "labelPointer": "/nav/cta/label",
         "hrefPointer": "/nav/cta/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["external_https"],
-        "allowedExternalHosts": ["davetaxnz.nz"],
-        "allowedExternalPaths": ["/book-a-consultation/"],
-        "baseIdentity": { "label": "Book a free consultation", "href": "https://davetaxnz.nz/book-a-consultation/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "external_https"
+        ],
+        "allowedExternalHosts": [
+          "davetaxnz.nz"
+        ],
+        "allowedExternalPaths": [
+          "/book-a-consultation/"
+        ],
+        "baseIdentity": {
+          "label": "Book a free consultation",
+          "href": "https://davetaxnz.nz/book-a-consultation/"
+        }
       },
       {
         "surfaceId": "site.header.stories",
@@ -737,9 +851,17 @@
         "meaning": "Primary navigation link to attributed client stories",
         "labelPointer": "/nav/items/stories/label",
         "hrefPointer": "/nav/items/stories/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["internal_route"],
-        "baseIdentity": { "label": "Client stories", "href": "/testimonials/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "internal_route"
+        ],
+        "baseIdentity": {
+          "label": "Client stories",
+          "href": "/testimonials/"
+        }
       },
       {
         "surfaceId": "site.hero.primary-booking",
@@ -747,11 +869,23 @@
         "meaning": "Primary hero booking conversion action",
         "labelPointer": "/hero/ctas/0/label",
         "hrefPointer": "/hero/ctas/0/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["external_https"],
-        "allowedExternalHosts": ["davetaxnz.nz"],
-        "allowedExternalPaths": ["/book-a-consultation/"],
-        "baseIdentity": { "label": "Book a free consultation", "href": "https://davetaxnz.nz/book-a-consultation/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "external_https"
+        ],
+        "allowedExternalHosts": [
+          "davetaxnz.nz"
+        ],
+        "allowedExternalPaths": [
+          "/book-a-consultation/"
+        ],
+        "baseIdentity": {
+          "label": "Book a free consultation",
+          "href": "https://davetaxnz.nz/book-a-consultation/"
+        }
       },
       {
         "surfaceId": "site.story.testimonials",
@@ -759,11 +893,23 @@
         "meaning": "Client-story link to the complete attributed testimonial archive",
         "labelPointer": "/story/link/label",
         "hrefPointer": "/story/link/href",
-        "requiredTogether": ["label", "destination"],
-        "destinationKinds": ["external_https"],
-        "allowedExternalHosts": ["davetaxnz.nz"],
-        "allowedExternalPaths": ["/testimonials/"],
-        "baseIdentity": { "label": "Read client experiences", "href": "https://davetaxnz.nz/testimonials/" }
+        "requiredTogether": [
+          "label",
+          "destination"
+        ],
+        "destinationKinds": [
+          "external_https"
+        ],
+        "allowedExternalHosts": [
+          "davetaxnz.nz"
+        ],
+        "allowedExternalPaths": [
+          "/testimonials/"
+        ],
+        "baseIdentity": {
+          "label": "Read client experiences",
+          "href": "https://davetaxnz.nz/testimonials/"
+        }
       }
     ],
     "navigationGroups": [
@@ -772,13 +918,39 @@
         "meaning": "Primary header navigation order",
         "itemsPointer": "/nav/items",
         "orderPointer": "/nav/order",
-        "itemIds": ["about", "expertise", "stories", "articles", "contact"],
+        "itemIds": [
+          "about",
+          "expertise",
+          "stories",
+          "articles",
+          "contact"
+        ],
         "identities": [
-          { "itemId": "about", "label": "About Dave", "href": "/about-dave/" },
-          { "itemId": "expertise", "label": "Expertise", "href": "#expertise" },
-          { "itemId": "stories", "label": "Client stories", "href": "/testimonials/" },
-          { "itemId": "articles", "label": "Articles & media", "href": "/articles/" },
-          { "itemId": "contact", "label": "Contact", "href": "/contact/" }
+          {
+            "itemId": "about",
+            "label": "About Dave",
+            "href": "/about-dave/"
+          },
+          {
+            "itemId": "expertise",
+            "label": "Expertise",
+            "href": "#expertise"
+          },
+          {
+            "itemId": "stories",
+            "label": "Client stories",
+            "href": "/testimonials/"
+          },
+          {
+            "itemId": "articles",
+            "label": "Articles & media",
+            "href": "/articles/"
+          },
+          {
+            "itemId": "contact",
+            "label": "Contact",
+            "href": "/contact/"
+          }
         ]
       }
     ],
@@ -790,14 +962,20 @@
     "artifactClass": "typed_page",
     "writeMode": "create_only_record",
     "carrierSchema": "governance/schemas/operation-carriers.v1.schema.json#/$defs/typedPageCreate",
-    "files": ["src/data/site.yaml", "src/data/typed-pages.yaml"],
+    "files": [
+      "src/data/site.yaml",
+      "src/data/typed-pages.yaml"
+    ],
     "pageTypes": [
       {
         "pageType": "service_detail",
         "meaning": "A bounded public description of one tax service",
         "schema": "governance/schemas/typed-pages.v1.schema.json#/$defs/serviceDetail",
         "renderer": "src/pages/[slug].astro",
-        "sectionKinds": ["prose", "list"],
+        "sectionKinds": [
+          "prose",
+          "list"
+        ],
         "maxSlugCharacters": 80,
         "maxTitleCharacters": 120,
         "maxDescriptionCharacters": 300,
@@ -807,10 +985,27 @@
     ],
     "navigationPlacement": {
       "optional": true,
-      "groupIds": ["site.header.primary"],
+      "groupIds": [
+        "site.header.primary"
+      ],
       "sameCandidate": true
     },
-    "forbidden": ["raw_html", "mdx", "script", "style", "iframe", "json_ld", "href", "asset", "media", "testimonial", "quote", "attribution", "component_id", "caller_path"],
+    "forbidden": [
+      "raw_html",
+      "mdx",
+      "script",
+      "style",
+      "iframe",
+      "json_ld",
+      "href",
+      "asset",
+      "media",
+      "testimonial",
+      "quote",
+      "attribution",
+      "component_id",
+      "caller_path"
+    ],
     "comment": "One strict typed record is appended to src/data/typed-pages.yaml only if its case-folded, decoded, trailing-slash-normalised route is absent. Optional header placement is an atomic modification in the same candidate, never a second operation."
   },
   "publicEmailPatch": {
@@ -820,52 +1015,157 @@
     "writeMode": "atomic_across_files",
     "carrierSchema": "governance/schemas/operation-carriers.v1.schema.json#/$defs/publicEmailPatch",
     "inputs": {
-      "display": { "required": true, "maxBytes": 254, "format": "canonical_bare_email", "derived": false },
-      "mailto": { "required": true, "maxBytes": 254, "format": "canonical_bare_email", "derived": false }
+      "display": {
+        "required": true,
+        "maxBytes": 254,
+        "format": "canonical_bare_email",
+        "derived": false
+      },
+      "mailto": {
+        "required": true,
+        "maxBytes": 254,
+        "format": "canonical_bare_email",
+        "derived": false
+      }
     },
     "currentValuePointer": "/contact/rows/1/value",
     "currentMailtoPointer": "/contact/rows/1/href",
     "semanticAssertions": [
-      { "jsonPointer": "/contact/rows/1/label", "equals": "Email Dave", "meaning": "visible public email contact row" },
-      { "jsonPointer": "/footer/links/2/label", "equals": "Email", "meaning": "footer public email action" },
-      { "jsonPointer": "/expertise/items/2/title", "equals": "Business tax matters", "meaning": "business-tax email action" }
+      {
+        "jsonPointer": "/contact/rows/1/label",
+        "equals": "Email Dave",
+        "meaning": "visible public email contact row"
+      },
+      {
+        "jsonPointer": "/footer/links/2/label",
+        "equals": "Email",
+        "meaning": "footer public email action"
+      },
+      {
+        "jsonPointer": "/expertise/items/2/title",
+        "equals": "Business tax matters",
+        "meaning": "business-tax email action"
+      }
     ],
     "scanExclusions": [
-      { "path": "node_modules", "reason": "Third-party dependencies, never a renderer-owned public email source." },
-      { "path": ".git", "reason": "Historical version-control objects legitimately retain prior values." },
-      { "path": "dist", "reason": "Derived build output; governed source bytes are scanned instead." },
-      { "path": ".astro", "reason": "Derived Astro cache." },
-      { "path": "governance", "reason": "Authority documents and fixtures may quote governed values but do not render." },
-      { "path": "tests", "reason": "Regression fixtures do not render." }
+      {
+        "path": "node_modules",
+        "reason": "Third-party dependencies, never a renderer-owned public email source."
+      },
+      {
+        "path": ".git",
+        "reason": "Historical version-control objects legitimately retain prior values."
+      },
+      {
+        "path": "dist",
+        "reason": "Derived build output; governed source bytes are scanned instead."
+      },
+      {
+        "path": ".astro",
+        "reason": "Derived Astro cache."
+      },
+      {
+        "path": "governance",
+        "reason": "Authority documents and fixtures may quote governed values but do not render."
+      },
+      {
+        "path": "tests",
+        "reason": "Regression fixtures do not render."
+      }
     ],
     "targets": [
       {
         "path": "src/data/site.yaml",
         "pointers": [
-          { "jsonPointer": "/contact/rows/1/value", "input": "display", "render": "raw" },
-          { "jsonPointer": "/contact/rows/1/href", "input": "mailto", "render": "mailto" },
-          { "jsonPointer": "/expertise/items/2/href", "input": "mailto", "render": "mailto_preserve_query" },
-          { "jsonPointer": "/footer/links/2/href", "input": "mailto", "render": "mailto" }
+          {
+            "jsonPointer": "/contact/rows/1/value",
+            "input": "display",
+            "render": "raw"
+          },
+          {
+            "jsonPointer": "/contact/rows/1/href",
+            "input": "mailto",
+            "render": "mailto"
+          },
+          {
+            "jsonPointer": "/expertise/items/2/href",
+            "input": "mailto",
+            "render": "mailto_preserve_query"
+          },
+          {
+            "jsonPointer": "/footer/links/2/href",
+            "input": "mailto",
+            "render": "mailto"
+          }
         ]
       },
       {
         "path": "src/data/pages.yaml",
         "pointers": [
-          { "jsonPointer": "/about-dave/description", "input": "display", "render": "substring" },
-          { "jsonPointer": "/about-dave/sections/2/items/1", "input": "display", "render": "substring" },
-          { "jsonPointer": "/contact/description", "input": "display", "render": "substring" },
-          { "jsonPointer": "/contact/sections/4/body", "input": "display", "render": "substring" },
-          { "jsonPointer": "/student-loan-negotiations/sections/5/items/1", "input": "display", "render": "substring" },
-          { "jsonPointer": "/student-loan-negotiations/sections/36/items/1", "input": "display", "render": "substring" },
-          { "jsonPointer": "/ird-disputes-tax-penalties-negotiation/sections/3/items/1", "input": "display", "render": "substring" },
-          { "jsonPointer": "/ird-disputes-tax-penalties-negotiation/sections/36/items/1", "input": "display", "render": "substring" }
+          {
+            "jsonPointer": "/about-dave/description",
+            "input": "display",
+            "render": "substring"
+          },
+          {
+            "jsonPointer": "/about-dave/sections/2/items/1",
+            "input": "display",
+            "render": "substring"
+          },
+          {
+            "jsonPointer": "/contact/description",
+            "input": "display",
+            "render": "substring"
+          },
+          {
+            "jsonPointer": "/contact/sections/4/body",
+            "input": "display",
+            "render": "substring"
+          },
+          {
+            "jsonPointer": "/student-loan-negotiations/sections/5/items/1",
+            "input": "display",
+            "render": "substring"
+          },
+          {
+            "jsonPointer": "/student-loan-negotiations/sections/36/items/1",
+            "input": "display",
+            "render": "substring"
+          },
+          {
+            "jsonPointer": "/ird-disputes-tax-penalties-negotiation/sections/3/items/1",
+            "input": "display",
+            "render": "substring"
+          },
+          {
+            "jsonPointer": "/ird-disputes-tax-penalties-negotiation/sections/36/items/1",
+            "input": "display",
+            "render": "substring"
+          }
         ]
       },
-      { "path": "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md", "input": "display", "expectedOccurrences": 1, "render": "substring", "requiredLinePrefix": "- Email: " },
-      { "path": "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md", "input": "display", "expectedOccurrences": 1, "render": "substring", "requiredLinePrefix": "- Email: " }
+      {
+        "path": "src/content/articles/can-ird-arrest-me-at-the-border-over-my-student-loan.md",
+        "input": "display",
+        "expectedOccurrences": 1,
+        "render": "substring",
+        "requiredLinePrefix": "- Email: "
+      },
+      {
+        "path": "src/content/articles/i-live-in-australia-and-my-nz-student-loan-has-doubled-what-can-i-do.md",
+        "input": "display",
+        "expectedOccurrences": 1,
+        "render": "substring",
+        "requiredLinePrefix": "- Email: "
+      }
     ],
     "allowedSemanticPrefixes": {
-      "src/data/site.yaml": ["/contact/rows/1/value", "/contact/rows/1/href", "/expertise/items/2/href", "/footer/links/2/href"],
+      "src/data/site.yaml": [
+        "/contact/rows/1/value",
+        "/contact/rows/1/href",
+        "/expertise/items/2/href",
+        "/footer/links/2/href"
+      ],
       "src/data/pages.yaml": [
         "/about-dave/description",
         "/about-dave/sections/2/items/1",
@@ -891,15 +1191,29 @@
     "constraints": {
       "schemaVersion": 1,
       "timezone": "Pacific/Auckland",
-      "days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+      "days": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+      ],
       "maxIntervalsPerDay": 3,
       "emptySchedule": "forbidden",
       "specialHours": "out_of_contract",
       "defaults": "forbidden"
     },
     "rendererBindings": [
-      { "surface": "visible_contact", "path": "src/components/Contact.astro" },
-      { "surface": "structured_data", "path": "src/lib/structured-data.ts" }
+      {
+        "surface": "visible_contact",
+        "path": "src/components/Contact.astro"
+      },
+      {
+        "surface": "structured_data",
+        "path": "src/lib/structured-data.ts"
+      }
     ],
     "comment": "This is deliberately not public_hours_patch. The baseline null records that no audited fact exists; it renders nothing and cannot be interpreted as closed or always-open. One approved operation replaces the complete structured and display fact from explicit input."
   },
