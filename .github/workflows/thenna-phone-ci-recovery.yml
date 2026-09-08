@@ -1,0 +1,88 @@
+name: Verify approved Thenna phone publication
+on:
+  push:
+    branches: [repair/thenna-phone-ci-20260908]
+permissions:
+  contents: read
+concurrency:
+  group: thenna-approved-phone-ci-recovery
+  cancel-in-progress: false
+jobs:
+  verify-approved-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Bind the recovery to the original approved Git objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$GITHUB_REPOSITORY" = infinitemindsnz/dave-tax-nz-site
+          gh api repos/infinitemindsnz/dave-tax-nz-site/pulls/22 > "$RUNNER_TEMP/approved-pr.json"
+          node --input-type=module -e '
+            import fs from "node:fs"; import assert from "node:assert/strict";
+            const pr = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/approved-pr.json"));
+            assert.equal(pr.state, "open");
+            assert.equal(pr.base.sha, "8db6685adf6dcb369aa4f8ba8555a24aa373aeec");
+            assert.equal(pr.head.sha, "d7ba46f5f7eb4f4ee9a3155df0b95daaae7f7635");
+            assert.equal(pr.base.ref, "astro-conversion");
+            assert.equal(pr.head.ref, "governed/apr_18333dd197b079ec58463afe7796a298");'
+          git fetch origin refs/pull/22/head
+          git cat-file -e 07f6a27cefee8baa8d34a97189a65575557e2b31
+      - run: npm ci
+      - name: Test the reviewed corrected verifier
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/verifier" 07f6a27cefee8baa8d34a97189a65575557e2b31
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/verifier/node_modules"
+          npm --prefix "$RUNNER_TEMP/verifier" run test:governance
+      - name: Verify the exact approved phone projection and projected inventory
+        env:
+          GOVERNED_BASE_SHA: 8db6685adf6dcb369aa4f8ba8555a24aa373aeec
+          GOVERNED_HEAD_SHA: d7ba46f5f7eb4f4ee9a3155df0b95daaae7f7635
+        run: |
+          node "$RUNNER_TEMP/verifier/scripts/verify-governed-candidate-ci.mjs"
+          node tests/verify-phone-recovery-inventory.mjs
+      - name: Run the historical policy suite on its audited base
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/audited-base" 8db6685adf6dcb369aa4f8ba8555a24aa373aeec
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/audited-base/node_modules"
+          npm --prefix "$RUNNER_TEMP/audited-base" run test:governance
+      - name: Validate and build the actual approved candidate
+        run: |
+          git worktree add --detach "$RUNNER_TEMP/approved-candidate" d7ba46f5f7eb4f4ee9a3155df0b95daaae7f7635
+          ln -s "$GITHUB_WORKSPACE/node_modules" "$RUNNER_TEMP/approved-candidate/node_modules"
+          npm --prefix "$RUNNER_TEMP/approved-candidate" run content:validate
+          npm --prefix "$RUNNER_TEMP/approved-candidate" run build
+          npm --prefix "$RUNNER_TEMP/approved-candidate" run test:sites
+  report-verified-result:
+    needs: verify-approved-candidate
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: Record the actual validation result on the unchanged approved head
+        uses: actions/github-script@v7
+        env:
+          VERIFICATION_RESULT: ${{ needs.verify-approved-candidate.result }}
+        with:
+          script: |
+            if (context.repo.owner !== 'infinitemindsnz' || context.repo.repo !== 'dave-tax-nz-site') throw new Error('Wrong repository');
+            const {data: pr} = await github.rest.pulls.get({...context.repo, pull_number: 22});
+            if (pr.state !== 'open' || pr.base.ref !== 'astro-conversion' || pr.head.ref !== 'governed/apr_18333dd197b079ec58463afe7796a298' || pr.base.sha !== '8db6685adf6dcb369aa4f8ba8555a24aa373aeec' || pr.head.sha !== 'd7ba46f5f7eb4f4ee9a3155df0b95daaae7f7635') throw new Error('Approved Git binding changed');
+            const success = process.env.VERIFICATION_RESULT === 'success';
+            await github.rest.checks.create({
+              ...context.repo, name: 'validate', head_sha: pr.head.sha,
+              status: 'completed', conclusion: success ? 'success' : 'failure',
+              details_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              output: {
+                title: success ? 'Approved phone candidate verified by corrected CI' : 'Phone recovery validation failed',
+                summary: 'Exact approved PR22 base/head preserved. Runs the reviewed scalar-projection verifier (07f6a27), audited-base governance suite, complete 13-target projected inventory with old-literal tombstones, and actual candidate content validation, production build and Sites worker tests. The historical candidate policy suite is not represented as passing. Publication remains owned by the existing approved publisher job.'
+              }
+            });
