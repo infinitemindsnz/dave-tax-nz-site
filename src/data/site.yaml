@@ -110,7 +110,7 @@ hero:
     - id: "hero.phone"
       binding: "hero.phone"
       label: "Call Dave"
-      href: "tel:+64210216888"
+      href: "tel:+64226944033"
       variant: "secondary"
       external: false
       icon: "Phone"
@@ -243,8 +243,8 @@ contact:
     # phoneHref "tel:+64210216888". Do not reconcile without the client's
     # confirmation of the correct number.
     - label: "Call Dave directly"
-      value: "+64 21 021 68888"
-      href: "tel:+64210216888"
+      value: "+64 22 694 4033"
+      href: "tel:+64226944033"
     - label: "Email Dave"
       value: "dave@davetaxnz.nz"
       href: "mailto:dave@davetaxnz.nz"
