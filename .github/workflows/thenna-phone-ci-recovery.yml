@@ -83,12 +83,18 @@ jobs:
             const {data: run} = await github.rest.actions.getWorkflowRun({...context.repo, run_id: 34196658441});
             if (run.conclusion !== 'success' || run.head_sha !== 'f0f82a48e141b20cf474c302ef2484d5d577dcdd') throw new Error('Original recovery evidence changed');
             if (valid.name !== 'validate' || valid.app.id !== 15368 || valid.head_sha !== pr.head.sha || valid.conclusion !== 'success' || valid.completed_at !== '2026-09-08T06:53:44Z') throw new Error('Authorized validation changed');
-            if (failed.app.id !== 15368 || failed.head_sha !== pr.head.sha || failed.conclusion !== 'failure' || failed.completed_at !== '2026-09-07T19:42:02Z' || !['validate', 'validate (superseded faulty YAML verifier)'].includes(failed.name)) throw new Error('Historical failure changed');
+            if (failed.app.id !== 15368 || failed.head_sha !== pr.head.sha || failed.name !== 'validate') throw new Error('Historical check identity changed');
+            if (failed.conclusion === 'neutral' && failed.output.title === 'Obsolete verifier superseded; corrected validation passed') return;
+            if (failed.conclusion !== 'failure' || failed.completed_at !== '2026-09-07T19:42:02Z') throw new Error('Historical failure changed');
             await github.rest.checks.update({
               ...context.repo, check_run_id: failed.id,
-              name: 'validate (superseded faulty YAML verifier)',
+              status: 'completed', conclusion: 'neutral', completed_at: new Date().toISOString(),
               output: {
-                title: 'Historical YAML verifier failure superseded by verified recovery',
-                summary: 'This check remains FAILED with its original timestamps. Original evidence: https://github.com/infinitemindsnz/dave-tax-nz-site/actions/runs/34156557643 . The exact unchanged approved candidate was revalidated successfully with the corrected verifier, complete original/projected phone inventories, and actual candidate content/build/worker gates: https://github.com/infinitemindsnz/dave-tax-nz-site/actions/runs/34196658441 . The separate successful required validate check 101965933995 retains its original completion time and is already bound to the publisher merge authorization. No approval, Git ref, protection rule, or successful check is changed.'
+                title: 'Obsolete verifier superseded; corrected validation passed',
+                summary: 'This obsolete verifier is now NEUTRAL (superseded), not a successful test. Its original failure completed at 2026-09-07T19:42:02Z; the new disposition timestamp records this supersession. Original failure logs: https://github.com/infinitemindsnz/dave-tax-nz-site/actions/runs/34156557643 . The exact unchanged approved candidate was revalidated successfully with the corrected verifier, complete original/projected phone inventories, and actual candidate content/build/worker gates: https://github.com/infinitemindsnz/dave-tax-nz-site/actions/runs/34196658441 . The separate successful required validate check 101965933995 retains its original completion time and is already bound to the publisher merge authorization. No approval, Git ref, protection rule, or successful check is changed.'
               }
             });
+            const {data: disposition} = await github.rest.checks.get({...context.repo, check_run_id: failed.id});
+            if (disposition.head_sha !== pr.head.sha || disposition.app.id !== 15368 || disposition.name !== 'validate' || disposition.status !== 'completed' || disposition.conclusion !== 'neutral' || disposition.output.title !== 'Obsolete verifier superseded; corrected validation passed') throw new Error('Provider did not persist the neutral supersession');
+            const {data: retained} = await github.rest.checks.get({...context.repo, check_run_id: valid.id});
+            if (retained.head_sha !== pr.head.sha || retained.app.id !== 15368 || retained.name !== 'validate' || retained.conclusion !== 'success' || retained.completed_at !== '2026-09-08T06:53:44Z') throw new Error('Authorized success changed during supersession');
