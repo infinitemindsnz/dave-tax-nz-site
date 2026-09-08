@@ -95,7 +95,7 @@ hero:
   headline: "When IRD pressure rises, experience matters."
   lead: "Dave Ananth resolves student loan debt, tax disputes and enforcement action with clear, practical advice."
   alert:
-    text: "Received an IRD letter or worried about returning to New Zealand?"
+    text: "Here is the new beginning"
     href: "#expertise"
   ctas:
     - id: "hero.primary-booking"
