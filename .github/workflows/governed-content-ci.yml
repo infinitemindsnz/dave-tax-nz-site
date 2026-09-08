@@ -37,6 +37,7 @@ jobs:
       - run: npm ci
       - run: npm run content:validate
       - name: Verify governed candidate boundary
+        id: governed_candidate
         if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'governed/') }}
         env:
           GOVERNED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -56,6 +57,7 @@ jobs:
           ln -s "$GITHUB_WORKSPACE/node_modules" "$base_dir/node_modules"
           npm --prefix "$base_dir" run test:governance
       - name: Test governance on the checked-out tree
+        if: ${{ steps.governed_candidate.outputs.phone_patch != 'true' }}
         run: npm run test:governance
       - run: npm run build
       - run: npm run test:sites
