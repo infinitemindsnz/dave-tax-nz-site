@@ -23,6 +23,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
+import { resolvePhonePolicy } from "../scripts/phone-baseline.mjs";
 import {
   GovernedMaterialiserRefusal,
   GOVERNED_AUTHORITY_DIGESTS,
@@ -33,7 +34,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const governancePath = (...segments) => path.join(root, "governance", ...segments);
 const readJson = (...segments) => JSON.parse(readFileSync(governancePath(...segments), "utf8"));
 
-const writablePaths = readJson("writable-paths.v1.json");
+const writablePaths = resolvePhonePolicy(readJson("writable-paths.v1.json"),
+  (file) => readFileSync(path.join(root, file), "utf8"));
 const approvalPolicy = readJson("approval-policy.v1.json");
 const candidateManifestSchema = readJson("schemas", "candidate-manifest.v1.schema.json");
 const expansionFixtures = readJson("fixtures", "governed-site-expansion.v1.json");

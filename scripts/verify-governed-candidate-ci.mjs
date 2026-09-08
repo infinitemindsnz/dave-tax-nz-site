@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { appendFileSync } from "node:fs";
 import path from "node:path";
 import { parse as parseYaml, parseDocument } from "yaml";
 import { GOVERNED_AUTHORITY_DIGESTS, materialiseGovernedOperation } from "./governed-materialisers.mjs";
+import { assertYamlScalarProjection } from "./verify-yaml-scalar-projection.mjs";
+import { resolvePhonePolicy } from "./phone-baseline.mjs";
 
 const sha = /^[0-9a-f]{40}$/;
 const baseSha = process.env.GOVERNED_BASE_SHA ?? "";
@@ -21,7 +24,8 @@ function git(...args) {
   });
 }
 
-const policy = JSON.parse(git("show", `${baseSha}:governance/writable-paths.v1.json`));
+const policy = resolvePhonePolicy(JSON.parse(git("show", `${baseSha}:governance/writable-paths.v1.json`)),
+  (file) => git("show", `${baseSha}:${file}`));
 assert.equal(policy?.coupledSet?.operationKind, "public_phone_patch", "base policy has no active phone coupled set");
 assert.equal(policy?.coupledSet?.writeMode, "atomic_across_files", "base policy phone write is not atomic");
 
@@ -72,6 +76,7 @@ const sortedChanged = [...changedPaths].sort();
 const isPhoneCoupledSet =
   addedPaths.length === 0 &&
   sortedChanged.length === phonePaths.length && sortedChanged.every((entry, index) => entry === phonePaths[index]);
+let verifiedPhonePatch = false;
 
 // article_publish: exactly ONE record, an added file under the articlePublish
 // directory with the contract's slug grammar — and only when the base policy
@@ -176,7 +181,7 @@ function verifyLegacyTextPatch() {
     const before = yamlAt(baseSha, file);
     const after = yamlAt(headSha, file);
     const changed = semanticDiff(before, after);
-    const document = parseDocument(sourceAt(baseSha, file), { strict: true });
+    const writes = [];
     for (const pointer of changed) {
       const value = getAt(after, pointer);
       assert.equal(typeof value, "string", `${file}${pointer} is not a text scalar`);
@@ -196,12 +201,12 @@ function verifyLegacyTextPatch() {
       }
       count += 1;
       totalBytes += Buffer.byteLength(value);
-      document.setIn(pointerParts(pointer), value);
+      writes.push({ parts: pointerParts(pointer), value });
     }
     for (const { literal } of policy.textPatch.constraints.preserveLiteralOccurrences) {
       assert.equal(sourceAt(baseSha, file).split(literal).length, sourceAt(headSha, file).split(literal).length, `${file} changed a protected literal count`);
     }
-    assert.equal(document.toString({ lineWidth: 0 }), sourceAt(headSha, file), `${file} contains bytes not produced by its text surfaces`);
+    assertYamlScalarProjection(sourceAt(baseSha, file), sourceAt(headSha, file), writes, file);
   }
   assert.ok(count >= 1 && count <= policy.textPatch.constraints.maxSurfacesPerCandidate, "site_text_patch surface count is outside policy");
   assert.ok(totalBytes <= policy.textPatch.constraints.maxTotalValueBytes, "site_text_patch aggregate value bound exceeded");
@@ -219,18 +224,19 @@ function verifyLegacyPhonePatch() {
     const beforeText = sourceAt(baseSha, file.path);
     if (file.path.endsWith(".yaml")) {
       const document = parseDocument(beforeText, { strict: true });
+      const writes = [];
       for (const target of targets) {
         const parts = pointerParts(target.jsonPointer);
         const current = document.getIn(parts);
         const replacement = target.input === "display" ? display : e164;
-        if (target.render === "raw") document.setIn(parts, replacement);
-        else if (target.render === "tel") document.setIn(parts, `tel:${replacement}`);
+        if (target.render === "raw") writes.push({ parts, value: replacement });
+        else if (target.render === "tel") writes.push({ parts, value: `tel:${replacement}` });
         else {
           assert.equal(current.split(target.matchLiteral).length - 1, 1, `${file.path}${target.jsonPointer} drifted`);
-          document.setIn(parts, current.replace(target.matchLiteral, replacement));
+          writes.push({ parts, value: current.replace(target.matchLiteral, replacement) });
         }
       }
-      assert.equal(document.toString({ lineWidth: 0 }), sourceAt(headSha, file.path), `${file.path} is not the exact phone projection`);
+      assertYamlScalarProjection(beforeText, sourceAt(headSha, file.path), writes, file.path);
     } else {
       assert.equal(targets.length, 1);
       assert.equal(beforeText.split(targets[0].matchLiteral).length - 1, 1, `${file.path} phone target drifted`);
@@ -302,6 +308,7 @@ if (isArticleCreate) {
     process.stdout.write(`Governed candidate boundary verified across ${changedPaths.length} exact materialiser files (public_email_patch).\n`);
   } else {
     verifyLegacyPhonePatch();
+    verifiedPhonePatch = true;
     process.stdout.write(`Governed candidate boundary verified across ${changedPaths.length} exact coupled files (public_phone_patch).\n`);
   }
 } else {
@@ -338,4 +345,11 @@ if (isArticleCreate) {
     verifyLegacyTextPatch();
     process.stdout.write(`Governed candidate boundary verified across ${changedPaths.length} exact text-surface files (site_text_patch).\n`);
   }
+}
+
+// Only a successfully verified complete phone projection replaces the literals
+// that the base policy inventories. All other candidates still need the full
+// checked-out-tree governance scan, including newly introduced occurrences.
+if (process.env.GITHUB_OUTPUT) {
+  appendFileSync(process.env.GITHUB_OUTPUT, `phone_patch=${verifiedPhonePatch}\n`);
 }

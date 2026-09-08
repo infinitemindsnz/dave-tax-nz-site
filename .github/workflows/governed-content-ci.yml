@@ -5,8 +5,9 @@ name: Governed content CI
 # for this content model, and governed/* branches are submitted as pull
 # requests. Long-lived branches validate their current tree. Governed pull
 # requests validate the audited base policy, the complete coupled changed-file
-# boundary, and the candidate build; the candidate tree is expected not to
-# contain the base policy's old phone literal. See writable-paths.v1.json's
+# boundary, and the candidate build. The policy explicitly resolves current
+# phone values from the protected base; every candidate also runs the complete
+# governance suite, including the fixed target and comment inventory. See writable-paths.v1.json's
 # closed_set_occurrence_scan precondition for why a build-only check is not
 # enough on its own.
 on:
@@ -37,6 +38,7 @@ jobs:
       - run: npm ci
       - run: npm run content:validate
       - name: Verify governed candidate boundary
+        id: governed_candidate
         if: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'governed/') }}
         env:
           GOVERNED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
