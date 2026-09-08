@@ -6,6 +6,7 @@ import path from "node:path";
 import { parse as parseYaml, parseDocument } from "yaml";
 import { GOVERNED_AUTHORITY_DIGESTS, materialiseGovernedOperation } from "./governed-materialisers.mjs";
 import { assertYamlScalarProjection } from "./verify-yaml-scalar-projection.mjs";
+import { resolvePhonePolicy } from "./phone-baseline.mjs";
 
 const sha = /^[0-9a-f]{40}$/;
 const baseSha = process.env.GOVERNED_BASE_SHA ?? "";
@@ -23,7 +24,8 @@ function git(...args) {
   });
 }
 
-const policy = JSON.parse(git("show", `${baseSha}:governance/writable-paths.v1.json`));
+const policy = resolvePhonePolicy(JSON.parse(git("show", `${baseSha}:governance/writable-paths.v1.json`)),
+  (file) => git("show", `${baseSha}:${file}`));
 assert.equal(policy?.coupledSet?.operationKind, "public_phone_patch", "base policy has no active phone coupled set");
 assert.equal(policy?.coupledSet?.writeMode, "atomic_across_files", "base policy phone write is not atomic");
 

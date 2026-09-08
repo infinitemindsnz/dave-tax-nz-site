@@ -3,6 +3,10 @@
   "contractId": "dave-tax-nz-site-content.v1",
   "changeLog": [
     {
+      "version": 9,
+      "comment": "REPEATABLE PHONE PUBLICATION. closed_set_occurrence_scan.baselineMode=protected_base_values_v1 resolves current display/tel literals from the existing raw/tel target anchors in the release-pinned protected revision (advanced only by publisher receipt lineage). All thirteen targets, counts, source exclusions and historical comment inventory remain fixed; original literals become zero-rendering tombstones after a change. Text edits preserve both current and original literals. Phone candidates continue to change content only and cannot modify policy. Absence of baselineMode retains strict literal-bound historical behavior; unknown modes refuse."
+    },
+    {
       "version": 8,
       "comment": "MEDIA CARD SURFACES. `site_text_patch` gains `media.<index>.title|summary` over the curated list in src/data/articles.yaml (title and summary only; url/category/type/date stay structural). No new operation or ceremony."
     },
@@ -272,7 +276,8 @@
           "reason": "The governance suite reads both literals from this contract rather than hardcoding them, but a future fixture legitimately might. Test fixtures do not render."
         }
       ],
-      "scanExclusionsComment": "INVERTED IN VERSION 3.1. Version 3 replaced an enumerated file list with an enumerated ROOT list (`scanRoots: [\"src\", \"public\"]`), which is the same fail-open pattern one level up: a new top-level directory that reaches rendered output — an edge handler, a functions/ directory, a second asset root — is invisible to the scan by default, exactly as src/data/articles.yaml was invisible under version 2. The scan now starts at the REPOSITORY ROOT and removes only the paths declared here, each with a stated reason. A new directory is therefore in scope the moment it exists, and excluding it is a deliberate, reviewed edit to this list rather than an omission nobody notices. Note that worker/index.js and astro.config.mjs are on the render path and are now scanned; neither contains a phone literal today, and the scan is what keeps it that way."
+      "scanExclusionsComment": "INVERTED IN VERSION 3.1. Version 3 replaced an enumerated file list with an enumerated ROOT list (`scanRoots: [\"src\", \"public\"]`), which is the same fail-open pattern one level up: a new top-level directory that reaches rendered output — an edge handler, a functions/ directory, a second asset root — is invisible to the scan by default, exactly as src/data/articles.yaml was invisible under version 2. The scan now starts at the REPOSITORY ROOT and removes only the paths declared here, each with a stated reason. A new directory is therefore in scope the moment it exists, and excluding it is a deliberate, reviewed edit to this list rather than an omission nobody notices. Note that worker/index.js and astro.config.mjs are on the render path and are now scanned; neither contains a phone literal today, and the scan is what keeps it that way.",
+      "baselineMode": "protected_base_values_v1"
     }
   ],
   "inputContracts": {

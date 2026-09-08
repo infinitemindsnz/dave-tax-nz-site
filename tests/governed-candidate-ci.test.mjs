@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { parse } from "yaml";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -11,12 +12,11 @@ const checker = path.join(root, "scripts/verify-governed-candidate-ci.mjs");
 const policyPath = "governance/writable-paths.v1.json";
 const policy = JSON.parse(readFileSync(path.join(root, policyPath), "utf8"));
 const phoneFiles = policy.coupledSet.paths;
-const oldDisplay = policy.files.find((file) => file.path === "src/data/site.yaml").fields
-  .find((field) => field.operationKind === "public_phone_patch").targets
-  .find((target) => target.render === "raw").matchLiteral;
-const oldHref = policy.files.find((file) => file.path === "src/data/site.yaml").fields
-  .find((field) => field.operationKind === "public_phone_patch").targets
-  .find((target) => target.render === "tel").matchLiteral;
+const currentSite = parse(readFileSync(path.join(root, "src/data/site.yaml"), "utf8"));
+const oldDisplay = currentSite.contact.rows[0].value;
+const oldHref = currentSite.contact.rows[0].href;
+const replacementDisplay = oldDisplay === "+64 22 111 2222" ? "+64 22 333 4444" : "+64 22 111 2222";
+const replacementHref = oldHref === "tel:+64221112222" ? "tel:+64223334444" : "tel:+64221112222";
 
 function fixture(t, changes) {
   const directory = mkdtempSync(path.join(tmpdir(), "governed-ci-test-"));
@@ -48,7 +48,7 @@ function fixture(t, changes) {
 }
 
 const replacePhone = (text) => text.split("\n").map((line) => /^\s*#/u.test(line) ? line :
-  line.replaceAll(oldDisplay, "+64 22 037 6543").replaceAll(oldHref, "tel:+64220376543")).join("\n");
+  line.replaceAll(oldDisplay, replacementDisplay).replaceAll(oldHref, replacementHref)).join("\n");
 
 test("only a complete verified phone candidate enables the phone-specific CI path", (t) => {
   const result = fixture(t, Object.fromEntries(phoneFiles.map((file) => [file, replacePhone])));
