@@ -381,3 +381,8 @@
 .article-meta a:hover {
   text-decoration: underline;
 }
+
+/* Governed document photos keep the article measure and their original aspect ratio. */
+.article-photo { margin: 2rem 0; }
+.article-photo img { display: block; width: auto; max-width: 100%; height: auto; }
+.article-photo figcaption { margin-top: .75rem; font-size: .875rem; line-height: 1.5; }

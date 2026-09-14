@@ -42,6 +42,7 @@ import {
   type ArticleEntry,
 } from "../../lib/articles";
 import { machineDateTime } from "../../lib/discovery";
+import { articlePhotoPath } from "../../lib/article-photos";
 import { resolveMediaUrl } from "../../lib/media";
 import { buildArticleStructuredData } from "../../lib/structured-data";
 import { absoluteUrl, sitePath } from "../../lib/urls";
@@ -158,7 +159,15 @@ const jsonLd = buildArticleStructuredData(Astro.site, entry.data);
         }
       </header>
 
-      <div class="article-prose"><Content /></div>
+      <div class="article-prose">
+        <Content />
+        {(entry.data.photos ?? []).map((photo) => (
+          <figure class="article-photo">
+            <img src={sitePath(articlePhotoPath(photo))} alt={photo.alt} width={photo.width} height={photo.height} loading="lazy" decoding="async" />
+            {photo.caption && <figcaption>{photo.caption}</figcaption>}
+          </figure>
+        ))}
+      </div>
 
       <div class="article-foot">
         <a class="text-link" href={articlesIndexPath()}>{articlePages.indexLinkLabel}</a>

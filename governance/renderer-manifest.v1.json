@@ -77,7 +77,8 @@
       "sitemap.xml",
       "_astro/*.css",
       "assets/*",
-      "assets/wp/*"
+      "assets/wp/*",
+      "article-photos/<sha256-hex>.jpg"
     ],
     "routeNotes": [
     {
