@@ -1258,7 +1258,7 @@
       "maxExcerptLength": 500,
       "maxCategories": 8,
       "maxBodyBytes": 32768,
-      "maxCarrierBytes": 49152
+      "maxCarrierBytes": 589824
     },
     "directory": "src/content/articles",
     "categoryVocabulary": [
@@ -1288,11 +1288,11 @@
       "draft": false,
       "wallClockPattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
       "timezone": "Pacific/Auckland",
-      "comment": "Authored-only v1: `attribution` absent (its presence flips renderer authorship claims — publishing reposts needs source verification and its own reviewed contract) and `heroImage` absent (every image must resolve in the media manifest; new media waits for the media pipeline). Dates use the schema's offset-free NZ wall-clock format, stamped by the publisher so a requester cannot backdate."
+      "comment": "Authored-only v1: `attribution` absent (its presence flips renderer authorship claims — publishing reposts needs source verification and its own reviewed contract) and `heroImage` absent (the legacy media-manifest path is outside this operation). Optional `photos` are carried only under the closed `mediaContract` below and are part of the exact article revision. Dates use the schema's offset-free NZ wall-clock format, stamped by the publisher so a requester cannot backdate."
     },
     "markdownContract": {
       "verifierClass": "conservative-textual-v1",
-      "comment": "The EXECUTING verifier precondition. The publisher enforces this contract's rules at candidate time; anything the conservative textual grammar cannot prove safe refuses the candidate. Deliberately a strict subset of governance/markdown-policy.v1.json: no raw HTML at all (the policy's deniedNodeTypes cover html nodes; this contract refuses any '<'), no images (the policy allows image nodes for migrated content; new authored work may not add media), https-only inline links, no bare-URL autolinks, heading depth capped at 3, no reference-style link definitions, and no attribution-style body lines (an authored article credits no other publication).",
+      "comment": "The EXECUTING verifier precondition. The publisher enforces this contract's rules at candidate time; anything the conservative textual grammar cannot prove safe refuses the candidate. Deliberately a strict subset of governance/markdown-policy.v1.json: no raw HTML at all (the policy's deniedNodeTypes cover html nodes; this contract refuses any '<'), no body image nodes (the policy allows them for migrated content; new authored work carries source-bound photos only through the frontmatter media contract), https-only inline links, no bare-URL autolinks, heading depth capped at 3, no reference-style link definitions, and no attribution-style body lines (an authored article credits no other publication).",
       "forbidRawHtml": true,
       "forbidImages": true,
       "linkProtocols": [
@@ -1303,6 +1303,13 @@
       "forbidAutolinkLiterals": true,
       "attributionLinePattern": "originally published|republished with permission|first appeared",
       "attributionLineRule": "refuse"
+    },
+    "mediaContract": {
+      "version": 1,
+      "storage": "article_frontmatter_jpeg_v1",
+      "maxImages": 6,
+      "maxImageBytes": 65536,
+      "maxDimension": 1280
     }
   }
 }

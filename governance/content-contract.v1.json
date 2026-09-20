@@ -71,5 +71,14 @@
   "markdownPolicy": "governance/markdown-policy.v1.json",
   "candidateManifestSchema": "governance/schemas/candidate-manifest.v1.schema.json",
   "rendererManifest": "governance/renderer-manifest.v1.json",
-  "approvalPolicy": "governance/approval-policy.v1.json"
+  "approvalPolicy": "governance/approval-policy.v1.json",
+  "articlePhotos": {
+    "schemaVersion": 1,
+    "storage": "article_frontmatter_jpeg_v1",
+    "source": "src/content/articles/*.md#photos",
+    "output": "/article-photos/<sha256-hex>.jpg",
+    "maxImages": 6,
+    "maxImageBytes": 65536,
+    "comment": "Optional photos on authored articles are part of the exact candidate file and both approval stages. The static renderer emits only validated, content-addressed JPEG bytes from published article records. No remote media URL, runtime upload, or arbitrary path is accepted."
+  }
 }

@@ -1,4 +1,5 @@
 import { defineCollection, z } from "astro:content";
+import { articlePhotosSchema } from "./lib/article-photos";
 import { glob } from "astro/loaders";
 
 /**
@@ -53,6 +54,7 @@ const articles = defineCollection({
       })
       .optional(),
 
+    photos: articlePhotosSchema.optional(),
     draft: z.boolean(),
   }),
 });
